@@ -2,9 +2,6 @@ name: Goreleaser build and publish
 
 on:
     push:
-        branches:
-            - "master"
-            - "dev"
         tags:
             - "v*"
     pull_request:
@@ -24,6 +21,6 @@ jobs:
               uses: goreleaser/goreleaser-action@v4
               with:
                   version: latest
-                  args: release --rm-dist
+                  args: release --clean
               env:
-                  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
