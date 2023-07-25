@@ -1,0 +1,22 @@
+name: email
+summary: CLI utility to search or verify lists of email addresses in minutes
+description: |
+    CLI utility to search or verify lists of email addresses in minutes.
+version: 1.0.0
+grade: stable
+base: core20
+
+confinement: strict
+
+apps:
+    email:
+        command: bin/email
+        plugs:
+            - home
+            - network
+
+parts:
+    email:
+        plugin: go
+        source-type: git
+        source: https://github.com/tomba-io/email

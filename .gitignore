@@ -1,0 +1,13 @@
+bin
+vendor
+.idea
+parts
+prime
+snap
+stage
+*.snap*
+*.bz2
+test.go
+email
+dist/
+.env
