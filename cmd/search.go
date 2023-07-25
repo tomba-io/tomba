@@ -17,6 +17,7 @@ var searchCmd = &cobra.Command{
 	Use:     "search",
 	Aliases: []string{"s"},
 	Short:   "Instantly locate email addresses from any company name or website.",
+	Long:    Long,
 	Run:     searchRun,
 	Example: searchExample,
 }
@@ -42,17 +43,22 @@ func searchRun(cmd *cobra.Command, args []string) {
 	result, err := init.Tomba.DomainSearch(domain)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
-	}
-	if init.JSON {
-		raw, _ := result.Marshal()
-		json, _ := output.DisplayJSON(string(raw))
-		fmt.Println(json)
 		return
 	}
-	if init.YAML {
-		raw, _ := result.Marshal()
-		json, _ := output.DisplayYAML(string(raw))
-		fmt.Println(json)
+	if result.Meta.Total > 0 {
+		if init.JSON {
+			raw, _ := result.Marshal()
+			json, _ := output.DisplayJSON(string(raw))
+			fmt.Println(json)
+			return
+		}
+		if init.YAML {
+			raw, _ := result.Marshal()
+			yaml, _ := output.DisplayYAML(string(raw))
+			fmt.Println(yaml)
+			return
+		}
 		return
 	}
+	fmt.Println(util.WarningIcon(), util.Yellow("TombaPublicWebCrawler is searching the internet for the best leads that relate to this company, but we don't have any for it yet. That said, we're working on it"))
 }

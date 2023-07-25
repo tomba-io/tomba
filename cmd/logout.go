@@ -13,6 +13,7 @@ import (
 var logoutCmd = &cobra.Command{
 	Use:   "logout",
 	Short: "delete your current KEY & SECRET API session.",
+	Long:  Long,
 	Run:   logoutRun,
 }
 
@@ -32,5 +33,4 @@ func logoutRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	fmt.Println(util.Green("Successfully disconnected."))
-
 }

@@ -17,6 +17,7 @@ import (
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "Sign in to Tomba account",
+	Long:  Long,
 	Run:   loginRun,
 }
 
@@ -36,13 +37,13 @@ func loginRun(cmd *cobra.Command, args []string) {
 
 	var vars = map[string]string{}
 	validateKey := func(key string) error {
-		if _key.IsValidAPI(key) {
+		if !_key.IsValidAPI(key) {
 			return start.ErrErrInvalidApiKey
 		}
 		return nil
 	}
 	validateSecret := func(secret string) error {
-		if _key.IsValidAPI(secret) {
+		if !_key.IsValidAPI(secret) {
 			return start.ErrErrInvalidApiSecret
 		}
 		return nil
@@ -92,5 +93,4 @@ func loginRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	fmt.Println(util.SuccessIcon(), util.Green("You have successfully logged in to tomba."))
-
 }

@@ -1,10 +1,14 @@
-<p align="center"><img src="https://tomba.io/logo.svg" height='60' /></p>
-
-<h3 align="center">Tomba Email Finder.</h3>
-
-# Tomba Email Finder Cli
+# Tomba Email Finder Cli 🔥
 
 CLI utility to search or verify email addresses in minutes.
+
+## Features ✨
+
+- 🛡️ Instantly locate email addresses from any website.
+- 🛡️ Email verify to confirm an email address' authenticity.
+- 🛡️ Enrich email with data
+- 🛡️ Instantly discover the email addresses of Linkedin URLs.
+- 🛡️ Instantly discover the email addresses of article authors.
 
 ## Installation
 
@@ -16,55 +20,54 @@ sudo snap install email
 
 ### Using Go
 
+Make sure that `$GOPATH/bin` is in your `$PATH`, because that's where this gets
+installed:
+
 ```bash
 go install github.com/tomba-io/email@latest
 ```
 
 ## Get Started 🎉
 
+By default, invoking the CLI shows a help message:
+
 ```bash
-cli utility to search or verify lists of email addresses in minutes can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases.
+email
+```
 
+![tomba email](svg/default.svg)
 
-    ████████╗ ██████╗ ███╗   ███╗██████╗  █████╗    ██╗ ██████╗ 
-    ╚══██╔══╝██╔═══██╗████╗ ████║██╔══██╗██╔══██╗   ██║██╔═══██╗
-       ██║   ██║   ██║██╔████╔██║██████╔╝███████║   ██║██║   ██║
-       ██║   ██║   ██║██║╚██╔╝██║██╔══██╗██╔══██║   ██║██║   ██║
-       ██║   ╚██████╔╝██║ ╚═╝ ██║██████╔╝██║  ██║██╗██║╚██████╔╝
-       ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝ ╚═════╝ 
-       
-    
+### Login
 
-Usage:
-  email [command]
+Sign in to Tomba account
 
-Available Commands:
-  author      Instantly discover the email addresses of article authors.
-  completion  Generate the autocompletion script for the specified shell
-  count       Returns total email addresses we have for one domain.
-  enrich      Locate and include data in your emails.
-  help        Help about any command
-  linkedin    Instantly discover the email addresses of Linkedin URLs.
-  login       Sign in to Tomba account
-  logout      delete your current KEY & SECRET API session.
-  search      Instantly locate email addresses from any company name or website.
-  status      Returns domain status if is webmail or disposable.
-  verify      Verify the deliverability of an email address.
-  version     Print version number and build information.
+```bash
+email login
+```
 
-Flags:
-  -N, --color           disable color output. (default true)
-  -c, --csv             output CSV format.
-  -h, --help            help for email
-  -j, --json            output JSON format. (default true)
-  -k, --key string      Tomba API KEY.
-  -o, --output string   Save the results to file.
-  -p, --pretty          output pretty format. (default true)
-  -s, --secret string   Tomba API SECRET.
-  -t, --target string   TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.
-  -y, --yaml            output YAML format.
+![tomba email](svg/login.svg)
 
-Use "email [command] --help" for more information about a command.
+## Auto-Completion
+
+Auto-completion is supported for at least the following shells:
+
+```bash
+bash
+fish
+powershell
+zsh
+```
+
+NOTE: it may work for other shells as well because the implementation is in
+Golang and is not necessarily shell-specific.
+
+### Installation
+
+Installing auto-completions is as simple as running one command (works for
+`bash`, `fish`, `powershell` and `zsh` shells):
+
+```bash
+email completion zsh
 ```
 
 ## Changelog 📌

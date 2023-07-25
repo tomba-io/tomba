@@ -30,7 +30,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&conn.Target, "target", "t", "", "TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Output, "output", "o", "", "Save the results to file.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.Pretty, "pretty", "p", true, "output pretty format.")
-	rootCmd.PersistentFlags().BoolVarP(&conn.Color, "color", "N", true, "disable color output.")
+	rootCmd.PersistentFlags().BoolVarP(&conn.Color, "color", "n", true, "disable color output.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.JSON, "json", "j", true, "output JSON format.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.CSV, "csv", "c", false, "output CSV format.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.YAML, "yaml", "y", false, "output YAML format.")

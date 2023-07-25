@@ -17,6 +17,7 @@ var statusCmd = &cobra.Command{
 	Use:     "status",
 	Aliases: []string{"t"},
 	Short:   "Returns domain status if is webmail or disposable.",
+	Long:    Long,
 	Run:     statusRun,
 	Example: statusExample,
 }
@@ -41,6 +42,7 @@ func statusRun(cmd *cobra.Command, args []string) {
 	result, err := init.Tomba.Status(domain)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
+		return
 	}
 	if init.JSON {
 		raw, _ := result.Marshal()
@@ -50,8 +52,8 @@ func statusRun(cmd *cobra.Command, args []string) {
 	}
 	if init.YAML {
 		raw, _ := result.Marshal()
-		json, _ := output.DisplayYAML(string(raw))
-		fmt.Println(json)
+		yaml, _ := output.DisplayYAML(string(raw))
+		fmt.Println(yaml)
 		return
 	}
 }

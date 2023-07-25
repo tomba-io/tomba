@@ -1,18 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
@@ -32,6 +17,7 @@ var enrichCmd = &cobra.Command{
 	Use:     "enrich",
 	Aliases: []string{"e"},
 	Short:   "Locate and include data in your emails.",
+	Long:    Long,
 	Run:     enrichRun,
 	Example: enrichExample,
 }
@@ -57,18 +43,22 @@ func enrichRun(cmd *cobra.Command, args []string) {
 	result, err := init.Tomba.Enrichment(email)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
-	}
-	if init.JSON {
-		raw, _ := result.Marshal()
-		json, _ := output.DisplayJSON(string(raw))
-		fmt.Println(json)
 		return
 	}
-	if init.YAML {
-		raw, _ := result.Marshal()
-		json, _ := output.DisplayYAML(string(raw))
-		fmt.Println(json)
+	if result.Data.Email != "" {
+		if init.JSON {
+			raw, _ := result.Marshal()
+			json, _ := output.DisplayJSON(string(raw))
+			fmt.Println(json)
+			return
+		}
+		if init.YAML {
+			raw, _ := result.Marshal()
+			yaml, _ := output.DisplayYAML(string(raw))
+			fmt.Println(yaml)
+			return
+		}
 		return
 	}
-
+	fmt.Println(util.WarningIcon(), util.Yellow("Why doesn't the enrichment return any result? https://help.tomba.io/en/questions/reasons-why-enrichment-don-t-find-any-emails"))
 }
