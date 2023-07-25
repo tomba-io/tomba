@@ -6,7 +6,7 @@ CLI utility to search or verify email addresses in minutes.
 
 - 🛡️ Instantly locate email addresses from any website.
 - 🛡️ Email verify to confirm an email address' authenticity.
-- 🛡️ Enrich email with data
+- 🛡️ Enrich email with data.
 - 🛡️ Instantly discover the email addresses of Linkedin URLs.
 - 🛡️ Instantly discover the email addresses of article authors.
 
