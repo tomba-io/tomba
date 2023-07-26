@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/asaskevich/govalidator"
-	_tld "github.com/tomba-io/email/pkg/validation/tld"
+	_tld "github.com/tomba-io/tomba/pkg/validation/tld"
 )
 
 // IsValidEmail Check if email is valid

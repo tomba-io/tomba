@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	_tld "github.com/tomba-io/email/pkg/validation/tld"
+	_tld "github.com/tomba-io/tomba/pkg/validation/tld"
 )
 
 // isValidDomain Check if domain looks valid

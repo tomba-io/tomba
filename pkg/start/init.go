@@ -3,7 +3,7 @@ package start
 import (
 	"fmt"
 
-	"github.com/tomba-io/email/pkg/config"
+	"github.com/tomba-io/tomba/pkg/config"
 	"github.com/tomba-io/go/tomba"
 )
 

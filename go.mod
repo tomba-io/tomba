@@ -1,4 +1,4 @@
-module github.com/tomba-io/email
+module github.com/tomba-io/tomba
 
 go 1.19
 

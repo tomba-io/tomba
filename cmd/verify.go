@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/tomba-io/email/pkg/output"
-	"github.com/tomba-io/email/pkg/start"
-	"github.com/tomba-io/email/pkg/util"
-	_email "github.com/tomba-io/email/pkg/validation/email"
+	"github.com/tomba-io/tomba/pkg/output"
+	"github.com/tomba-io/tomba/pkg/start"
+	"github.com/tomba-io/tomba/pkg/util"
+	_email "github.com/tomba-io/tomba/pkg/validation/email"
 )
 
 // verifyCmd represents the verify command

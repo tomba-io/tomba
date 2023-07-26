@@ -5,11 +5,11 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/tomba-io/email/pkg/config"
-	"github.com/tomba-io/email/pkg/output"
-	"github.com/tomba-io/email/pkg/start"
-	"github.com/tomba-io/email/pkg/util"
-	_key "github.com/tomba-io/email/pkg/validation/key"
+	"github.com/tomba-io/tomba/pkg/config"
+	"github.com/tomba-io/tomba/pkg/output"
+	"github.com/tomba-io/tomba/pkg/start"
+	"github.com/tomba-io/tomba/pkg/util"
+	_key "github.com/tomba-io/tomba/pkg/validation/key"
 	"github.com/tomba-io/go/tomba"
 )
 

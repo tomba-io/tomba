@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/tomba-io/email/pkg/version"
+	"github.com/tomba-io/tomba/pkg/version"
 )
 
 // versionCmd represents the version command

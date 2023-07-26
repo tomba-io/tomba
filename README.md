@@ -15,7 +15,7 @@ CLI utility to search or verify email addresses in minutes.
 ### Using Snap
 
 ```bash
-sudo snap install email
+sudo snap install tomba
 ```
 
 ### Using Go
@@ -24,7 +24,7 @@ Make sure that `$GOPATH/bin` is in your `$PATH`, because that's where this gets
 installed:
 
 ```bash
-go install github.com/tomba-io/email@latest
+go install github.com/tomba-io/tomba@latest
 ```
 
 ## Get Started 🎉
@@ -32,7 +32,7 @@ go install github.com/tomba-io/email@latest
 By default, invoking the CLI shows a help message:
 
 ```bash
-email
+tomba
 ```
 
 ![tomba email](svg/default.svg)
@@ -42,7 +42,7 @@ email
 Sign in to Tomba account
 
 ```bash
-email login
+tomba login
 ```
 
 ![tomba email](svg/login.svg)
@@ -67,12 +67,12 @@ Installing auto-completions is as simple as running one command (works for
 `bash`, `fish`, `powershell` and `zsh` shells):
 
 ```bash
-email completion zsh
+tomba completion zsh
 ```
 
 ## Changelog 📌
 
-Detailed changes for each release are documented in the [release notes](https://github.com/tomba-io/email/releases).
+Detailed changes for each release are documented in the [release notes](https://github.com/tomba-io/tomba/releases).
 
 ## Documentation
 
@@ -86,7 +86,7 @@ Founded in 2021, Tomba prides itself on being the most reliable, accurate, and i
 
 ## Contribution
 
-1. Fork it (<https://github.com/tomba-io/email/fork>)
+1. Fork it (<https://github.com/tomba-io/tomba/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

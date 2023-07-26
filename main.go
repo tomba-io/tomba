@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/tomba-io/email/cmd"
+import "github.com/tomba-io/tomba/cmd"
 
 func main() {
 	cmd.Execute()

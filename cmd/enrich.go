@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/tomba-io/email/pkg/output"
-	"github.com/tomba-io/email/pkg/start"
-	"github.com/tomba-io/email/pkg/util"
-	_email "github.com/tomba-io/email/pkg/validation/email"
-	_key "github.com/tomba-io/email/pkg/validation/key"
+	"github.com/tomba-io/tomba/pkg/output"
+	"github.com/tomba-io/tomba/pkg/start"
+	"github.com/tomba-io/tomba/pkg/util"
+	_email "github.com/tomba-io/tomba/pkg/validation/email"
+	_key "github.com/tomba-io/tomba/pkg/validation/key"
 )
 
 // enrichCmd represents the enrich command

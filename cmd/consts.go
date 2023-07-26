@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/tomba-io/email/pkg/start"
-	"github.com/tomba-io/email/pkg/util"
+	"github.com/tomba-io/tomba/pkg/start"
+	"github.com/tomba-io/tomba/pkg/util"
 )
 
 var conn start.Conn

@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/tomba-io/email/pkg/config"
+	"github.com/tomba-io/tomba/pkg/config"
 )
 
 // rootCmd represents the base command when called without any subcommands

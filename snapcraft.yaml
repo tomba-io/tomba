@@ -1,4 +1,4 @@
-name: email
+name: tomba
 icon: logo.png
 summary: CLI utility to search or verify lists of email addresses in minutes
 description: |
@@ -10,26 +10,26 @@ description: |
     * Instantly discover the email addresses of Linkedin URLs https://tomba.io/linkedin-finder .
     * Instantly discover the email addresses of article authors https://tomba.io/author-finder .
 
-    This snap is built via the build.snapcraft.io service from the snapcraft.yaml definition at https://github.com/tomba-io/email to ensure source and build transparency.
-issues: https://github.com/tomba-io/email/issues
+    This snap is built via the build.snapcraft.io service from the snapcraft.yaml definition at https://github.com/tomba-io/tomba to ensure source and build transparency.
+issues: https://github.com/tomba-io/tomba/issues
 license: "Apache-2.0"
-source-code: https://github.com/tomba-io/email.git
+source-code: https://github.com/tomba-io/tomba.git
 website: https://tomba.io/
-version: 1.0.0
+version: 1.0.1
 grade: stable
 base: core20
 
 confinement: strict
 
 apps:
-    email:
-        command: bin/email
+    tomba:
+        command: bin/tomba
         plugs:
             - home
             - network
 
 parts:
-    email:
+    tomba:
         plugin: go
         source-type: git
-        source: https://github.com/tomba-io/email
+        source: https://github.com/tomba-io/tomba

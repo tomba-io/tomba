@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/tomba-io/email/pkg/config"
-	"github.com/tomba-io/email/pkg/start"
-	"github.com/tomba-io/email/pkg/util"
+	"github.com/tomba-io/tomba/pkg/config"
+	"github.com/tomba-io/tomba/pkg/start"
+	"github.com/tomba-io/tomba/pkg/util"
 )
 
 // logoutCmd represents the logout command
