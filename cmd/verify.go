@@ -51,17 +51,20 @@ func verifyRun(cmd *cobra.Command, args []string) {
 			fmt.Println(util.WarningIcon(), util.Yellow("Tomba is designed to contact other professionals. This email is used to create personal email addresses so we don't the verification. 💡"))
 			return
 		}
+		raw, _ := result.Marshal()
 		if init.JSON {
-			raw, _ := result.Marshal()
 			json, _ := output.DisplayJSON(string(raw))
 			fmt.Println(json)
-			return
 		}
 		if init.YAML {
-			raw, _ := result.Marshal()
 			yaml, _ := output.DisplayYAML(string(raw))
 			fmt.Println(yaml)
-			return
+		}
+		if init.Output != "" {
+			err := output.CreateOutput(init.Output, string(raw))
+			if err != nil {
+				fmt.Println("Error creating file:", err)
+			}
 		}
 		return
 	}

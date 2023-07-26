@@ -46,17 +46,20 @@ func enrichRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	if result.Data.Email != "" {
+		raw, _ := result.Marshal()
 		if init.JSON {
-			raw, _ := result.Marshal()
 			json, _ := output.DisplayJSON(string(raw))
 			fmt.Println(json)
-			return
 		}
 		if init.YAML {
-			raw, _ := result.Marshal()
 			yaml, _ := output.DisplayYAML(string(raw))
 			fmt.Println(yaml)
-			return
+		}
+		if init.Output != "" {
+			err := output.CreateOutput(init.Output, string(raw))
+			if err != nil {
+				fmt.Println("Error creating file:", err)
+			}
 		}
 		return
 	}

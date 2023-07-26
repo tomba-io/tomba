@@ -5,10 +5,10 @@ description: |
     Tomba.io (CLI) utility to search or verify lists of email addresses in minutes can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases. This utility can automate the process of checking the validity and deliverability of email addresses, saving valuable time and resources. Let's explore the features and benefits of such a CLI utility:
 
     * Instantly locate email addresses from any website https://tomba.io/domain-search .
-    * Email verify to confirm an email address' authenticity https://tomba.io/email-verifier. 
-    * Enrich email with data. https://tomba.io/enrichment https://tomba.io/enrichment.
-    * Instantly discover the email addresses of Linkedin URLs https://tomba.io/linkedin-finder.
-    * Instantly discover the email addresses of article authors https://tomba.io/author-finder.
+    * Email verify to confirm an email address' authenticity https://tomba.io/email-verifier . 
+    * Enrich email with data https://tomba.io/enrichment .
+    * Instantly discover the email addresses of Linkedin URLs https://tomba.io/linkedin-finder .
+    * Instantly discover the email addresses of article authors https://tomba.io/author-finder .
 
     This snap is built via the build.snapcraft.io service from the snapcraft.yaml definition at https://github.com/tomba-io/email to ensure source and build transparency.
 issues: https://github.com/tomba-io/email/issues
@@ -20,7 +20,6 @@ grade: stable
 base: core20
 
 confinement: strict
-adopt-info: email
 
 apps:
     email:

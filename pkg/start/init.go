@@ -20,7 +20,6 @@ type Parameters struct {
 	Target string // Can pass email, Domain, URL, Linkedin URL or TXT file for bulk.
 	Output string
 	JSON   bool
-	CSV    bool
 	YAML   bool
 	Color  bool
 	Pretty bool
@@ -31,6 +30,9 @@ type Parameters struct {
 func New(conn Conn) *Conn {
 	// Read the config file
 	conf, err := config.ReadConfigFile()
+	if conn.YAML {
+		conn.Parameters.JSON = false
+	}
 	if err != nil {
 		fmt.Println("Error reading config file:", err)
 	}
