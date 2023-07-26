@@ -14,6 +14,8 @@ CLI utility to search or verify email addresses in minutes.
 
 ### Using Snap
 
+[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/tomba)
+
 ```bash
 sudo snap install tomba
 ```
