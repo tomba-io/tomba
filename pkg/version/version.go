@@ -3,7 +3,7 @@ package version
 import "fmt"
 
 var (
-	app     = "email"
+	app     = "tomba"
 	version = "v1.0.1"
 )
 
