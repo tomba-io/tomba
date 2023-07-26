@@ -57,8 +57,6 @@ Instantly locate email addresses from any company name or website.
 tomba search --target "tomba.io"
 ```
 
-![tomba domain search](svg/search.svg)
-
 ### Enrichment
 
 Locate and include data in your emails.
@@ -77,8 +75,6 @@ Instantly discover the email addresses of article authors.
 tomba author --target "https://clearbit.com/blog/company-name-to-domain-api"
 ```
 
-![tomba author](svg/author.svg)
-
 ### Linkedin Finder
 
 Instantly discover the email addresses of Linkedin URLs.
@@ -87,8 +83,6 @@ Instantly discover the email addresses of Linkedin URLs.
 tomba linkedin --target "https://www.linkedin.com/in/mohamed-ben-rebia"
 ```
 
-![tomba linkedin](svg/linkedin.svg)
-
 ### Email Verifier
 
 Verify the deliverability of an email address.
@@ -96,8 +90,6 @@ Verify the deliverability of an email address.
 ```bash
 tomba verify --target "b.mohamed@tomba.io"
 ```
-
-![tomba verify](svg/verify.svg)
 
 ### Available Commands
 
