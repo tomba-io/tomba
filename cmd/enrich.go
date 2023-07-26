@@ -8,7 +8,6 @@ import (
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
 	_email "github.com/tomba-io/tomba/pkg/validation/email"
-	_key "github.com/tomba-io/tomba/pkg/validation/key"
 )
 
 // enrichCmd represents the enrich command
@@ -26,16 +25,8 @@ var enrichCmd = &cobra.Command{
 func enrichRun(cmd *cobra.Command, args []string) {
 	fmt.Println(Long)
 	init := start.New(conn)
-	if init.Key == "" || init.Secret == "" {
-		fmt.Println(util.WarningIcon(), util.Yellow(start.ErrErrInvalidNoLogin.Error()))
-		return
-	}
-	if !_key.IsValidAPI(init.Key) && !_key.IsValidAPI(init.Secret) {
-		fmt.Println(util.WarningIcon(), util.Yellow(start.ErrErrInvalidLogin.Error()))
-		return
-	}
-
 	email := init.Target
+
 	if !_email.IsValidEmail(email) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentEmail.Error()))
 		return

@@ -2,9 +2,12 @@ package start
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/tomba-io/tomba/pkg/config"
 	"github.com/tomba-io/go/tomba"
+	"github.com/tomba-io/tomba/pkg/config"
+	"github.com/tomba-io/tomba/pkg/util"
+	_key "github.com/tomba-io/tomba/pkg/validation/key"
 )
 
 // Conn
@@ -45,7 +48,14 @@ func New(conn Conn) *Conn {
 			Tomba:      tomba,
 		}
 	}
-
+	if conn.Key == "" || conn.Secret == "" {
+		fmt.Println(util.WarningIcon(), util.Yellow(ErrErrInvalidNoLogin.Error()))
+		os.Exit(0)
+	}
+	if !_key.IsValidAPI(conn.Key) && !_key.IsValidAPI(conn.Secret) {
+		fmt.Println(util.WarningIcon(), util.Yellow(ErrErrInvalidLogin.Error()))
+		os.Exit(0)
+	}
 	tomba := tomba.New(conn.Key, conn.Secret)
 	return &Conn{
 		Parameters: conn.Parameters,

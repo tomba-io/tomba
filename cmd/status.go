@@ -8,7 +8,6 @@ import (
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
 	_domain "github.com/tomba-io/tomba/pkg/validation/domain"
-	_key "github.com/tomba-io/tomba/pkg/validation/key"
 )
 
 // statusCmd represents the status command
@@ -26,15 +25,8 @@ var statusCmd = &cobra.Command{
 func statusRun(cmd *cobra.Command, args []string) {
 	fmt.Println(Long)
 	init := start.New(conn)
-	if init.Key == "" || init.Secret == "" {
-		fmt.Println(util.WarningIcon(), util.Yellow(start.ErrErrInvalidNoLogin.Error()))
-		return
-	}
-	if !_key.IsValidAPI(init.Key) && !_key.IsValidAPI(init.Secret) {
-		fmt.Println(util.WarningIcon(), util.Yellow(start.ErrErrInvalidLogin.Error()))
-		return
-	}
 	domain := init.Target
+
 	if !_domain.IsValidDomain(domain) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsDomain.Error()))
 		return
