@@ -4,7 +4,7 @@ import "fmt"
 
 var (
 	app     = "email"
-	version = "v1.0.0"
+	version = "v1.0.1"
 )
 
 // String returns a string.
