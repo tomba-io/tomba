@@ -38,9 +38,8 @@ func linkedinRun(cmd *cobra.Command, args []string) {
 	if !_url.IsValidURL(url) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsURL.Error()))
 		return
-
 	}
-	result, err := conn.Tomba.LinkedinFinder(url)
+	result, err := init.Tomba.LinkedinFinder(url)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return
