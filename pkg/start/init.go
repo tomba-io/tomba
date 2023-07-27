@@ -20,8 +20,9 @@ type Conn struct {
 type Parameters struct {
 	Key    string
 	Secret string
-	Target string // Can pass email, Domain, URL, Linkedin URL or TXT file for bulk.
+	Target string // Can pass email, Domain, URL, Linkedin URL.
 	Output string
+	Port   int
 	JSON   bool
 	YAML   bool
 	Color  bool
