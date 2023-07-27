@@ -1,4 +1,4 @@
-name: Golang Build Private Tomba cli
+name: go
 on:
     push:
         branches: [master]
