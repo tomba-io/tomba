@@ -93,7 +93,7 @@ tomba verify --target "b.mohamed@tomba.io"
 
 ## Http
 
-***Tomba Reverse Proxy***
+**_Tomba Reverse Proxy_**
 
 ```bash
 tomba http
@@ -138,7 +138,7 @@ tomba http
 | `-j`      | `--json`   | output JSON format. (default true)                                 |
 | `-k`      | `--key`    | Tomba API KEY.                                                     |
 | `-o`      | `--output` | Save the results to file.                                          |
-| `-op`     | `--prot`   | Sets the port on which the HTTP server should bind. (default 3000) |
+| `-p`      | `--prot`   | Sets the port on which the HTTP server should bind. (default 3000) |
 | `-s`      | `--secret` | Tomba API SECRET.                                                  |
 | `-t`      | `--target` | TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.    |
 | `-y`      | `--yaml`   | output YAML format.                                                |

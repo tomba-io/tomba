@@ -64,7 +64,7 @@ snapshot:
     name_template: "{{ .Tag }}-next"
 nfpms:
     - file_name_template: "{{ .ProjectName }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-      homepage: https://tomba.com
+      homepage: https://tomba.io
       description: CLI utility to search or verify lists of email addresses in seconds.
       maintainer: Mohamed Ben rebia <b.mohamed@tomba.io>
       license: Apache-2.0
