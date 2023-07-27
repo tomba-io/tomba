@@ -24,11 +24,12 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(config.InitConfig)
-	rootCmd.AddCommand(authorCmd, countCmd, enrichCmd, linkedinCmd, logoutCmd, loginCmd, searchCmd, statusCmd, verifyCmd, versionCmd)
+	rootCmd.AddCommand(authorCmd, countCmd, enrichCmd, httpCmd, linkedinCmd, logoutCmd, loginCmd, searchCmd, statusCmd, verifyCmd, versionCmd)
 	rootCmd.PersistentFlags().StringVarP(&conn.Key, "key", "k", "", "Tomba API KEY.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Secret, "secret", "s", "", "Tomba API SECRET.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Target, "target", "t", "", "TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Output, "output", "o", "", "Save the results to file.")
+	rootCmd.PersistentFlags().IntVarP(&conn.Port, "port", "p", 3000, "Sets the port on which the HTTP server should bind.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.JSON, "json", "j", true, "output JSON format.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.YAML, "yaml", "y", false, "output YAML format.")
 }
