@@ -25,13 +25,13 @@ var countCmd = &cobra.Command{
 func countRun(cmd *cobra.Command, args []string) {
 	fmt.Println(Long)
 	init := start.New(conn)
-	url := init.Target
+	domain := init.Target
 
-	if !_domain.IsValidDomain(url) {
+	if !_domain.IsValidDomain(domain) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsDomain.Error()))
 		return
 	}
-	result, err := init.Tomba.Count(url)
+	result, err := init.Tomba.Count(domain)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return

@@ -91,6 +91,27 @@ Verify the deliverability of an email address.
 tomba verify --target "b.mohamed@tomba.io"
 ```
 
+## Http
+
+***Tomba Reverse Proxy***
+
+```bash
+tomba http
+```
+
+## Endpoints
+
+| Name            | Route     | Query    | State     | Authentication | Method |
+| --------------- | --------- | -------- | --------- | -------------- | ------ |
+| Home            | /         | No       | Completed | No             | Get    |
+| author finder   | /author   | `url`    | Completed | No             | Get    |
+| email counter   | /count    | `domain` | Completed | No             | Get    |
+| enrichment      | /enrich   | `email`  | Completed | No             | Get    |
+| linkedin finder | /linkedin | `url`    | Completed | No             | Get    |
+| domain search   | /search   | `domain` | Completed | No             | Get    |
+| domain status   | /status   | `domain` | Completed | No             | Get    |
+| email verifier  | /verify   | `email`  | Completed | No             | Get    |
+
 ### Available Commands
 
 | Command name | Description                                                        |
@@ -100,6 +121,7 @@ tomba verify --target "b.mohamed@tomba.io"
 | count        | Returns total email addresses we have for one domain.              |
 | enrich       | Locate and include data in your emails.                            |
 | help         | Help about any command                                             |
+| http         | Runs a HTTP server (reverse proxy).                                |
 | linkedin     | Instantly discover the email addresses of Linkedin URLs.           |
 | login        | Sign in to Tomba account                                           |
 | logout       | delete your current KEY & SECRET API session.                      |
@@ -110,15 +132,16 @@ tomba verify --target "b.mohamed@tomba.io"
 
 ### Command Flags
 
-| shortopts | longopts   | Description                                                     |
-| --------- | ---------- | --------------------------------------------------------------- |
-| `-h`      | `--help`   | help for tomba                                                  |
-| `-j`      | `--json`   | output JSON format. (default true)                              |
-| `-k`      | `--key`    | Tomba API KEY.                                                  |
-| `-o`      | `--output` | Save the results to file.                                       |
-| `-s`      | `--secret` | Tomba API SECRET.                                               |
-| `-t`      | `--target` | TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL. |
-| `-y`      | `--yaml`   | output YAML format.                                             |
+| shortopts | longopts   | Description                                                        |
+| --------- | ---------- | ------------------------------------------------------------------ |
+| `-h`      | `--help`   | help for tomba                                                     |
+| `-j`      | `--json`   | output JSON format. (default true)                                 |
+| `-k`      | `--key`    | Tomba API KEY.                                                     |
+| `-o`      | `--output` | Save the results to file.                                          |
+| `-op`     | `--prot`   | Sets the port on which the HTTP server should bind. (default 3000) |
+| `-s`      | `--secret` | Tomba API SECRET.                                                  |
+| `-t`      | `--target` | TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.    |
+| `-y`      | `--yaml`   | output YAML format.                                                |
 
 ## Auto-Completion
 
