@@ -19,12 +19,12 @@ func (d *Conn) Home(c *fiber.Ctx) error {
 func (init *Conn) Author(c *fiber.Ctx) error {
 	url := strings.ToLower(c.Query("url"))
 	if !_url.IsValidURL(url) {
-		log.Info(ErrArgumentsURL.Error())
+		log.Error(ErrArgumentsURL.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsURL.Error()})
 	}
 	result, err := init.Tomba.AuthorFinder(url)
 	if err != nil {
-		log.Info(ErrErrInvalidLogin.Error())
+		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	if result.Data.Email == "" {
@@ -39,10 +39,12 @@ func (init *Conn) Author(c *fiber.Ctx) error {
 func (init *Conn) Count(c *fiber.Ctx) error {
 	domain := strings.ToLower(c.Query("domain"))
 	if !_domain.IsValidDomain(domain) {
+		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
 	result, err := init.Tomba.Count(domain)
 	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	if result.Data.Total == 0 {
@@ -56,10 +58,12 @@ func (init *Conn) Enrich(c *fiber.Ctx) error {
 	email := strings.ToLower(c.Query("email"))
 
 	if !_email.IsValidEmail(email) {
+		log.Error(ErrArgumentEmail.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentEmail.Error()})
 	}
 	result, err := init.Tomba.Enrichment(email)
 	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	if result.Data.Email == "" {
@@ -73,14 +77,26 @@ func (init *Conn) Linkedin(c *fiber.Ctx) error {
 	url := strings.ToLower(c.Query("url"))
 
 	if !_url.IsValidURL(url) {
+		log.Error(ErrArgumentsURL.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsURL.Error()})
 	}
 	result, err := init.Tomba.LinkedinFinder(url)
 	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	if result.Data.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the Linkedin return any result? https://help.tomba.io/en/questions/reasons-why-linkedin-don-t-find-any-emails"})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// Logs query logs
+func (init *Conn) Logs(c *fiber.Ctx) error {
+	result, err := init.Tomba.Logs()
+	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	return c.Status(200).JSON(result)
 }
@@ -90,10 +106,12 @@ func (init *Conn) Search(c *fiber.Ctx) error {
 	domain := strings.ToLower(c.Query("domain"))
 
 	if !_domain.IsValidDomain(domain) {
+		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
 	result, err := init.Tomba.DomainSearch(domain, "10", "0")
 	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	if result.Meta.Total == 0 {
@@ -108,10 +126,22 @@ func (init *Conn) Status(c *fiber.Ctx) error {
 	domain := strings.ToLower(c.Query("domain"))
 
 	if !_domain.IsValidDomain(domain) {
+		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
 	result, err := init.Tomba.Status(domain)
 	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
+		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// Usage query usage
+func (init *Conn) Usage(c *fiber.Ctx) error {
+	result, err := init.Tomba.Usage()
+	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	return c.Status(200).JSON(result)
@@ -122,11 +152,13 @@ func (init *Conn) Verify(c *fiber.Ctx) error {
 	email := strings.ToLower(c.Query("email"))
 
 	if !_email.IsValidEmail(email) {
+		log.Error(ErrArgumentEmail.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentEmail.Error()})
 	}
 
 	result, err := init.Tomba.EmailVerifier(email)
 	if err != nil {
+		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	if result.Data.Email.Email != "" {

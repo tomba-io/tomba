@@ -37,7 +37,9 @@ func setUpRoutes(app *fiber.App, conn *start.Conn) {
 	app.Get("count", conn.Count)
 	app.Get("enrich", conn.Enrich)
 	app.Get("linkedin", conn.Linkedin)
+	app.Get("logs", conn.Logs)
 	app.Get("search", conn.Search)
 	app.Get("status", conn.Status)
+	app.Get("usage", conn.Usage)
 	app.Get("verify", conn.Verify)
 }
