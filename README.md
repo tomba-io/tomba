@@ -108,8 +108,10 @@ tomba http
 | email counter   | /count    | `domain` | Completed | No             | Get    |
 | enrichment      | /enrich   | `email`  | Completed | No             | Get    |
 | linkedin finder | /linkedin | `url`    | Completed | No             | Get    |
+| logs            | /logs     | No       | Completed | No             | Get    |
 | domain search   | /search   | `domain` | Completed | No             | Get    |
 | domain status   | /status   | `domain` | Completed | No             | Get    |
+| usage           | /usage    | No       | Completed | No             | Get    |
 | email verifier  | /verify   | `email`  | Completed | No             | Get    |
 
 ### Available Commands
@@ -125,8 +127,10 @@ tomba http
 | linkedin     | Instantly discover the email addresses of Linkedin URLs.           |
 | login        | Sign in to Tomba account                                           |
 | logout       | delete your current KEY & SECRET API session.                      |
+| logs         | Check your last 1,000 requests you made during the last 3 months.  |
 | search       | Instantly locate email addresses from any company name or website. |
 | status       | Returns domain status if is webmail or disposable.                 |
+| usage        | Check your monthly requests.                                       |
 | verify       | Verify the deliverability of an email address.                     |
 | version      | Print version number and build information.                        |
 
