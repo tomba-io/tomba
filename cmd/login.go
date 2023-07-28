@@ -5,12 +5,12 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/tomba-io/go/tomba"
 	"github.com/tomba-io/tomba/pkg/config"
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
 	_key "github.com/tomba-io/tomba/pkg/validation/key"
-	"github.com/tomba-io/go/tomba"
 )
 
 // loginCmd represents the login command
@@ -29,6 +29,7 @@ type Prompts struct {
 // loginRun the actual work login
 func loginRun(cmd *cobra.Command, args []string) {
 	fmt.Println(Long)
+	conn.Use = "login"
 	init := start.New(conn)
 	if init.Key != "" || init.Secret != "" {
 		fmt.Println(util.WarningIcon(), util.Yellow("Please logout to login."))

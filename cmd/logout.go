@@ -19,11 +19,7 @@ var logoutCmd = &cobra.Command{
 
 // loginRun the actual work login
 func logoutRun(cmd *cobra.Command, args []string) {
-	init := start.New(conn)
-	if init.Key == "" && init.Secret == "" {
-		fmt.Println(util.WarningIcon(), util.Yellow(start.ErrErrInvalidNoLogin.Error()))
-		return
-	}
+	start.New(conn)
 	// update config
 	if err := config.UpdateConfig(config.Config{
 		Key:    "",

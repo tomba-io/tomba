@@ -27,6 +27,7 @@ type Parameters struct {
 	YAML   bool
 	Color  bool
 	Pretty bool
+	Use    string
 }
 
 // New parameters
@@ -49,13 +50,15 @@ func New(conn Conn) *Conn {
 			Tomba:      tomba,
 		}
 	}
-	if conn.Key == "" || conn.Secret == "" {
-		fmt.Println(util.WarningIcon(), util.Yellow(ErrErrInvalidNoLogin.Error()))
-		os.Exit(0)
-	}
-	if !_key.IsValidAPI(conn.Key) && !_key.IsValidAPI(conn.Secret) {
-		fmt.Println(util.WarningIcon(), util.Yellow(ErrErrInvalidLogin.Error()))
-		os.Exit(0)
+	if conn.Use != "login" {
+		if conn.Key == "" || conn.Secret == "" {
+			fmt.Println(util.WarningIcon(), util.Yellow(ErrErrInvalidNoLogin.Error()))
+			os.Exit(0)
+		}
+		if !_key.IsValidAPI(conn.Key) && !_key.IsValidAPI(conn.Secret) {
+			fmt.Println(util.WarningIcon(), util.Yellow(ErrErrInvalidLogin.Error()))
+			os.Exit(0)
+		}
 	}
 	tomba := tomba.New(conn.Key, conn.Secret)
 	return &Conn{
