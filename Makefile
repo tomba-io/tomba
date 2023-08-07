@@ -12,7 +12,7 @@ deps:
 	go get -v ./...
 
 clean:
-	$(info ******************** downloading dependencies ********************)
+	$(info ******************** clean bin ********************)
 	rm -rf $(BIN)
 
 ensure-dir:
