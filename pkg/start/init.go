@@ -28,6 +28,20 @@ type Parameters struct {
 	Color  bool
 	Pretty bool
 	Use    string
+	Search
+	Finder
+}
+
+type Search struct {
+	Page       int
+	Limit      int
+	Department string
+}
+
+type Finder struct {
+	FullName  string
+	FirstName string
+	LastName  string
 }
 
 // New parameters
