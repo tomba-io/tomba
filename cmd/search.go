@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/tomba-io/go/tomba"
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -32,7 +33,18 @@ func searchRun(cmd *cobra.Command, args []string) {
 		return
 
 	}
-	result, err := init.Tomba.DomainSearch(domain, "10", "0")
+	params := tomba.Params{"domain": domain}
+	if init.Page != 0 {
+		params["page"] = fmt.Sprint(init.Page)
+	}
+	switch init.Limit {
+	case 10, 20, 50:
+		params["limit"] = fmt.Sprint(init.Limit)
+	default:
+		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsDomainLimit.Error()), init.Page)
+		return
+	}
+	result, err := init.Tomba.DomainSearch(params)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return
