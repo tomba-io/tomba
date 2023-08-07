@@ -57,6 +57,14 @@ Instantly locate email addresses from any company name or website.
 tomba search --target "tomba.io"
 ```
 
+### Email Finder
+
+Retrieves the most likely email address from a domain name, a first name and a last name.
+
+```bash
+tomba finder --target "tomba.io" --fist "mohamed" --last "ben rebia"
+```
+
 ### Enrichment
 
 Locate and include data in your emails.
@@ -101,40 +109,40 @@ tomba http
 
 ## Endpoints
 
-| Name            | Route     | Query    | State     | Authentication | Method |
-| --------------- | --------- | -------- | --------- | -------------- | ------ |
-| Home            | /         | No       | Completed | No             | Get    |
-| author finder   | /author   | `url`    | Completed | No             | Get    |
-| email counter   | /count    | `domain` | Completed | No             | Get    |
-| enrichment      | /enrich   | `email`  | Completed | No             | Get    |
-| linkedin finder | /linkedin | `url`    | Completed | No             | Get    |
-| logs            | /logs     | No       | Completed | No             | Get    |
-| domain search   | /search   | `domain` | Completed | No             | Get    |
-| domain status   | /status   | `domain` | Completed | No             | Get    |
-| usage           | /usage    | No       | Completed | No             | Get    |
-| email verifier  | /verify   | `email`  | Completed | No             | Get    |
+| Name            | Route     | Body     | State     | Slack | Method |
+| --------------- | --------- | -------- | --------- | ----- | ------ |
+| author finder   | /author   | `url`    | Completed | Yes   | Post   |
+| email counter   | /count    | `domain` | Completed | No    | Post   |
+| enrichment      | /enrich   | `email`  | Completed | Yes   | Post   |
+| linkedin finder | /linkedin | `url`    | Completed | Yes   | Post   |
+| domain search   | /search   | `domain` | Completed | Yes   | Post   |
+| domain status   | /status   | `domain` | Completed | No    | Post   |
+| email verifier  | /verify   | `email`  | Completed | Yes   | Post   |
+| logs            | /logs     | No       | Completed | No    | Get    |
+| usage           | /usage    | No       | Completed | No    | Get    |
 
 ### Available Commands
 
-| Command name | Description                                                        |
-| ------------ | ------------------------------------------------------------------ |
-| author       | Instantly discover the email addresses of article authors.         |
-| completion   | Generate the autocompletion script for the specified shell         |
-| count        | Returns total email addresses we have for one domain.              |
-| enrich       | Locate and include data in your emails.                            |
-| help         | Help about any command                                             |
-| http         | Runs a HTTP server (reverse proxy).                                |
-| linkedin     | Instantly discover the email addresses of Linkedin URLs.           |
-| login        | Sign in to Tomba account                                           |
-| logout       | delete your current KEY & SECRET API session.                      |
-| logs         | Check your last 1,000 requests you made during the last 3 months.  |
-| search       | Instantly locate email addresses from any company name or website. |
-| status       | Returns domain status if is webmail or disposable.                 |
-| usage        | Check your monthly requests.                                       |
-| verify       | Verify the deliverability of an email address.                     |
-| version      | Print version number and build information.                        |
+| Command name | Description                                                                               |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| author       | Instantly discover the email addresses of article authors.                                |
+| completion   | Generate the autocompletion script for the specified shell                                |
+| count        | Returns total email addresses we have for one domain.                                     |
+| enrich       | Locate and include data in your emails.                                                   |
+| finder       | Retrieves the most likely email address from a domain name, a first name and a last name. |
+| help         | Help about any command                                                                    |
+| http         | Runs a HTTP server (reverse proxy).                                                       |
+| linkedin     | Instantly discover the email addresses of Linkedin URLs.                                  |
+| login        | Sign in to Tomba account                                                                  |
+| logout       | delete your current KEY & SECRET API session.                                             |
+| logs         | Check your last 1,000 requests you made during the last 3 months.                         |
+| search       | Instantly locate email addresses from any company name or website.                        |
+| status       | Returns domain status if is webmail or disposable.                                        |
+| usage        | Check your monthly requests.                                                              |
+| verify       | Verify the deliverability of an email address.                                            |
+| version      | Print version number and build information.                                               |
 
-### Command Flags
+### Command Global Flags
 
 | shortopts | longopts   | Description                                                        |
 | --------- | ---------- | ------------------------------------------------------------------ |
