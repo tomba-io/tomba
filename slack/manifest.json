@@ -1,0 +1,61 @@
+{
+    "display_information": {
+        "name": "Tomba Email Finder",
+        "description": "Command utility to search or verify lists of email addresses in minutes",
+        "background_color": "#1853db",
+        "long_description": "Command utility to search or verify lists of email addresses in minutes can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases."
+    },
+    "features": {
+        "bot_user": {
+            "display_name": "tomba",
+            "always_online": false
+        },
+        "slash_commands": [
+            {
+                "command": "/author",
+                "url": "https://yourdomain.com/author",
+                "description": "Instantly discover the email addresses of article authors.",
+                "usage_hint": "https://clearbit.com/blog/company-name-to-domain-api",
+                "should_escape": false
+            },
+            {
+                "command": "/enrich",
+                "url": "https://yourdomain.com/enrich",
+                "description": "Locate and include data in your emails.",
+                "usage_hint": "b.mohamed@tomba.io",
+                "should_escape": false
+            },
+            {
+                "command": "/linkedin",
+                "url": "https://yourdomain.com/linkedin",
+                "description": "Instantly discover the email addresses of Linkedin URLs.",
+                "usage_hint": "https://www.linkedin.com/in/mohamed-ben-rebia",
+                "should_escape": false
+            },
+            {
+                "command": "/domain",
+                "url": "https://yourdomain.com/search",
+                "description": "Instantly locate email addresses from any company name or website.",
+                "usage_hint": "tomba.io",
+                "should_escape": false
+            },
+            {
+                "command": "/checker",
+                "url": "https://yourdomain.com/verify",
+                "description": "Verify the deliverability of an email address.",
+                "usage_hint": "b.mohamed@tomba.io",
+                "should_escape": false
+            }
+        ]
+    },
+    "oauth_config": {
+        "scopes": {
+            "bot": ["commands", "chat:write", "chat:write.public"]
+        }
+    },
+    "settings": {
+        "org_deploy_enabled": false,
+        "socket_mode_enabled": false,
+        "token_rotation_enabled": false
+    }
+}
