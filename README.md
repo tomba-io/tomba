@@ -31,7 +31,7 @@ go install github.com/tomba-io/tomba@latest
 
 ### Using homebrew tap
 
-[![The formula](https://github.com/tomba-io/homebrew-tap/blob/master/Formula/tomba.rb)
+[The formula](https://github.com/tomba-io/homebrew-tap/blob/master/Formula/tomba.rb)
 
 ```bash
 brew install tomba-io/tap/tomba
