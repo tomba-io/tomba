@@ -22,9 +22,9 @@ type Attachment struct {
 }
 
 type Block struct {
-	Type   string `json:"type"`
-	Text   Text   `json:"text"`
-	Fields []Text `json:"fields,omitempty"`
+	Type   string  `json:"type"`
+	Text   *Text   `json:"text,omitempty"`
+	Fields *[]Text `json:"fields,omitempty"`
 }
 
 type Text struct {
