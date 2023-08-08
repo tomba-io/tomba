@@ -29,6 +29,21 @@ installed:
 go install github.com/tomba-io/tomba@latest
 ```
 
+### Using homebrew tap
+
+[![The formula](https://github.com/tomba-io/homebrew-tap/blob/master/Formula/tomba.rb)
+
+```bash
+brew install tomba-io/tap/tomba
+```
+
+### Using scoop
+
+```bash
+scoop bucket add tomba https://github.com/tomba-io/scoop-bucket.git
+scoop install tomba
+```
+
 ## Get Started 🎉
 
 By default, invoking the CLI shows a help message:
