@@ -95,7 +95,7 @@ func SearchResponse(data models.Search) Model {
 		Type: "section",
 		Text: &Text{
 			Type: "mrkdwn",
-			Text: fmt.Sprintf("%d results for your search %s\n", len(emails), *data.Data.Organization.WebsiteURL),
+			Text: fmt.Sprintf("%d results for your search %s\n", data.Meta.Total, *data.Data.Organization.WebsiteURL),
 		},
 	})
 
