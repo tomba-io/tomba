@@ -13,35 +13,35 @@
         "slash_commands": [
             {
                 "command": "/author",
-                "url": "https://yourdomain.com/author",
+                "url": "https://yourdomain.com/author?slack=true",
                 "description": "Instantly discover the email addresses of article authors.",
                 "usage_hint": "https://clearbit.com/blog/company-name-to-domain-api",
                 "should_escape": false
             },
             {
                 "command": "/enrich",
-                "url": "https://yourdomain.com/enrich",
+                "url": "https://yourdomain.com/enrich?slack=true",
                 "description": "Locate and include data in your emails.",
                 "usage_hint": "b.mohamed@tomba.io",
                 "should_escape": false
             },
             {
                 "command": "/linkedin",
-                "url": "https://yourdomain.com/linkedin",
+                "url": "https://yourdomain.com/linkedin?slack=true",
                 "description": "Instantly discover the email addresses of Linkedin URLs.",
                 "usage_hint": "https://www.linkedin.com/in/mohamed-ben-rebia",
                 "should_escape": false
             },
             {
                 "command": "/domain",
-                "url": "https://yourdomain.com/search",
+                "url": "https://yourdomain.com/search?slack=true",
                 "description": "Instantly locate email addresses from any company name or website.",
                 "usage_hint": "tomba.io",
                 "should_escape": false
             },
             {
                 "command": "/checker",
-                "url": "https://yourdomain.com/verify",
+                "url": "https://yourdomain.com/verify?slack=true",
                 "description": "Verify the deliverability of an email address.",
                 "usage_hint": "b.mohamed@tomba.io",
                 "should_escape": false

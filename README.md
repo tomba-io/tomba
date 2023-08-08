@@ -72,6 +72,12 @@ Instantly locate email addresses from any company name or website.
 tomba search --target "tomba.io"
 ```
 
+Slack Command
+
+```bash
+/search tomba.io
+```
+
 ### Email Finder
 
 Retrieves the most likely email address from a domain name, a first name and a last name.
@@ -88,6 +94,12 @@ Locate and include data in your emails.
 tomba enrich --target "b.mohamed@tomba.io"
 ```
 
+Slack Command
+
+```bash
+/enrich b.mohamed@tomba.io
+```
+
 ![tomba enrich](svg/enrich.svg)
 
 ### Author Finder
@@ -98,6 +110,12 @@ Instantly discover the email addresses of article authors.
 tomba author --target "https://clearbit.com/blog/company-name-to-domain-api"
 ```
 
+Slack Command
+
+```bash
+/author https://clearbit.com/blog/company-name-to-domain-api
+```
+
 ### Linkedin Finder
 
 Instantly discover the email addresses of Linkedin URLs.
@@ -106,12 +124,24 @@ Instantly discover the email addresses of Linkedin URLs.
 tomba linkedin --target "https://www.linkedin.com/in/mohamed-ben-rebia"
 ```
 
+Slack Command
+
+```bash
+/linkedin https://www.linkedin.com/in/mohamed-ben-rebia
+```
+
 ### Email Verifier
 
 Verify the deliverability of an email address.
 
 ```bash
 tomba verify --target "b.mohamed@tomba.io"
+```
+
+Slack Command
+
+```bash
+/checker b.mohamed@tomba.io
 ```
 
 ## Http

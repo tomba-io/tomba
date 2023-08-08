@@ -12,10 +12,10 @@ import (
 
 // Request structure
 type Request struct {
-	URL    string `json:"url" form:"url"`
-	Domain string `json:"domain" form:"domain"`
-	Email  string `json:"email" form:"email"`
-	Slack  bool   `json:"slack" form:"slack"`
+	URL       string `json:"url" form:"url"`
+	Domain    string `json:"domain" form:"domain"`
+	Email     string `json:"email" form:"email"`
+	SlackText string `json:"text" form:"text"`
 }
 
 func request(c *fiber.Ctx) Request {
@@ -32,11 +32,15 @@ func (d *Conn) Home(c *fiber.Ctx) error {
 // Author query author finder
 func (init *Conn) Author(c *fiber.Ctx) error {
 	req := request(c)
-	if !_url.IsValidURL(req.URL) {
+	url := req.URL
+	if url == "" && c.QueryBool("slack") {
+		url = req.SlackText
+	}
+	if !_url.IsValidURL(url) {
 		log.Error(ErrArgumentsURL.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsURL.Error()})
 	}
-	result, err := init.Tomba.AuthorFinder(req.URL)
+	result, err := init.Tomba.AuthorFinder(url)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -44,7 +48,7 @@ func (init *Conn) Author(c *fiber.Ctx) error {
 	if result.Data.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the author finder return any result? https://help.tomba.io/en/questions/reasons-why-author-finder-don-t-find-any-result"})
 	}
-	if req.Slack {
+	if c.QueryBool("slack") {
 		return c.Status(200).JSON(slack.FinderResponse(result))
 	}
 	return c.Status(200).JSON(result)
@@ -53,11 +57,15 @@ func (init *Conn) Author(c *fiber.Ctx) error {
 // Count query email counter
 func (init *Conn) Count(c *fiber.Ctx) error {
 	req := request(c)
-	if !_domain.IsValidDomain(req.Domain) {
+	domain := req.Domain
+	if domain == "" && c.QueryBool("slack") {
+		domain = req.SlackText
+	}
+	if !_domain.IsValidDomain(domain) {
 		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
-	result, err := init.Tomba.Count(req.Domain)
+	result, err := init.Tomba.Count(domain)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -71,11 +79,15 @@ func (init *Conn) Count(c *fiber.Ctx) error {
 // Enrich query enrichment
 func (init *Conn) Enrich(c *fiber.Ctx) error {
 	req := request(c)
-	if !_email.IsValidEmail(req.Email) {
+	email := req.Email
+	if email == "" && c.QueryBool("slack") {
+		email = req.SlackText
+	}
+	if !_email.IsValidEmail(email) {
 		log.Error(ErrArgumentEmail.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentEmail.Error()})
 	}
-	result, err := init.Tomba.Enrichment(req.Email)
+	result, err := init.Tomba.Enrichment(email)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -83,7 +95,7 @@ func (init *Conn) Enrich(c *fiber.Ctx) error {
 	if result.Data.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the enrichment return any result? https://help.tomba.io/en/questions/reasons-why-enrichment-don-t-find-any-emails"})
 	}
-	if req.Slack {
+	if c.QueryBool("slack") {
 		return c.Status(200).JSON(slack.FinderResponse(result))
 	}
 	return c.Status(200).JSON(result)
@@ -92,11 +104,15 @@ func (init *Conn) Enrich(c *fiber.Ctx) error {
 // Linkedin query linkedin finder
 func (init *Conn) Linkedin(c *fiber.Ctx) error {
 	req := request(c)
-	if !_url.IsValidURL(req.URL) {
+	url := req.URL
+	if url == "" && c.QueryBool("slack") {
+		url = req.SlackText
+	}
+	if !_url.IsValidURL(url) {
 		log.Error(ErrArgumentsURL.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsURL.Error()})
 	}
-	result, err := init.Tomba.LinkedinFinder(req.URL)
+	result, err := init.Tomba.LinkedinFinder(url)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -104,7 +120,7 @@ func (init *Conn) Linkedin(c *fiber.Ctx) error {
 	if result.Data.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the Linkedin return any result? https://help.tomba.io/en/questions/reasons-why-linkedin-don-t-find-any-emails"})
 	}
-	if req.Slack {
+	if c.QueryBool("slack") {
 		return c.Status(200).JSON(slack.FinderResponse(result))
 	}
 	return c.Status(200).JSON(result)
@@ -123,11 +139,15 @@ func (init *Conn) Logs(c *fiber.Ctx) error {
 // Search query domain search
 func (init *Conn) Search(c *fiber.Ctx) error {
 	req := request(c)
-	if !_domain.IsValidDomain(req.Domain) {
+	domain := req.Domain
+	if domain == "" && c.QueryBool("slack") {
+		domain = req.SlackText
+	}
+	if !_domain.IsValidDomain(domain) {
 		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
-	result, err := init.Tomba.DomainSearch(tomba.Params{"domain": req.Domain})
+	result, err := init.Tomba.DomainSearch(tomba.Params{"domain": domain})
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -135,7 +155,7 @@ func (init *Conn) Search(c *fiber.Ctx) error {
 	if result.Meta.Total == 0 {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "TombaPublicWebCrawler is searching the internet for the best leads that relate to this company, but we don't have any for it yet. That said, we're working on it"})
 	}
-	if req.Slack {
+	if c.QueryBool("slack") {
 		return c.Status(200).JSON(slack.SearchResponse(result))
 	}
 	return c.Status(200).JSON(result)
@@ -169,11 +189,15 @@ func (init *Conn) Usage(c *fiber.Ctx) error {
 // Verify query email verifier
 func (init *Conn) Verify(c *fiber.Ctx) error {
 	req := request(c)
-	if !_email.IsValidEmail(req.Email) {
+	email := req.Email
+	if email == "" && c.QueryBool("slack") {
+		email = req.SlackText
+	}
+	if !_email.IsValidEmail(email) {
 		log.Error(ErrArgumentEmail.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentEmail.Error()})
 	}
-	result, err := init.Tomba.EmailVerifier(req.Email)
+	result, err := init.Tomba.EmailVerifier(email)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -185,7 +209,7 @@ func (init *Conn) Verify(c *fiber.Ctx) error {
 		if result.Data.Email.Webmail {
 			return c.Status(404).JSON(fiber.Map{"status": "error", "message": "The domain name  is webmail provider."})
 		}
-		if req.Slack {
+		if c.QueryBool("slack") {
 			return c.Status(200).JSON(slack.VerifyResponse(result))
 		}
 		return c.Status(200).JSON(result)
