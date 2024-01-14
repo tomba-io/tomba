@@ -167,8 +167,8 @@ paths:
             responses:
                 "200":
                     description: a pet to be returned
-    /post:
-        get:
+    /count:
+        post:
             tags:
                 - Count
             summary: get Email Count
