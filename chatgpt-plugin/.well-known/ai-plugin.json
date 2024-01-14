@@ -1,0 +1,17 @@
+{
+    "schema_version": "v1",
+    "name_for_human": "Tomba",
+    "name_for_model": "tomba_integration",
+    "description_for_human": "Tomba Enrichment,  search or verify email addresses in seconds.",
+    "description_for_model": "Tomba Enrichment,  search or verify email addresses in seconds. Always display results using markdown tables",
+    "auth": {
+        "type": "none"
+    },
+    "api": {
+        "type": "openapi",
+        "url": "https://yourdomain.com/openapi.yaml"
+    },
+    "logo_url": "https://yourdomain.com/logo.png",
+    "contact_email": "support@yourdomain.com",
+    "legal_info_url": "https://yourdomain.com/terms-of-service"
+}
