@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
 	"github.com/tomba-io/tomba/pkg/config"
 )
 
@@ -24,7 +25,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(config.InitConfig)
-	rootCmd.AddCommand(authorCmd, countCmd, enrichCmd, finderCmd, httpCmd, linkedinCmd, logsCmd, logoutCmd, loginCmd, searchCmd, statusCmd, usageCmd, verifyCmd, versionCmd)
+	rootCmd.AddCommand(authorCmd, countCmd, enrichCmd, finderCmd, httpCmd, linkedinCmd, logsCmd, logoutCmd, loginCmd, searchCmd, sourcesCmd, statusCmd, usageCmd, verifyCmd, versionCmd)
 	rootCmd.PersistentFlags().StringVarP(&conn.Key, "key", "k", "", "Tomba API KEY.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Secret, "secret", "s", "", "Tomba API SECRET.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Target, "target", "t", "", "TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.")

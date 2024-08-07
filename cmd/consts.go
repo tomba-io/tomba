@@ -19,4 +19,5 @@ const (
 	searchExample   = `  tomba search --target "tomba.io"`
 	statusExample   = `  tomba status --target "tomba.io"`
 	verifyExample   = `  tomba verify --target "b.mohamed@tomba.io"`
+	sourcesExample  = `  tomba source --target "b.mohamed@tomba.io"`
 )
