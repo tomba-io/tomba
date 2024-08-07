@@ -124,6 +124,14 @@ Instantly discover the email addresses of Linkedin URLs.
 tomba linkedin --target "https://www.linkedin.com/in/mohamed-ben-rebia"
 ```
 
+### Email Sources
+
+Find email address source somewhere on the web
+
+```bash
+tomba sources --target "ab@tomba.io"
+```
+
 Slack Command
 
 ```bash
