@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+rm -rf ./res/package/manpages
+mkdir ./res/package/manpages
+go run . | gzip -c -9 > ./res/package/manpages/tomba.1.gz

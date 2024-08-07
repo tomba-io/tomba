@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+rm -rf ./res/package/completion
+mkdir ./res/package/completion
+for sh in bash zsh fish; do
+	go run main.go completion "$sh" >"./res/package/completion/tomba.$sh"
+done
