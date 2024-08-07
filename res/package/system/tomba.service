@@ -1,0 +1,16 @@
+[Unit]
+Description=Tomba, your unique B2B email finder and verifier, provides a distinctive lead database for effortless and effective outreach scaling.
+Documentation=https://tomba.io
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/tomba http
+Restart=on-failure
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=tomba http
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
