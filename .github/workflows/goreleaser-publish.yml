@@ -17,6 +17,9 @@ jobs:
             - name: Set up Go
               uses: actions/setup-go@v4
 
+            - name: Export signing key
+              run: 'echo "${{ secrets.PKG_SIGNING_KEY }}" | base64 --decode > /tmp/signing-key.gpg'
+
             - name: Run GoReleaser
               uses: goreleaser/goreleaser-action@v4
               with:
@@ -24,3 +27,4 @@ jobs:
                   args: release --clean
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  BUILD_USER: ${{ github.actor }} (via Github Actions)
