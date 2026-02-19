@@ -10,6 +10,9 @@ CLI utility to search or verify email addresses in minutes.
 - 🛡️ Instantly discover the email addresses of Linkedin URLs.
 - 🛡️ Instantly discover the email addresses of article authors.
 - 🛡️ Search for phone numbers given an email, domain, or LinkedIn URL.
+- 🛡️ Validate phone numbers.
+- 🛡️ Retrieve domains similar to a specific domain.
+- 🛡️ Discover technologies detected for a domain.
 - 🛡️ Search for companies using natural language or structured filters.
 - 🛡️ Print current account information.
 
@@ -89,12 +92,24 @@ Retrieves the most likely email address from a domain name, a first name and a l
 tomba finder --target "tomba.io" --fist "mohamed" --last "ben rebia"
 ```
 
+With phone number enrichment:
+
+```bash
+tomba finder --target "tomba.io" --fist "mohamed" --last "ben rebia" --enrich-mobile
+```
+
 ### Enrichment
 
 Locate and include data in your emails.
 
 ```bash
 tomba enrich --target "b.mohamed@tomba.io"
+```
+
+With phone number enrichment:
+
+```bash
+tomba enrich --target "b.mohamed@tomba.io" --enrich-mobile
 ```
 
 Slack Command
@@ -127,6 +142,12 @@ Instantly discover the email addresses of Linkedin URLs.
 tomba linkedin --target "https://www.linkedin.com/in/mohamed-ben-rebia"
 ```
 
+With phone number enrichment:
+
+```bash
+tomba linkedin --target "https://www.linkedin.com/in/mohamed-ben-rebia" --enrich-mobile
+```
+
 ### Email Sources
 
 Find email address source somewhere on the web
@@ -152,6 +173,15 @@ tomba phone-finder --linkedin "https://www.linkedin.com/in/alex-maccaw-ab592978"
 tomba phone-finder --domain "stripe.com" --full
 ```
 
+### Phone Validator
+
+Validate phone numbers.
+
+```bash
+tomba phone-validator --phone "+14155552671"
+tomba phone-validator --phone "4155552671" --country-code US
+```
+
 ### Reveal (Company Search)
 
 Search for companies using natural language or structured filters.
@@ -160,6 +190,22 @@ Search for companies using natural language or structured filters.
 tomba reveal --query "Real Estate in France"
 tomba reveal --country US,UK --industry Technology
 tomba reveal --country US --size 101-500,501-1000 --page 2
+```
+
+### Similar Domains
+
+Retrieve domains similar to a specific domain.
+
+```bash
+tomba similar --target "tomba.io"
+```
+
+### Technology
+
+Discover technologies detected for a domain.
+
+```bash
+tomba technology --target "tomba.io"
 ```
 
 ### Whoami
@@ -194,41 +240,52 @@ tomba http
 
 ## Endpoints
 
-| Name            | Route     | Body     | State     | Slack | Method |
-| --------------- | --------- | -------- | --------- | ----- | ------ |
-| author finder   | /author   | `url`    | Completed | Yes   | Post   |
-| email counter   | /count    | `domain` | Completed | No    | Post   |
-| enrichment      | /enrich   | `email`  | Completed | Yes   | Post   |
-| linkedin finder | /linkedin | `url`    | Completed | Yes   | Post   |
-| domain search   | /search   | `domain` | Completed | Yes   | Post   |
-| domain status   | /status   | `domain` | Completed | No    | Post   |
-| email verifier  | /verify   | `email`  | Completed | Yes   | Post   |
-| logs            | /logs     | No       | Completed | No    | Get    |
-| usage           | /usage    | No       | Completed | No    | Get    |
+| Name            | Route            | Body                                                 | State     | Slack | Method |
+| --------------- | ---------------- | ---------------------------------------------------- | --------- | ----- | ------ |
+| author finder   | /author          | `url`                                                | Completed | Yes   | Post   |
+| email counter   | /count           | `domain`                                             | Completed | No    | Post   |
+| enrichment      | /enrich          | `email`, `enrich_mobile`                             | Completed | Yes   | Post   |
+| email finder    | /finder          | `domain`, `first_name`, `last_name`, `enrich_mobile` | Completed | No    | Post   |
+| linkedin finder | /linkedin        | `url`, `enrich_mobile`                               | Completed | Yes   | Post   |
+| phone finder    | /phone-finder    | `email`, `domain`, or `linkedin`                     | Completed | No    | Post   |
+| phone validator | /phone-validator | `phone`, `country_code`                              | Completed | No    | Post   |
+| reveal          | /reveal          | `query`, `country`, `industry`, `size`               | Completed | No    | Post   |
+| domain search   | /search          | `domain`                                             | Completed | Yes   | Post   |
+| similar domains | /similar         | `domain`                                             | Completed | No    | Post   |
+| email sources   | /sources         | `email`                                              | Completed | No    | Post   |
+| domain status   | /status          | `domain`                                             | Completed | No    | Post   |
+| technology      | /technology      | `domain`                                             | Completed | No    | Post   |
+| email verifier  | /verify          | `email`                                              | Completed | Yes   | Post   |
+| logs            | /logs            | No                                                   | Completed | No    | Get    |
+| usage           | /usage           | No                                                   | Completed | No    | Get    |
+| whoami          | /whoami          | No                                                   | Completed | No    | Get    |
 
 ### Available Commands
 
-| Command name | Description                                                                               |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| author       | Instantly discover the email addresses of article authors.                                |
-| completion   | Generate the autocompletion script for the specified shell                                |
-| count        | Returns total email addresses we have for one domain.                                     |
-| enrich       | Locate and include data in your emails.                                                   |
-| finder       | Retrieves the most likely email address from a domain name, a first name and a last name. |
-| help         | Help about any command                                                                    |
-| http         | Runs a HTTP server (reverse proxy).                                                       |
-| linkedin     | Instantly discover the email addresses of Linkedin URLs.                                  |
-| login        | Sign in to Tomba account                                                                  |
-| logout       | delete your current KEY & SECRET API session.                                             |
-| logs         | Check your last 1,000 requests you made during the last 3 months.                         |
-| phone-finder | Search for phone numbers given an email, domain, or LinkedIn URL.                         |
-| reveal       | Search for companies using natural language or structured filters.                        |
-| search       | Instantly locate email addresses from any company name or website.                        |
-| status       | Returns domain status if is webmail or disposable.                                        |
-| usage        | Check your monthly requests.                                                              |
-| verify       | Verify the deliverability of an email address.                                            |
-| version      | Print version number and build information.                                               |
-| whoami       | Print current account information.                                                        |
+| Command name    | Description                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| author          | Instantly discover the email addresses of article authors.                                |
+| completion      | Generate the autocompletion script for the specified shell                                |
+| count           | Returns total email addresses we have for one domain.                                     |
+| enrich          | Locate and include data in your emails.                                                   |
+| finder          | Retrieves the most likely email address from a domain name, a first name and a last name. |
+| help            | Help about any command                                                                    |
+| http            | Runs a HTTP server (reverse proxy).                                                       |
+| linkedin        | Instantly discover the email addresses of Linkedin URLs.                                  |
+| login           | Sign in to Tomba account                                                                  |
+| logout          | delete your current KEY & SECRET API session.                                             |
+| logs            | Check your last 1,000 requests you made during the last 3 months.                         |
+| phone-finder    | Search for phone numbers given an email, domain, or LinkedIn URL.                         |
+| phone-validator | Validate phone numbers.                                                                   |
+| reveal          | Search for companies using natural language or structured filters.                        |
+| search          | Instantly locate email addresses from any company name or website.                        |
+| similar         | Retrieve domains similar to a specific domain.                                            |
+| status          | Returns domain status if is webmail or disposable.                                        |
+| technology      | Discover technologies detected for a domain.                                              |
+| usage           | Check your monthly requests.                                                              |
+| verify          | Verify the deliverability of an email address.                                            |
+| version         | Print version number and build information.                                               |
+| whoami          | Print current account information.                                                        |
 
 ### Command Global Flags
 
@@ -272,7 +329,7 @@ Detailed changes for each release are documented in the [release notes](https://
 
 ## Documentation
 
-See the [official documentation](https://developer.tomba.io/).
+See the [official documentation](https://docs.tomba.io/).
 
 ### About Tomba
 
