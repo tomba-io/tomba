@@ -9,6 +9,9 @@ CLI utility to search or verify email addresses in minutes.
 - 🛡️ Enrich email with data.
 - 🛡️ Instantly discover the email addresses of Linkedin URLs.
 - 🛡️ Instantly discover the email addresses of article authors.
+- 🛡️ Search for phone numbers given an email, domain, or LinkedIn URL.
+- 🛡️ Search for companies using natural language or structured filters.
+- 🛡️ Print current account information.
 
 ## Installation
 
@@ -138,6 +141,35 @@ Slack Command
 /linkedin https://www.linkedin.com/in/mohamed-ben-rebia
 ```
 
+### Phone Finder
+
+Search for phone numbers given an email, domain, or LinkedIn URL.
+
+```bash
+tomba phone-finder --email "info@stripe.com"
+tomba phone-finder --domain "tomba.io"
+tomba phone-finder --linkedin "https://www.linkedin.com/in/alex-maccaw-ab592978"
+tomba phone-finder --domain "stripe.com" --full
+```
+
+### Reveal (Company Search)
+
+Search for companies using natural language or structured filters.
+
+```bash
+tomba reveal --query "Real Estate in France"
+tomba reveal --country US,UK --industry Technology
+tomba reveal --country US --size 101-500,501-1000 --page 2
+```
+
+### Whoami
+
+Print current account information.
+
+```bash
+tomba whoami
+```
+
 ### Email Verifier
 
 Verify the deliverability of an email address.
@@ -189,11 +221,14 @@ tomba http
 | login        | Sign in to Tomba account                                                                  |
 | logout       | delete your current KEY & SECRET API session.                                             |
 | logs         | Check your last 1,000 requests you made during the last 3 months.                         |
+| phone-finder | Search for phone numbers given an email, domain, or LinkedIn URL.                         |
+| reveal       | Search for companies using natural language or structured filters.                        |
 | search       | Instantly locate email addresses from any company name or website.                        |
 | status       | Returns domain status if is webmail or disposable.                                        |
 | usage        | Check your monthly requests.                                                              |
 | verify       | Verify the deliverability of an email address.                                            |
 | version      | Print version number and build information.                                               |
+| whoami       | Print current account information.                                                        |
 
 ### Command Global Flags
 
