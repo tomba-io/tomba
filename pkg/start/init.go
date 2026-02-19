@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/tomba-io/go/tomba"
+
 	"github.com/tomba-io/tomba/pkg/config"
 	"github.com/tomba-io/tomba/pkg/util"
 	_key "github.com/tomba-io/tomba/pkg/validation/key"
@@ -39,9 +40,10 @@ type Search struct {
 }
 
 type Finder struct {
-	FullName  string
-	FirstName string
-	LastName  string
+	FullName     string
+	FirstName    string
+	LastName     string
+	EnrichMobile bool
 }
 
 // New parameters

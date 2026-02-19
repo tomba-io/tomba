@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/spf13/cobra"
+
 	"github.com/tomba-io/tomba/pkg/start"
 )
 
@@ -46,10 +47,18 @@ func setUpRoutes(app *fiber.App, conn *start.Conn) {
 	app.Post("author", conn.Author)
 	app.Post("count", conn.Count)
 	app.Post("enrich", conn.Enrich)
+	app.Post("finder", conn.Finder)
 	app.Post("linkedin", conn.Linkedin)
 	app.Get("logs", conn.Logs)
+	app.Post("phone-finder", conn.PhoneFinder)
+	app.Post("phone-validator", conn.PhoneValidator)
+	app.Post("reveal", conn.Reveal)
 	app.Post("search", conn.Search)
+	app.Post("similar", conn.Similar)
+	app.Post("sources", conn.Sources)
 	app.Post("status", conn.Status)
+	app.Post("technology", conn.Technology)
 	app.Get("usage", conn.Usage)
 	app.Post("verify", conn.Verify)
+	app.Get("whoami", conn.Whoami)
 }
