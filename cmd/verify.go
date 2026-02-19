@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/tomba-io/go/tomba"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -32,7 +34,7 @@ func verifyRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	result, err := init.Tomba.EmailVerifier(email)
+	result, err := init.Tomba.EmailVerifier(tomba.Params{"email": email})
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/tomba-io/go/tomba"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -31,7 +33,7 @@ func enrichRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentEmail.Error()))
 		return
 	}
-	result, err := init.Tomba.Enrichment(email)
+	result, err := init.Tomba.Enrichment(tomba.Params{"email": email})
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return

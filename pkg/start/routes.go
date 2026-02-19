@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/tomba-io/go/tomba"
+
 	"github.com/tomba-io/tomba/pkg/slack"
 	_domain "github.com/tomba-io/tomba/pkg/validation/domain"
 	_email "github.com/tomba-io/tomba/pkg/validation/email"
@@ -87,7 +88,7 @@ func (init *Conn) Enrich(c *fiber.Ctx) error {
 		log.Error(ErrArgumentEmail.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentEmail.Error()})
 	}
-	result, err := init.Tomba.Enrichment(email)
+	result, err := init.Tomba.Enrichment(tomba.Params{"email": email})
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -112,7 +113,7 @@ func (init *Conn) Linkedin(c *fiber.Ctx) error {
 		log.Error(ErrArgumentsURL.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsURL.Error()})
 	}
-	result, err := init.Tomba.LinkedinFinder(url)
+	result, err := init.Tomba.LinkedinFinder(tomba.Params{"url": url})
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -197,7 +198,7 @@ func (init *Conn) Verify(c *fiber.Ctx) error {
 		log.Error(ErrArgumentEmail.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentEmail.Error()})
 	}
-	result, err := init.Tomba.EmailVerifier(email)
+	result, err := init.Tomba.EmailVerifier(tomba.Params{"email": email})
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})

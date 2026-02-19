@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"github.com/tomba-io/go/tomba"
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -31,7 +33,7 @@ func linkedinRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsURL.Error()))
 		return
 	}
-	result, err := init.Tomba.LinkedinFinder(url)
+	result, err := init.Tomba.LinkedinFinder(tomba.Params{"url": url})
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return
