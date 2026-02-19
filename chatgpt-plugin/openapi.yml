@@ -13,7 +13,7 @@ info:
     version: 0.0.1
 externalDocs:
     description: Developers - Full API docs
-    url: https://developer.tomba.io/
+    url: https://docs.tomba.io/
 servers:
     - url: https://yourdomain.com
 paths:
