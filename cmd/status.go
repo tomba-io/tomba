@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -11,7 +12,7 @@ import (
 )
 
 // statusCmd represents the status command
-// see https://developer.tomba.io/#domain-status
+// see https://docs.tomba.io/api/~endpoints#domain-status
 var statusCmd = &cobra.Command{
 	Use:     "status",
 	Aliases: []string{"t"},

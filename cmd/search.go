@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/tomba-io/go/tomba"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -12,7 +13,7 @@ import (
 )
 
 // searchCmd represents the search command
-// see https://developer.tomba.io/#domain-search
+// see https://docs.tomba.io/api/finder#domain-search
 var searchCmd = &cobra.Command{
 	Use:     "search",
 	Aliases: []string{"s"},

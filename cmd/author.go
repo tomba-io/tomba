@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -11,7 +12,7 @@ import (
 )
 
 // authorCmd represents the author command
-// see https://developer.tomba.io/#author-finder
+// see https://docs.tomba.io/api/finder#author-finder
 var authorCmd = &cobra.Command{
 	Use:     "author",
 	Aliases: []string{"a"},

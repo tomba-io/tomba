@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -11,7 +12,7 @@ import (
 )
 
 // countCmd represents the count command
-// see https://developer.tomba.io/#email-count
+// see https://docs.tomba.io/api/finder#email-count
 var countCmd = &cobra.Command{
 	Use:     "count",
 	Aliases: []string{"c"},

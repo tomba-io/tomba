@@ -13,7 +13,7 @@ import (
 )
 
 // verifyCmd represents the verify command
-// see https://developer.tomba.io/#email-verifier
+// see https://docs.tomba.io/api/verifier#email-verifier
 var verifyCmd = &cobra.Command{
 	Use:     "verify",
 	Aliases: []string{"t"},

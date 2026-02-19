@@ -13,7 +13,7 @@ import (
 )
 
 // enrichCmd represents the enrich command
-// see https://developer.tomba.io/#author-finder
+// see https://docs.tomba.io/api/finder#email-enrichment
 var enrichCmd = &cobra.Command{
 	Use:     "enrich",
 	Aliases: []string{"e"},
@@ -33,7 +33,11 @@ func enrichRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentEmail.Error()))
 		return
 	}
-	result, err := init.Tomba.Enrichment(tomba.Params{"email": email})
+	params := tomba.Params{"email": email}
+	if init.EnrichMobile {
+		params["enrich_mobile"] = true
+	}
+	result, err := init.Tomba.Enrichment(params)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return

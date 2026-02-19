@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/tomba-io/go/tomba"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -12,7 +13,7 @@ import (
 )
 
 // finderCmd represents the finder command
-// see https://developer.tomba.io/#email-finder
+// see https://docs.tomba.io/api/finder#email-finder
 var finderCmd = &cobra.Command{
 	Use:     "finder",
 	Aliases: []string{"s"},
@@ -44,6 +45,10 @@ func finderRun(cmd *cobra.Command, args []string) {
 	default:
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsFinder.Error()))
 		return
+	}
+
+	if init.EnrichMobile {
+		params["enrich_mobile"] = true
 	}
 
 	result, err := init.Tomba.EmailFinder(params)

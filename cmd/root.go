@@ -25,7 +25,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(config.InitConfig)
-	rootCmd.AddCommand(authorCmd, countCmd, enrichCmd, finderCmd, httpCmd, linkedinCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, revealCmd, searchCmd, sourcesCmd, statusCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
+	rootCmd.AddCommand(authorCmd, countCmd, enrichCmd, finderCmd, httpCmd, linkedinCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, phoneValidatorCmd, revealCmd, searchCmd, similarCmd, sourcesCmd, statusCmd, technologyCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
 	rootCmd.PersistentFlags().StringVarP(&conn.Key, "key", "k", "", "Tomba API KEY.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Secret, "secret", "s", "", "Tomba API SECRET.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Target, "target", "t", "", "TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.")
@@ -39,4 +39,7 @@ func init() {
 	finderCmd.PersistentFlags().StringVar(&conn.FullName, "full", "", "The person's full name")
 	finderCmd.PersistentFlags().StringVarP(&conn.FirstName, "fist", "f", "", "The person's first name. It doesn't need to be in lowercase..")
 	finderCmd.PersistentFlags().StringVarP(&conn.LastName, "last", "l", "", "The person's last name. It doesn't need to be in lowercase..")
+	finderCmd.PersistentFlags().BoolVar(&conn.EnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found.")
+	enrichCmd.PersistentFlags().BoolVar(&conn.EnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found.")
+	linkedinCmd.PersistentFlags().BoolVar(&conn.EnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found.")
 }

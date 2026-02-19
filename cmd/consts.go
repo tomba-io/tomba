@@ -20,12 +20,16 @@ const (
   tomba phone-finder --domain "tomba.io"
   tomba phone-finder --linkedin "https://www.linkedin.com/in/alex-maccaw-ab592978"
   tomba phone-finder --domain "stripe.com" --full`
+	phoneValidatorExample = `  tomba phone-validator --phone "+14155552671"
+  tomba phone-validator --phone "4155552671" --country-code US`
 	revealExample = `  tomba reveal --query "Real Estate in France"
   tomba reveal --country US,UK --industry Technology
   tomba reveal --country US --size 101-500,501-1000 --page 2`
-	searchExample  = `  tomba search --target "tomba.io"`
-	statusExample  = `  tomba status --target "tomba.io"`
-	verifyExample  = `  tomba verify --target "b.mohamed@tomba.io"`
-	sourcesExample = `  tomba source --target "b.mohamed@tomba.io"`
-	whoamiExample  = `  tomba whoami`
+	searchExample     = `  tomba search --target "tomba.io"`
+	similarExample    = `  tomba similar --target "tomba.io"`
+	statusExample     = `  tomba status --target "tomba.io"`
+	technologyExample = `  tomba technology --target "tomba.io"`
+	verifyExample     = `  tomba verify --target "b.mohamed@tomba.io"`
+	sourcesExample    = `  tomba source --target "b.mohamed@tomba.io"`
+	whoamiExample     = `  tomba whoami`
 )

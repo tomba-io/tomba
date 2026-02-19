@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-
 	"github.com/tomba-io/go/tomba"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -13,7 +13,7 @@ import (
 )
 
 // linkedinCmd represents the linkedin command
-// see https://developer.tomba.io/#linkedin-finder
+// see https://docs.tomba.io/api/finder#linkedin-finder
 var linkedinCmd = &cobra.Command{
 	Use:     "linkedin",
 	Aliases: []string{"l"},
@@ -33,7 +33,11 @@ func linkedinRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsURL.Error()))
 		return
 	}
-	result, err := init.Tomba.LinkedinFinder(tomba.Params{"url": url})
+	params := tomba.Params{"url": url}
+	if init.EnrichMobile {
+		params["enrich_mobile"] = true
+	}
+	result, err := init.Tomba.LinkedinFinder(params)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return
