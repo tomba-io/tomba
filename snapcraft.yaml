@@ -20,7 +20,7 @@ issues: https://github.com/tomba-io/tomba/issues
 license: "Apache-2.0"
 source-code: https://github.com/tomba-io/tomba.git
 website: https://tomba.io/
-version: 1.0.9
+version: 1.1.0
 grade: stable
 base: core24
 
@@ -38,3 +38,5 @@ parts:
         plugin: go
         source-type: git
         source: https://github.com/tomba-io/tomba
+        build-snaps:
+            - go/latest/stable
