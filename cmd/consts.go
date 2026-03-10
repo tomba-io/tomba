@@ -8,7 +8,7 @@ import (
 )
 
 var conn start.Conn
-var Long = fmt.Sprintf("cli utility to search or verify lists of email addresses in minutes can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases.\n\n%s", util.RandomBanner())
+var Long = fmt.Sprintf("CLI utility to search or verify lists of email addresses in seconds can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases.\n\n%s", util.RandomBanner())
 
 const (
 	authorExample      = `  tomba author --target "https://clearbit.com/blog/company-name-to-domain-api"`

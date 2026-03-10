@@ -11,7 +11,7 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "tomba",
-	Short: "CLI utility to search or verify lists of email addresses in minutes",
+	Short: "CLI utility to search or verify lists of email addresses in seconds",
 	Long:  Long,
 }
 
