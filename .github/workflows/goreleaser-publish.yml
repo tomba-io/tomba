@@ -21,7 +21,7 @@ jobs:
               run: 'echo "${{ secrets.PKG_SIGNING_KEY }}" | base64 --decode > /tmp/signing-key.gpg'
 
             - name: Run GoReleaser
-              uses: goreleaser/goreleaser-action@v4
+              uses: goreleaser/goreleaser-action@v6
               with:
                   version: latest
                   args: release --clean
