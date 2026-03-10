@@ -120,6 +120,36 @@ nfpms:
               key_file: /tmp/signing-key.gpg
               type: origin
 
+snapcrafts:
+    - name: tomba
+      icon: logo.png
+      summary: CLI utility to search or verify lists of email addresses in seconds
+      description: |
+          Tomba.io (CLI) utility to search or verify lists of email addresses in seconds can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases. This utility can automate the process of checking the validity and deliverability of email addresses, saving valuable time and resources.
+
+          Features:
+          * Instantly locate email addresses from any website (Domain Search)
+          * Email verify to confirm an email address' authenticity
+          * Enrich email with data
+          * Instantly discover the email addresses of Linkedin URLs
+          * Instantly discover the email addresses of article authors
+          * Phone finder to get phone numbers associated with emails
+          * Phone validator to verify phone number validity
+          * Find similar websites and their email addresses
+          * Technology lookup to discover technologies used by domains
+          * Count email addresses available for any domain
+      grade: stable
+      confinement: strict
+      license: Apache-2.0
+      base: core24
+      publish: true
+      apps:
+          tomba:
+              command: tomba
+              plugs:
+                  - home
+                  - network
+
 changelog:
     sort: asc
     filters:
