@@ -64,6 +64,7 @@ scoops:
           owner: tomba-io
           name: scoop-bucket
       homepage: https://tomba.io
+      directory: bucket
       description: CLI utility to search or verify lists of email addresses in seconds.
       license: Apache-2.0
 
