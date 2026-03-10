@@ -4,7 +4,7 @@ import "fmt"
 
 var (
 	app     = "tomba"
-	version = "v1.1.0-next"
+	version = "v1.1.1-next"
 )
 
 // String returns a string.

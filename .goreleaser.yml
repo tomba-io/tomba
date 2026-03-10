@@ -123,7 +123,6 @@ nfpms:
 
 snapcrafts:
     - name: tomba
-      icon: logo.png
       summary: CLI utility to search or verify lists of email addresses in seconds
       description: |
           Tomba.io (CLI) utility to search or verify lists of email addresses in seconds can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases. This utility can automate the process of checking the validity and deliverability of email addresses, saving valuable time and resources.
