@@ -39,6 +39,29 @@ func request(c *fiber.Ctx) Request {
 	return req
 }
 
+// getFinderData extracts FinderData from Finder result (Data can be FinderData or []FinderData)
+func getFinderData(data interface{}) *models.FinderData {
+	return GetFinderData(data)
+}
+
+// GetFinderData extracts FinderData from Finder result (Data can be FinderData or []FinderData)
+func GetFinderData(data interface{}) *models.FinderData {
+	switch v := data.(type) {
+	case models.FinderData:
+		return &v
+	case map[string]interface{}:
+		fd := &models.FinderData{}
+		if email, ok := v["email"].(string); ok {
+			fd.Email = email
+		}
+		if fullName, ok := v["full_name"].(string); ok {
+			fd.FullName = fullName
+		}
+		return fd
+	}
+	return nil
+}
+
 // Home redirect to tomba home page
 func (d *Conn) Home(c *fiber.Ctx) error {
 	return c.Redirect("http://tomba.io?ref=tomba_cli", 301)
@@ -60,7 +83,8 @@ func (init *Conn) Author(c *fiber.Ctx) error {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	if result.Data.Email == "" {
+	finderData := getFinderData(result.Data)
+	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the author finder return any result? https://help.tomba.io/en/questions/reasons-why-author-finder-don-t-find-any-result"})
 	}
 	if c.QueryBool("slack") {
@@ -111,7 +135,8 @@ func (init *Conn) Enrich(c *fiber.Ctx) error {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	if result.Data.Email == "" {
+	finderData := getFinderData(result.Data)
+	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the enrichment return any result? https://help.tomba.io/en/questions/reasons-why-enrichment-don-t-find-any-emails"})
 	}
 	if c.QueryBool("slack") {
@@ -140,7 +165,8 @@ func (init *Conn) Linkedin(c *fiber.Ctx) error {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	if result.Data.Email == "" {
+	finderData := getFinderData(result.Data)
+	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the Linkedin return any result? https://help.tomba.io/en/questions/reasons-why-linkedin-don-t-find-any-emails"})
 	}
 	if c.QueryBool("slack") {
@@ -266,7 +292,8 @@ func (init *Conn) Finder(c *fiber.Ctx) error {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	if result.Data.Email == "" {
+	finderData := getFinderData(result.Data)
+	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the finder return any result? https://help.tomba.io/en/questions/reasons-why-finder-don-t-find-any-emails"})
 	}
 	return c.Status(200).JSON(result)

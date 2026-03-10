@@ -8,49 +8,90 @@ import (
 
 // FinderResponse
 func FinderResponse(data models.Finder) Model {
-	email := data.Data.Email
+	// Type assert Data to FinderData (can be FinderData or []FinderData)
+	var finderData models.FinderData
+	switch v := data.Data.(type) {
+	case models.FinderData:
+		finderData = v
+	case map[string]interface{}:
+		// Handle JSON unmarshaled as map
+		if email, ok := v["email"].(string); ok {
+			finderData.Email = email
+		}
+		if fullName, ok := v["full_name"].(string); ok {
+			finderData.FullName = fullName
+		}
+		if position, ok := v["position"].(string); ok {
+			finderData.Position = position
+		}
+		if company, ok := v["company"].(string); ok {
+			finderData.Company = company
+		}
+		if country, ok := v["country"].(string); ok {
+			finderData.Country = &country
+		}
+		if linkedin, ok := v["linkedin"].(string); ok {
+			finderData.Linkedin = &linkedin
+		}
+		if twitter, ok := v["twitter"].(string); ok {
+			finderData.Twitter = &twitter
+		}
+		if sources, ok := v["sources"].([]interface{}); ok {
+			for _, s := range sources {
+				if src, ok := s.(map[string]interface{}); ok {
+					if uri, ok := src["uri"].(string); ok {
+						finderData.Sources = append(finderData.Sources, models.SourceElement{URI: uri})
+					}
+				}
+			}
+		}
+	default:
+		return Model{}
+	}
+
+	email := finderData.Email
 	fields := make([]Text, 0, 5)
 
 	fields = append(fields, Text{
 		Type: "mrkdwn",
-		Text: fmt.Sprintf("\n\n*Name*\n\n %s \n\n", data.Data.FullName),
+		Text: fmt.Sprintf("\n\n*Name*\n\n %s \n\n", finderData.FullName),
 	}, Text{
 		Type: "mrkdwn",
 		Text: fmt.Sprintf("\n\n*Email*\n\n %s \n\n", email),
 	})
 
-	if data.Data.Position != "" {
+	if finderData.Position != "" {
 		fields = append(fields, Text{
 			Type: "mrkdwn",
-			Text: fmt.Sprintf("\n\n*Bio*\n\n %s at %s \n\n", data.Data.Position, data.Data.Company),
+			Text: fmt.Sprintf("\n\n*Bio*\n\n %s at %s \n\n", finderData.Position, finderData.Company),
 		})
 	}
 
-	if data.Data.Country != "" {
+	if finderData.Country != nil && *finderData.Country != "" {
 		fields = append(fields, Text{
 			Type: "mrkdwn",
-			Text: fmt.Sprintf("\n\n*Location*\n\n %s \n\n", data.Data.Country),
+			Text: fmt.Sprintf("\n\n*Location*\n\n %s \n\n", *finderData.Country),
 		})
 	}
 
-	if data.Data.Linkedin != "" {
+	if finderData.Linkedin != nil && *finderData.Linkedin != "" {
 		fields = append(fields, Text{
 			Type: "mrkdwn",
-			Text: fmt.Sprintf("\n\n*Linkedin*\n\n %s \n\n", data.Data.Linkedin),
+			Text: fmt.Sprintf("\n\n*Linkedin*\n\n %s \n\n", *finderData.Linkedin),
 		})
 	}
 
-	if data.Data.Twitter != nil {
+	if finderData.Twitter != nil && *finderData.Twitter != "" {
 		fields = append(fields, Text{
 			Type: "mrkdwn",
-			Text: fmt.Sprintf("\n\n*Twitter*\n\n %s \n\n", data.Data.Twitter),
+			Text: fmt.Sprintf("\n\n*Twitter*\n\n %s \n\n", *finderData.Twitter),
 		})
 	}
 
 	sources := ""
-	if len(data.Data.Sources) > 0 {
-		for i := 0; i < len(data.Data.Sources); i++ {
-			sources += data.Data.Sources[i].URI + "\n"
+	if len(finderData.Sources) > 0 {
+		for i := 0; i < len(finderData.Sources); i++ {
+			sources += finderData.Sources[i].URI + "\n"
 		}
 	}
 
@@ -74,7 +115,7 @@ func FinderResponse(data models.Finder) Model {
 						Type: "section",
 						Text: &Text{
 							Type: "mrkdwn",
-							Text: fmt.Sprintf("We found `%d` sources for *%s* on the web.\n %s", len(data.Data.Sources), email, sources),
+							Text: fmt.Sprintf("We found `%d` sources for *%s* on the web.\n %s", len(finderData.Sources), email, sources),
 						},
 					},
 					{
@@ -127,17 +168,17 @@ func SearchResponse(data models.Search) Model {
 			})
 		}
 
-		if emails[i].Linkedin != nil {
+		if emails[i].Linkedin != nil && *emails[i].Linkedin != "" {
 			fields = append(fields, Text{
 				Type: "mrkdwn",
 				Text: fmt.Sprintf("\n\n*Linkedin*\n\n %s \n\n", *emails[i].Linkedin),
 			})
 		}
 
-		if emails[i].Twitter != nil {
+		if emails[i].Twitter != nil && *emails[i].Twitter != "" {
 			fields = append(fields, Text{
 				Type: "mrkdwn",
-				Text: fmt.Sprintf("\n\n*Twitter*\n\n %s \n\n", emails[i].Twitter),
+				Text: fmt.Sprintf("\n\n*Twitter*\n\n %s \n\n", *emails[i].Twitter),
 			})
 		}
 		sources := ""

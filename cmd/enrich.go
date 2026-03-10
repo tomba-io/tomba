@@ -42,7 +42,8 @@ func enrichRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
 		return
 	}
-	if result.Data.Email != "" {
+	finderData := start.GetFinderData(result.Data)
+	if finderData != nil && finderData.Email != "" {
 		raw, _ := result.Marshal()
 		if init.JSON {
 			json, _ := output.DisplayJSON(string(raw))
