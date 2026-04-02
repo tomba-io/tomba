@@ -23,7 +23,6 @@ var sourcesCmd = &cobra.Command{
 
 // sourcesRun the actual work sources
 func sourcesRun(cmd *cobra.Command, args []string) {
-	fmt.Println(Long)
 	init := start.New(conn)
 	email := init.Target
 
@@ -38,22 +37,8 @@ func sourcesRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	if len(result.Sources) > 0 {
-
 		raw, _ := result.Marshal()
-		if init.JSON {
-			json, _ := output.DisplayJSON(string(raw))
-			fmt.Println(json)
-		}
-		if init.YAML {
-			yaml, _ := output.DisplayYAML(string(raw))
-			fmt.Println(yaml)
-		}
-		if init.Output != "" {
-			err := output.CreateOutput(init.Output, string(raw))
-			if err != nil {
-				fmt.Println("Error creating file:", err)
-			}
-		}
+		output.Render(string(raw), init.JSON, init.YAML, init.Output, "sources")
 		return
 	}
 	fmt.Println(util.WarningIcon(), util.Yellow("We haven't found this email on the web."))

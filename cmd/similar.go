@@ -24,7 +24,7 @@ var similarCmd = &cobra.Command{
 
 // similarRun the actual work similar
 func similarRun(cmd *cobra.Command, args []string) {
-	fmt.Println(Long)
+
 	init := start.New(conn)
 	domain := init.Target
 
@@ -40,18 +40,5 @@ func similarRun(cmd *cobra.Command, args []string) {
 	}
 
 	raw, _ := result.Marshal()
-	if init.JSON {
-		json, _ := output.DisplayJSON(string(raw))
-		fmt.Println(json)
-	}
-	if init.YAML {
-		yaml, _ := output.DisplayYAML(string(raw))
-		fmt.Println(yaml)
-	}
-	if init.Output != "" {
-		err := output.CreateOutput(init.Output, string(raw))
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-		}
-	}
+	output.Render(string(raw), init.JSON, init.YAML, init.Output, "similar")
 }

@@ -25,7 +25,7 @@ var enrichCmd = &cobra.Command{
 
 // enrichRun the actual work enrich
 func enrichRun(cmd *cobra.Command, args []string) {
-	fmt.Println(Long)
+
 	init := start.New(conn)
 	email := init.Target
 
@@ -45,20 +45,7 @@ func enrichRun(cmd *cobra.Command, args []string) {
 	finderData := start.GetFinderData(result.Data)
 	if finderData != nil && finderData.Email != "" {
 		raw, _ := result.Marshal()
-		if init.JSON {
-			json, _ := output.DisplayJSON(string(raw))
-			fmt.Println(json)
-		}
-		if init.YAML {
-			yaml, _ := output.DisplayYAML(string(raw))
-			fmt.Println(yaml)
-		}
-		if init.Output != "" {
-			err := output.CreateOutput(init.Output, string(raw))
-			if err != nil {
-				fmt.Println("Error creating file:", err)
-			}
-		}
+		output.Render(string(raw), init.JSON, init.YAML, init.Output, "enrich")
 		return
 	}
 	fmt.Println(util.WarningIcon(), util.Yellow("Why doesn't the enrichment return any result? https://help.tomba.io/en/questions/reasons-why-enrichment-don-t-find-any-emails"))

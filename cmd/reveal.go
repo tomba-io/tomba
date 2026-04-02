@@ -41,7 +41,7 @@ var revealCmd = &cobra.Command{
 }
 
 func init() {
-	revealCmd.Flags().StringVarP(&revealQuery, "query", "q", "", "Natural language query (e.g., 'Real Estate in France').")
+	revealCmd.Flags().StringVarP(&revealQuery, "query", "q", "", "Natural language query (e.g., 'SaaS startups in Europe').")
 	revealCmd.Flags().IntVar(&revealPage, "page", 1, "Page number for pagination.")
 	revealCmd.Flags().StringSliceVar(&revealCountry, "country", nil, "Filter by country codes (e.g., US,UK).")
 	revealCmd.Flags().StringSliceVar(&revealCity, "city", nil, "Filter by city names.")
@@ -60,7 +60,7 @@ func init() {
 
 // revealRun the actual work reveal
 func revealRun(cmd *cobra.Command, args []string) {
-	fmt.Println(Long)
+
 	init := start.New(conn)
 
 	// Build request
@@ -169,18 +169,5 @@ func revealRun(cmd *cobra.Command, args []string) {
 	}
 
 	raw, _ := result.Marshal()
-	if init.JSON {
-		json, _ := output.DisplayJSON(string(raw))
-		fmt.Println(json)
-	}
-	if init.YAML {
-		yaml, _ := output.DisplayYAML(string(raw))
-		fmt.Println(yaml)
-	}
-	if init.Output != "" {
-		err := output.CreateOutput(init.Output, string(raw))
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-		}
-	}
+	output.Render(string(raw), init.JSON, init.YAML, init.Output, "reveal")
 }

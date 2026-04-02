@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
 	"github.com/tomba-io/tomba/pkg/util"
@@ -19,7 +20,6 @@ var logsCmd = &cobra.Command{
 
 // logsRun the actual work logs
 func logsRun(cmd *cobra.Command, args []string) {
-	fmt.Println(Long)
 	init := start.New(conn)
 
 	result, err := init.Tomba.Logs()
@@ -28,18 +28,5 @@ func logsRun(cmd *cobra.Command, args []string) {
 		return
 	}
 	raw, _ := result.Marshal()
-	if init.JSON {
-		json, _ := output.DisplayJSON(string(raw))
-		fmt.Println(json)
-	}
-	if init.YAML {
-		yaml, _ := output.DisplayYAML(string(raw))
-		fmt.Println(yaml)
-	}
-	if init.Output != "" {
-		err := output.CreateOutput(init.Output, string(raw))
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-		}
-	}
+	output.Render(string(raw), init.JSON, init.YAML, init.Output, "logs")
 }

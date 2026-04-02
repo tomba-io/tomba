@@ -25,7 +25,7 @@ var finderCmd = &cobra.Command{
 
 // finderRun the actual work finder
 func finderRun(cmd *cobra.Command, args []string) {
-	fmt.Println(Long)
+
 	init := start.New(conn)
 	domain := init.Target
 
@@ -59,20 +59,7 @@ func finderRun(cmd *cobra.Command, args []string) {
 	finderData := start.GetFinderData(result.Data)
 	if finderData != nil && finderData.Email != "" {
 		raw, _ := result.Marshal()
-		if init.JSON {
-			json, _ := output.DisplayJSON(string(raw))
-			fmt.Println(json)
-		}
-		if init.YAML {
-			yaml, _ := output.DisplayYAML(string(raw))
-			fmt.Println(yaml)
-		}
-		if init.Output != "" {
-			err := output.CreateOutput(init.Output, string(raw))
-			if err != nil {
-				fmt.Println("Error creating file:", err)
-			}
-		}
+		output.Render(string(raw), init.JSON, init.YAML, init.Output, "finder")
 		return
 	}
 	fmt.Println(util.WarningIcon(), util.Yellow("Why doesn't the Email Finder return any result? https://help.tomba.io/en/questions/why-doesn-t-the-email-finder-return-any-result"))
