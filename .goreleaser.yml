@@ -56,6 +56,12 @@ homebrew_casks:
       directory: Casks
       description: CLI utility to search or verify lists of email addresses in seconds.
       license: Apache-2.0
+      manpages:
+      - "./res/package/manpages/tomba.1.gz"
+      completions:
+       bash: "res/package/completion/tomba.bash"
+       zsh: "res/package/completion/tomba.zsh"
+       fish: "res/package/completion/tomba.fish"
       binaries:
           - tomba
 
