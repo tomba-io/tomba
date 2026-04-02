@@ -1,0 +1,179 @@
+#!/bin/bash
+# Generate SVG demo recordings for all tomba commands
+# Usage: ./bin/generate-demos
+
+set -e
+
+SVG_DIR="$(cd "$(dirname "$0")/.." && pwd)/svg"
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+mkdir -p "$SVG_DIR"
+
+COLS=140
+ROWS=50
+TEMPLATE="window_frame"
+DELAY=2  # seconds between recordings
+
+# Build latest binary
+echo "  Building tomba..."
+go build -o /tmp/tomba-dev "$PROJECT_DIR" 2>/dev/null
+TOMBA="/tmp/tomba-dev"
+echo "  Binary: $TOMBA"
+echo ""
+
+record() {
+    local name="$1"
+    local cmd="$2"
+    local output="$SVG_DIR/${name}.svg"
+
+    echo -n "  $name ... "
+
+    # Replace "tomba" with dev binary path in command
+    local exec_cmd="${cmd/tomba/$TOMBA}"
+
+    # Capture command output with ANSI codes using script
+    local raw_output
+    raw_output=$(script -qc "$exec_cmd" /dev/null 2>&1 || true)
+
+    # Build asciicast v2 format manually
+    local castfile=$(mktemp /tmp/demo-XXXXXX.cast)
+
+    # Header
+    echo "{\"version\": 2, \"width\": $COLS, \"height\": $ROWS}" > "$castfile"
+
+    # Prompt line
+    echo "[0.0, \"o\", \"\u001b[1;32m\$ \u001b[0m$(echo "$cmd" | sed 's/\\/\\\\/g; s/"/\\"/g')\r\n\"]" >> "$castfile"
+
+    # Command output - escape for JSON
+    local escaped_output
+    escaped_output=$(echo "$raw_output" | python3 -c '
+import sys, json
+data = sys.stdin.read()
+data = data.replace("\n", "\r\n")
+print(json.dumps(data))
+')
+    echo "[0.5, \"o\", $escaped_output]" >> "$castfile"
+
+    # Render cast to SVG
+    if [ -f "$castfile" ] && [ -s "$castfile" ]; then
+        termtosvg render "$castfile" "$output" \
+            -t "$TEMPLATE" \
+            -M 5000 \
+            -m 30 2>/dev/null
+    fi
+
+    rm -f "$castfile"
+
+    if [ -f "$output" ] && [ -s "$output" ]; then
+        local size=$(wc -c < "$output")
+        echo "OK (${size} bytes)"
+    else
+        echo "FAILED"
+    fi
+
+    # Timeout between recordings
+    sleep "$DELAY"
+}
+
+echo "Generating Tomba CLI demo SVGs..."
+echo "Output: $SVG_DIR/"
+echo "Screen: ${COLS}x${ROWS}"
+echo "Delay:  ${DELAY}s between recordings"
+echo ""
+
+# Default / help
+record "default" "tomba --help"
+
+# Login help
+record "login" "tomba login --help"
+
+# Whoami
+record "whoami" "tomba whoami"
+
+# Search
+record "search" "tomba search --target tomba.io"
+
+# Finder
+record "finder" "tomba finder --target tomba.io --fist mohamed --last 'ben rebia'"
+
+# Enrich
+record "enrich" "tomba enrich --target b.mohamed@tomba.io"
+
+# Verify
+record "verify" "tomba verify --target b.mohamed@tomba.io"
+
+# Author
+record "author" "tomba author --target 'https://clearbit.com/blog/company-name-to-domain-api'"
+
+# LinkedIn
+record "linkedin" "tomba linkedin --target 'https://www.linkedin.com/in/mohamed-ben-rebia'"
+
+# Sources
+record "sources" "tomba sources --target b.mohamed@tomba.io"
+
+# Count
+record "count" "tomba count --target tomba.io"
+
+# Status
+record "status" "tomba status --target gmail.io"
+
+# Similar
+record "similar" "tomba similar --target tomba.io"
+
+# Technology
+record "technology" "tomba technology --target tomba.io"
+
+# Phone Finder
+record "phone-finder" "tomba phone-finder --email wade@zapier.com"
+
+# Phone Validator
+record "phone-validator" "tomba phone-validator --phone '+33612345678'"
+
+# Reveal
+record "reveal" "tomba reveal --country US,UK --industry Technology"
+
+# Bulk help
+record "bulk" "tomba bulk --help"
+
+# Chat help
+record "chat" "tomba chat --help"
+
+# Version
+record "version" "tomba version"
+
+# JSON output
+record "search-json" "tomba search --target tomba.io --json"
+
+# YAML output
+record "search-yaml" "tomba search --target tomba.io --yaml"
+
+# Skill - list all skills
+record "skill-list" "tomba skill list"
+
+# Skill - show skill info
+record "skill-info" "tomba skill info company-intel"
+
+# Skill - run domain-check
+record "skill-domain-check" "tomba skill run domain-check --target tomba.io"
+
+# Skill - run find-email
+record "skill-find-email" "tomba skill run find-email --target tomba.io first_name=mohamed last_name='ben rebia'"
+
+# Skill - run company-intel
+record "skill-company-intel" "tomba skill run company-intel --target tomba.io"
+
+# Skill - run enrich-verify
+record "skill-enrich-verify" "tomba skill run enrich-verify --target b.mohamed@tomba.io"
+
+# Skill - export as YAML
+record "skill-export" "tomba skill export find-email"
+
+# Skill - help
+record "skill-help" "tomba skill --help"
+
+# Cleanup
+rm -f /tmp/tomba-dev
+
+echo ""
+echo "All demos generated!"
+echo ""
+ls -lh "$SVG_DIR/"*.svg 2>/dev/null | awk '{printf "  %-50s %s\n", $9, $5}'

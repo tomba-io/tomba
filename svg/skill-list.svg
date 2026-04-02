@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 1167 931" width="1167" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="140" rows="50"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    
+            :root {
+                --animation-duration: 1500ms;
+            }
+
+            @keyframes roll {
+                0.000%{transform:translateY(0px)}
+33.333%{transform:translateY(-884px)}
+100.000%{transform:translateY(-884px)}
+            }
+
+            #screen_view {
+                animation-duration: 1500ms;
+                animation-iteration-count:infinite;
+                animation-name:roll;
+                animation-timing-function: steps(1,end);
+                animation-fill-mode: forwards;
+            }
+        ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               gjm8 color theme (source: https://terminal.sexy/) */
+            .foreground {fill: #f8f8f2}
+            .background {fill: #272822}
+            .color0 {fill: #272822}
+            .color1 {fill: #f92672}
+            .color2 {fill: #a6e22e}
+            .color3 {fill: #f4bf75}
+            .color4 {fill: #66d9ef}
+            .color5 {fill: #ae81ff}
+            .color6 {fill: #a1efe4}
+            .color7 {fill: #f8f8f2}
+            .color8 {fill: #75715e}
+            .color9 {fill: #fd971f}
+            .color10 {fill: #383830}
+            .color11 {fill: #49483e}
+            .color12 {fill: #a59f85}
+            .color13 {fill: #f5f4f1}
+            .color14 {fill: #cc6633}
+            .color15 {fill: #f9f8f5}
+        </style>
+    </defs>
+    <rect id="terminalui" class="background" width="100%" height="100%" ry="4.5826941"/>
+    <circle cx="24" cy="23" r="7" class="color1"/>
+    <circle cx="44" cy="23" r="7" class="color3"/>
+    <circle cx="64" cy="23" r="7" class="color2"/>
+    <svg id="screen" width="1120" height="850" x="23" y="50" viewBox="0 0 1120 850" preserveAspectRatio="xMidYMin slice"><rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="16" font-weight="bold" class="color10">$ </text><text x="16" textLength="128" class="foreground">tomba skill list</text></g><g id="g2"><text x="0" textLength="8" class="background"> </text></g><g id="g3"><text x="0" textLength="176" class="foreground">   Built-in Skills (8)</text></g><g id="g4"><text x="0" textLength="672" class="foreground">  Name                 Description                                             Steps</text></g><g id="g5"><text x="0" textLength="736" class="foreground">  &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</text></g><g id="g6"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="80" class="color2">find-email</text><text x="96" textLength="544" class="foreground"> Find and verify someone's email from their name and company domain </text><text x="640" textLength="128" class="color8">finder -&gt; verify</text></g><g id="g7"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="112" class="color2">company-emails</text><text x="128" textLength="456" class="foreground"> Search all emails for a company and count by department </text><text x="584" textLength="120" class="color8">count -&gt; search</text></g><g id="g8"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="104" class="color2">enrich-verify</text><text x="120" textLength="496" class="foreground"> Enrich an email with contact data then verify deliverability </text><text x="616" textLength="216" class="color8">enrich -&gt; verify -&gt; sources</text></g><g id="g9"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="104" class="color2">company-intel</text><text x="120" textLength="520" class="foreground"> Full company intelligence &#8212; emails, tech stack, similar domains </text><text x="640" textLength="400" class="color8">status -&gt; count -&gt; search -&gt; technology -&gt; similar</text></g><g id="g10"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="64" class="color2">lead-gen</text><text x="80" textLength="616" class="foreground">  Find decision makers at a company by searching and filtering by department </text><text x="696" textLength="48" class="color8">search</text></g><g id="g11"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="112" class="color2">linkedin-intel</text><text x="128" textLength="648" class="foreground"> Get full intel from a LinkedIn profile &#8212; email, enrichment, phone, verification </text><text x="776" textLength="224" class="color8">linkedin -&gt; enrich -&gt; verify</text></g><g id="g12"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="96" class="color2">domain-check</text><text x="112" textLength="672" class="foreground"> Quick health check on a domain &#8212; status, email count, disposable/webmail detection </text><text x="784" textLength="120" class="color8">status -&gt; count</text></g><g id="g13"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="104" class="color2">author-verify</text><text x="120" textLength="456" class="foreground"> Find an article author's email and verify it            </text><text x="576" textLength="128" class="color8">author -&gt; verify</text></g><g id="g14"><text x="0" textLength="136" class="foreground">  Run a skill:   </text><text x="136" textLength="312" font-weight="bold" class="foreground">tomba skill run &lt;name&gt; --target &lt;value&gt;</text></g><g id="g15"><text x="0" textLength="136" class="foreground">  Skill details: </text><text x="136" textLength="184" font-weight="bold" class="foreground">tomba skill info &lt;name&gt;</text></g><g id="g16"><text x="0" textLength="136" class="foreground">  Create custom: </text><text x="136" textLength="144" font-weight="bold" class="foreground">tomba skill create</text></g></defs><g id="screen_view"><g><use xlink:href="#g1" y="0"/><rect x="0" y="17" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="17"/></g><g><use xlink:href="#g1" y="884"/><use xlink:href="#g3" y="918"/><use xlink:href="#g4" y="952"/><use xlink:href="#g5" y="969"/><use xlink:href="#g6" y="986"/><use xlink:href="#g7" y="1003"/><use xlink:href="#g8" y="1020"/><use xlink:href="#g9" y="1037"/><use xlink:href="#g10" y="1054"/><use xlink:href="#g11" y="1071"/><use xlink:href="#g12" y="1088"/><use xlink:href="#g13" y="1105"/><use xlink:href="#g14" y="1139"/><use xlink:href="#g15" y="1156"/><use xlink:href="#g16" y="1173"/><rect x="0" y="1207" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="1207"/></g></g></svg>
+</svg>

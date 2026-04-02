@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 1167 931" width="1167" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="140" rows="50"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    
+            :root {
+                --animation-duration: 1500ms;
+            }
+
+            @keyframes roll {
+                0.000%{transform:translateY(0px)}
+33.333%{transform:translateY(-884px)}
+100.000%{transform:translateY(-884px)}
+            }
+
+            #screen_view {
+                animation-duration: 1500ms;
+                animation-iteration-count:infinite;
+                animation-name:roll;
+                animation-timing-function: steps(1,end);
+                animation-fill-mode: forwards;
+            }
+        ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               gjm8 color theme (source: https://terminal.sexy/) */
+            .foreground {fill: #f8f8f2}
+            .background {fill: #272822}
+            .color0 {fill: #272822}
+            .color1 {fill: #f92672}
+            .color2 {fill: #a6e22e}
+            .color3 {fill: #f4bf75}
+            .color4 {fill: #66d9ef}
+            .color5 {fill: #ae81ff}
+            .color6 {fill: #a1efe4}
+            .color7 {fill: #f8f8f2}
+            .color8 {fill: #75715e}
+            .color9 {fill: #fd971f}
+            .color10 {fill: #383830}
+            .color11 {fill: #49483e}
+            .color12 {fill: #a59f85}
+            .color13 {fill: #f5f4f1}
+            .color14 {fill: #cc6633}
+            .color15 {fill: #f9f8f5}
+        </style>
+    </defs>
+    <rect id="terminalui" class="background" width="100%" height="100%" ry="4.5826941"/>
+    <circle cx="24" cy="23" r="7" class="color1"/>
+    <circle cx="44" cy="23" r="7" class="color3"/>
+    <circle cx="64" cy="23" r="7" class="color2"/>
+    <svg id="screen" width="1120" height="850" x="23" y="50" viewBox="0 0 1120 850" preserveAspectRatio="xMidYMin slice"><rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="16" font-weight="bold" class="color10">$ </text><text x="16" textLength="240" class="foreground">tomba skill info company-intel</text></g><g id="g2"><text x="0" textLength="8" class="background"> </text></g><g id="g3"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="48" font-weight="bold" class="foreground">Skill:</text><text x="64" textLength="8" class="foreground"> </text><text x="72" textLength="104" class="color2">company-intel</text></g><g id="g4"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="96" font-weight="bold" class="foreground">Description:</text><text x="112" textLength="512" class="foreground"> Full company intelligence &#8212; emails, tech stack, similar domains</text></g><g id="g5"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="56" font-weight="bold" class="foreground">Author:</text><text x="72" textLength="48" class="foreground"> tomba</text></g><g id="g6"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="64" font-weight="bold" class="foreground">Version:</text><text x="80" textLength="48" class="foreground"> 1.0.0</text></g><g id="g7"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="40" font-weight="bold" class="foreground">Tags:</text><text x="56" textLength="8" class="foreground"> </text><text x="64" textLength="288" class="color8">company, technology, similar, search</text></g><g id="g8"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="56" font-weight="bold" class="foreground">Inputs:</text></g><g id="g9"><text x="0" textLength="32" class="foreground">    </text><text x="32" textLength="48" class="color6">domain</text><text x="80" textLength="96" class="foreground"> [domain]   </text><text x="176" textLength="64" class="color3">required</text><text x="240" textLength="120" class="foreground"> Company domain</text></g><g id="g10"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="72" font-weight="bold" class="foreground">Workflow:</text></g><g id="g11"><text x="0" textLength="64" class="foreground">    &#9500;&#9472;&#9472; </text><text x="64" textLength="104" font-weight="bold" class="foreground">Domain status</text><text x="168" textLength="8" class="foreground"> </text><text x="176" textLength="64" class="color8">(status)</text></g><g id="g12"><text x="0" textLength="80" class="foreground">    &#9474;     </text><text x="80" textLength="48" class="color8">domain</text><text x="128" textLength="16" class="foreground">: </text><text x="144" textLength="128" class="color8">{{input.domain}}</text></g><g id="g13"><text x="0" textLength="64" class="foreground">    &#9500;&#9472;&#9472; </text><text x="64" textLength="88" font-weight="bold" class="foreground">Email count</text><text x="152" textLength="8" class="foreground"> </text><text x="160" textLength="56" class="color8">(count)</text></g><g id="g14"><text x="0" textLength="64" class="foreground">    &#9500;&#9472;&#9472; </text><text x="64" textLength="104" font-weight="bold" class="foreground">Search emails</text><text x="168" textLength="8" class="foreground"> </text><text x="176" textLength="64" class="color8">(search)</text></g><g id="g15"><text x="0" textLength="80" class="foreground">    &#9474;     </text><text x="80" textLength="40" class="color8">limit</text><text x="120" textLength="16" class="foreground">: </text><text x="136" textLength="16" class="color8">20</text></g><g id="g16"><text x="0" textLength="64" class="foreground">    &#9500;&#9472;&#9472; </text><text x="64" textLength="128" font-weight="bold" class="foreground">Technology stack</text><text x="192" textLength="8" class="foreground"> </text><text x="200" textLength="96" class="color8">(technology)</text></g><g id="g17"><text x="0" textLength="64" class="foreground">    &#9492;&#9472;&#9472; </text><text x="64" textLength="136" font-weight="bold" class="foreground">Similar companies</text><text x="200" textLength="8" class="foreground"> </text><text x="208" textLength="72" class="color8">(similar)</text></g><g id="g18"><text x="0" textLength="80" class="foreground">          </text><text x="80" textLength="48" class="color8">domain</text><text x="128" textLength="16" class="foreground">: </text><text x="144" textLength="128" class="color8">{{input.domain}}</text></g><g id="g19"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="56" font-weight="bold" class="foreground">Output:</text><text x="72" textLength="304" class="foreground"> Company Intelligence Report (summary)</text></g><g id="g20"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="56" font-weight="bold" class="foreground">Fields:</text><text x="72" textLength="648" class="foreground"> domain, status, total_emails, departments, technologies, similar_domains, emails</text></g><g id="g21"><text x="0" textLength="16" class="foreground">  </text><text x="16" textLength="48" font-weight="bold" class="foreground">Usage:</text></g><g id="g22"><text x="0" textLength="424" class="foreground">    tomba skill run company-intel --target stripe.com</text></g></defs><g id="screen_view"><g><use xlink:href="#g1" y="0"/><rect x="0" y="17" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="17"/></g><g><use xlink:href="#g1" y="884"/><use xlink:href="#g3" y="918"/><use xlink:href="#g4" y="935"/><use xlink:href="#g5" y="952"/><use xlink:href="#g6" y="969"/><use xlink:href="#g7" y="986"/><use xlink:href="#g8" y="1020"/><use xlink:href="#g9" y="1054"/><use xlink:href="#g10" y="1088"/><use xlink:href="#g11" y="1122"/><use xlink:href="#g12" y="1139"/><use xlink:href="#g13" y="1156"/><use xlink:href="#g12" y="1173"/><use xlink:href="#g14" y="1190"/><use xlink:href="#g12" y="1207"/><use xlink:href="#g15" y="1224"/><use xlink:href="#g16" y="1241"/><use xlink:href="#g12" y="1258"/><use xlink:href="#g17" y="1275"/><use xlink:href="#g18" y="1292"/><use xlink:href="#g19" y="1326"/><use xlink:href="#g20" y="1343"/><use xlink:href="#g21" y="1377"/><use xlink:href="#g22" y="1394"/><rect x="0" y="1428" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="1428"/></g></g></svg>
+</svg>

@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 1167 931" width="1167" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="140" rows="50"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    
+            :root {
+                --animation-duration: 1500ms;
+            }
+
+            @keyframes roll {
+                0.000%{transform:translateY(0px)}
+33.333%{transform:translateY(-884px)}
+100.000%{transform:translateY(-884px)}
+            }
+
+            #screen_view {
+                animation-duration: 1500ms;
+                animation-iteration-count:infinite;
+                animation-name:roll;
+                animation-timing-function: steps(1,end);
+                animation-fill-mode: forwards;
+            }
+        ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               gjm8 color theme (source: https://terminal.sexy/) */
+            .foreground {fill: #f8f8f2}
+            .background {fill: #272822}
+            .color0 {fill: #272822}
+            .color1 {fill: #f92672}
+            .color2 {fill: #a6e22e}
+            .color3 {fill: #f4bf75}
+            .color4 {fill: #66d9ef}
+            .color5 {fill: #ae81ff}
+            .color6 {fill: #a1efe4}
+            .color7 {fill: #f8f8f2}
+            .color8 {fill: #75715e}
+            .color9 {fill: #fd971f}
+            .color10 {fill: #383830}
+            .color11 {fill: #49483e}
+            .color12 {fill: #a59f85}
+            .color13 {fill: #f5f4f1}
+            .color14 {fill: #cc6633}
+            .color15 {fill: #f9f8f5}
+        </style>
+    </defs>
+    <rect id="terminalui" class="background" width="100%" height="100%" ry="4.5826941"/>
+    <circle cx="24" cy="23" r="7" class="color1"/>
+    <circle cx="44" cy="23" r="7" class="color3"/>
+    <circle cx="64" cy="23" r="7" class="color2"/>
+    <svg id="screen" width="1120" height="850" x="23" y="50" viewBox="0 0 1120 850" preserveAspectRatio="xMidYMin slice"><rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="16" font-weight="bold" class="color10">$ </text><text x="16" textLength="296" class="foreground">tomba search --target tomba.io --yaml</text></g><g id="g2"><text x="0" textLength="8" class="background"> </text></g><g id="g3"><text x="0" textLength="456" font-weight="bold" class="color15">      uri: https://app.tomba.io/verify/developer@tomba.io</text></g><g id="g4"><text x="0" textLength="248" font-weight="bold" class="color15">      website_url: app.tomba.io</text></g><g id="g5"><text x="0" textLength="136" font-weight="bold" class="color15">    twitter: null</text></g><g id="g6"><text x="0" textLength="136" font-weight="bold" class="color15">    type: generic</text></g><g id="g7"><text x="0" textLength="136" font-weight="bold" class="color15">    verification:</text></g><g id="g8"><text x="0" textLength="312" font-weight="bold" class="color15">      date: "2026-03-26T00:00:00+01:00"</text></g><g id="g9"><text x="0" textLength="152" font-weight="bold" class="color15">      status: valid</text></g><g id="g10"><text x="0" textLength="120" font-weight="bold" class="color15">  organization:</text></g><g id="g11"><text x="0" textLength="168" font-weight="bold" class="color15">    accept_all: false</text></g><g id="g12"><text x="0" textLength="176" font-weight="bold" class="color15">    company_size: 1-10</text></g><g id="g13"><text x="0" textLength="664" font-weight="bold" class="color15">    description: the most powerful email-finding tool which is able to list all the</text></g><g id="g14"><text x="0" textLength="576" font-weight="bold" class="color15">      email addresses of people who are working in a particular company.</text></g><g id="g15"><text x="0" textLength="168" font-weight="bold" class="color15">    disposable: false</text></g><g id="g16"><text x="0" textLength="152" font-weight="bold" class="color15">    domain_score: 0</text></g><g id="g17"><text x="0" textLength="168" font-weight="bold" class="color15">    employee_count: 0</text></g><g id="g18"><text x="0" textLength="152" font-weight="bold" class="color15">    founded: "2021"</text></g><g id="g19"><text x="0" textLength="408" font-weight="bold" class="color15">    industries: Information Technology and Services</text></g><g id="g20"><text x="0" textLength="360" font-weight="bold" class="color15">    last_updated: "2026-03-09T21:15:02+01:00"</text></g><g id="g21"><text x="0" textLength="104" font-weight="bold" class="color15">    location:</text></g><g id="g22"><text x="0" textLength="160" font-weight="bold" class="color15">      city: Claymont</text></g><g id="g23"><text x="0" textLength="136" font-weight="bold" class="color15">      country: US</text></g><g id="g24"><text x="0" textLength="168" font-weight="bold" class="color15">      state: Delaware</text></g><g id="g25"><text x="0" textLength="280" font-weight="bold" class="color15">      street_address: 1228 claymont</text></g><g id="g26"><text x="0" textLength="400" font-weight="bold" class="color15">    organization: Tomba technology web service LLC</text></g><g id="g27"><text x="0" textLength="208" font-weight="bold" class="color15">    pattern: '{l}.{first}'</text></g><g id="g28"><text x="0" textLength="176" font-weight="bold" class="color15">    phone_number: true</text></g><g id="g29"><text x="0" textLength="168" font-weight="bold" class="color15">    postal_code: null</text></g><g id="g30"><text x="0" textLength="152" font-weight="bold" class="color15">    revenue: $0-$1M</text></g><g id="g31"><text x="0" textLength="136" font-weight="bold" class="color15">    social_links:</text></g><g id="g32"><text x="0" textLength="472" font-weight="bold" class="color15">      facebook_url: https://www.facebook.com/tombaplatforum</text></g><g id="g33"><text x="0" textLength="392" font-weight="bold" class="color15">      github_url: https://www.github.com/tomba-io</text></g><g id="g34"><text x="0" textLength="440" font-weight="bold" class="color15">      instagram_url: https://www.instagram.com/tomba_io</text></g><g id="g35"><text x="0" textLength="488" font-weight="bold" class="color15">      linkedin_url: https://www.linkedin.com/company/tomba-io</text></g><g id="g36"><text x="0" textLength="504" font-weight="bold" class="color15">      pinterest_url: https://www.pinterest.com/tombaemailfinder</text></g><g id="g37"><text x="0" textLength="408" font-weight="bold" class="color15">      tiktok_url: https://www.tiktok.com/@@tomba_io</text></g><g id="g38"><text x="0" textLength="424" font-weight="bold" class="color15">      twitter_url: https://twitter.com/tombaplatforum</text></g><g id="g39"><text x="0" textLength="408" font-weight="bold" class="color15">      youtube_url: https://www.youtube.com/@tombaio</text></g><g id="g40"><text x="0" textLength="144" font-weight="bold" class="color15">    webmail: false</text></g><g id="g41"><text x="0" textLength="200" font-weight="bold" class="color15">    website_url: tomba.io</text></g><g id="g42"><text x="0" textLength="80" font-weight="bold" class="color15">    whois:</text></g><g id="g43"><text x="0" textLength="376" font-weight="bold" class="color15">      created_date: "2020-07-07T20:54:07+02:00"</text></g><g id="g44"><text x="0" textLength="368" font-weight="bold" class="color15">      referral_url: https://www.namecheap.com/</text></g><g id="g45"><text x="0" textLength="296" font-weight="bold" class="color15">      registrar_name: namecheap, inc.</text></g><g id="g46"><text x="0" textLength="40" font-weight="bold" class="color15">meta:</text></g><g id="g47"><text x="0" textLength="96" font-weight="bold" class="color15">  current: 1</text></g><g id="g48"><text x="0" textLength="112" font-weight="bold" class="color15">  pageSize: 10</text></g><g id="g49"><text x="0" textLength="88" font-weight="bold" class="color15">  total: 21</text></g><g id="g50"><text x="0" textLength="128" font-weight="bold" class="color15">  total_pages: 3</text></g></defs><g id="screen_view"><g><use xlink:href="#g1" y="0"/><rect x="0" y="17" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="17"/></g><g><use xlink:href="#g3" y="884"/><use xlink:href="#g4" y="901"/><use xlink:href="#g5" y="918"/><use xlink:href="#g6" y="935"/><use xlink:href="#g7" y="952"/><use xlink:href="#g8" y="969"/><use xlink:href="#g9" y="986"/><use xlink:href="#g10" y="1003"/><use xlink:href="#g11" y="1020"/><use xlink:href="#g12" y="1037"/><use xlink:href="#g13" y="1054"/><use xlink:href="#g14" y="1071"/><use xlink:href="#g15" y="1088"/><use xlink:href="#g16" y="1105"/><use xlink:href="#g17" y="1122"/><use xlink:href="#g18" y="1139"/><use xlink:href="#g19" y="1156"/><use xlink:href="#g20" y="1173"/><use xlink:href="#g21" y="1190"/><use xlink:href="#g22" y="1207"/><use xlink:href="#g23" y="1224"/><use xlink:href="#g24" y="1241"/><use xlink:href="#g25" y="1258"/><use xlink:href="#g26" y="1275"/><use xlink:href="#g27" y="1292"/><use xlink:href="#g28" y="1309"/><use xlink:href="#g29" y="1326"/><use xlink:href="#g30" y="1343"/><use xlink:href="#g31" y="1360"/><use xlink:href="#g32" y="1377"/><use xlink:href="#g33" y="1394"/><use xlink:href="#g34" y="1411"/><use xlink:href="#g35" y="1428"/><use xlink:href="#g36" y="1445"/><use xlink:href="#g37" y="1462"/><use xlink:href="#g38" y="1479"/><use xlink:href="#g39" y="1496"/><use xlink:href="#g40" y="1513"/><use xlink:href="#g41" y="1530"/><use xlink:href="#g42" y="1547"/><use xlink:href="#g43" y="1564"/><use xlink:href="#g44" y="1581"/><use xlink:href="#g45" y="1598"/><use xlink:href="#g46" y="1615"/><use xlink:href="#g47" y="1632"/><use xlink:href="#g48" y="1649"/><use xlink:href="#g49" y="1666"/><use xlink:href="#g50" y="1683"/><rect x="0" y="1717" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="1717"/></g></g></svg>
+</svg>

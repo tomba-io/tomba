@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 1167 931" width="1167" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="140" rows="50"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    
+            :root {
+                --animation-duration: 1500ms;
+            }
+
+            @keyframes roll {
+                0.000%{transform:translateY(0px)}
+33.333%{transform:translateY(-884px)}
+100.000%{transform:translateY(-884px)}
+            }
+
+            #screen_view {
+                animation-duration: 1500ms;
+                animation-iteration-count:infinite;
+                animation-name:roll;
+                animation-timing-function: steps(1,end);
+                animation-fill-mode: forwards;
+            }
+        ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               gjm8 color theme (source: https://terminal.sexy/) */
+            .foreground {fill: #f8f8f2}
+            .background {fill: #272822}
+            .color0 {fill: #272822}
+            .color1 {fill: #f92672}
+            .color2 {fill: #a6e22e}
+            .color3 {fill: #f4bf75}
+            .color4 {fill: #66d9ef}
+            .color5 {fill: #ae81ff}
+            .color6 {fill: #a1efe4}
+            .color7 {fill: #f8f8f2}
+            .color8 {fill: #75715e}
+            .color9 {fill: #fd971f}
+            .color10 {fill: #383830}
+            .color11 {fill: #49483e}
+            .color12 {fill: #a59f85}
+            .color13 {fill: #f5f4f1}
+            .color14 {fill: #cc6633}
+            .color15 {fill: #f9f8f5}
+        </style>
+    </defs>
+    <rect id="terminalui" class="background" width="100%" height="100%" ry="4.5826941"/>
+    <circle cx="24" cy="23" r="7" class="color1"/>
+    <circle cx="44" cy="23" r="7" class="color3"/>
+    <circle cx="64" cy="23" r="7" class="color2"/>
+    <svg id="screen" width="1120" height="850" x="23" y="50" viewBox="0 0 1120 850" preserveAspectRatio="xMidYMin slice"><rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="16" font-weight="bold" class="color10">$ </text><text x="16" textLength="248" class="foreground">tomba similar --target tomba.io</text></g><g id="g2"><text x="0" textLength="8" class="background"> </text></g><g id="g3"><text x="0" textLength="8" class="color2">&#10003;</text><text x="8" textLength="200" class="foreground"> Found 25 similar domains</text></g><g id="g4"><text x="0" textLength="616" class="foreground">  #    Domain                         Name                           Industry</text></g><g id="g5"><text x="0" textLength="816" class="foreground">  &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</text></g><g id="g6"><text x="0" textLength="56" class="foreground">  1    </text><text x="56" textLength="72" class="color2">hunter.io</text><text x="128" textLength="336" class="foreground">           Hunter                         </text><text x="464" textLength="280" class="color8">Information Technology and Services</text></g><g id="g7"><text x="0" textLength="56" class="foreground">  2    </text><text x="56" textLength="72" class="color2">skrapp.io</text><text x="128" textLength="336" class="foreground">           Skrapp.io                      </text><text x="464" textLength="280" class="color8">Information Technology and Services</text></g><g id="g8"><text x="0" textLength="56" class="foreground">  3    </text><text x="56" textLength="72" class="color2">drift.com</text><text x="128" textLength="336" class="foreground">           Drift                          </text><text x="464" textLength="280" class="color8">Information Technology and Services</text></g><g id="g9"><text x="0" textLength="56" class="foreground">  4    </text><text x="56" textLength="96" class="color2">wdsdemos.com</text><text x="152" textLength="312" class="foreground">        Warehouse Demo Services        </text><text x="464" textLength="144" class="color8">Marketing Services</text></g><g id="g10"><text x="0" textLength="56" class="foreground">  5    </text><text x="56" textLength="96" class="color2">sellhack.com</text><text x="152" textLength="312" class="foreground">        SellHack                       </text><text x="464" textLength="280" class="color8">Information Technology and Services</text></g><g id="g11"><text x="0" textLength="56" class="foreground">  6    </text><text x="56" textLength="96" class="color2">clubdemo.com</text><text x="152" textLength="312" class="foreground">        Club Demonstration Services    </text><text x="464" textLength="48" class="color8">Retail</text></g><g id="g12"><text x="0" textLength="56" class="foreground">  7    </text><text x="56" textLength="120" class="color2">holaconnect.com</text><text x="176" textLength="288" class="foreground">     HolaConnect                    </text><text x="464" textLength="144" class="color8">Marketing Services</text></g><g id="g13"><text x="0" textLength="56" class="foreground">  8    </text><text x="56" textLength="80" class="color2">iconix.com</text><text x="136" textLength="328" class="foreground">          Iconix INC                     </text><text x="464" textLength="232" class="color8">Computer and Network Security</text></g><g id="g14"><text x="0" textLength="56" class="foreground">  9    </text><text x="56" textLength="112" class="color2">emailhunter.co</text><text x="168" textLength="296" class="foreground">      Email Hunter                   </text><text x="464" textLength="160" class="color8">Information Services</text></g><g id="g15"><text x="0" textLength="56" class="foreground">  10   </text><text x="56" textLength="80" class="color2">driftt.com</text><text x="136" textLength="328" class="foreground">          Drift                          </text><text x="464" textLength="280" class="color8">Information Technology and Services</text></g><g id="g16"><text x="0" textLength="56" class="foreground">  11   </text><text x="56" textLength="136" class="color2">email-checker.com</text><text x="192" textLength="296" class="foreground">   emailchecker - (email verify ltd) </text><text x="488" textLength="160" class="color8">Information Services</text></g><g id="g17"><text x="0" textLength="56" class="foreground">  12   </text><text x="56" textLength="120" class="color2">emailcrawlr.com</text><text x="176" textLength="288" class="foreground">     EmailCrawlr                    </text></g><g id="g18"><text x="0" textLength="56" class="foreground">  13   </text><text x="56" textLength="128" class="color2">insights.network</text><text x="184" textLength="280" class="foreground">    insights network               </text><text x="464" textLength="160" class="color8">Information Services</text></g><g id="g19"><text x="0" textLength="56" class="foreground">  14   </text><text x="56" textLength="136" class="color2">levyfamily.com.au</text><text x="192" textLength="272" class="foreground">   stellar tech it                </text></g><g id="g20"><text x="0" textLength="56" class="foreground">  15   </text><text x="56" textLength="88" class="color2">minelead.io</text><text x="144" textLength="320" class="foreground">         Minelead.io                    </text><text x="464" textLength="144" class="color8">Marketing Services</text></g><g id="g21"><text x="0" textLength="56" class="foreground">  16   </text><text x="56" textLength="136" class="color2">theemailfinder.co</text><text x="192" textLength="24" class="foreground">   </text><text x="216" textLength="8" class="color8">-</text><text x="224" textLength="152" class="foreground">                   </text></g><g id="g22"><text x="0" textLength="56" class="foreground">  17   </text><text x="56" textLength="104" class="color2">addresses.com</text><text x="160" textLength="304" class="foreground">       Addresses.com                  </text><text x="464" textLength="208" class="color8">Public Assistance Programs</text></g><g id="g23"><text x="0" textLength="56" class="foreground">  18   </text><text x="56" textLength="184" class="color2">fastonlinedirect.com.au</text><text x="240" textLength="256" class="foreground"> fast online direct             </text><text x="496" textLength="272" class="color8">Professional Training and Coaching</text></g><g id="g24"><text x="0" textLength="56" class="foreground">  19   </text><text x="56" textLength="88" class="color2">skymem.info</text><text x="144" textLength="320" class="foreground">         Skymem web page                </text></g><g id="g25"><text x="0" textLength="56" class="foreground">  20   </text><text x="56" textLength="88" class="color2">thereach.io</text><text x="144" textLength="72" class="foreground">         </text><text x="216" textLength="8" class="color8">-</text><text x="224" textLength="152" class="foreground">                   </text></g><g id="g26"><text x="0" textLength="56" class="foreground">  21   </text><text x="56" textLength="96" class="color2">emailhunt.io</text><text x="152" textLength="64" class="foreground">        </text><text x="216" textLength="8" class="color8">-</text><text x="224" textLength="152" class="foreground">                   </text></g><g id="g27"><text x="0" textLength="56" class="foreground">  22   </text><text x="56" textLength="136" class="color2">addresssearch.com</text><text x="192" textLength="24" class="foreground">   </text><text x="216" textLength="8" class="color8">-</text><text x="224" textLength="152" class="foreground">                   </text></g><g id="g28"><text x="0" textLength="56" class="foreground">  23   </text><text x="56" textLength="128" class="color2">mailtester.ninja</text><text x="184" textLength="280" class="foreground">    MailTester Ninja               </text></g><g id="g29"><text x="0" textLength="56" class="foreground">  24   </text><text x="56" textLength="80" class="color2">prospeo.io</text><text x="136" textLength="328" class="foreground">          Prospeo                        </text><text x="464" textLength="160" class="color8">Software Development</text></g><g id="g30"><text x="0" textLength="56" class="foreground">  25   </text><text x="56" textLength="72" class="color2">mail7.net</text><text x="128" textLength="88" class="foreground">           </text><text x="216" textLength="8" class="color8">-</text><text x="224" textLength="152" class="foreground">                   </text></g></defs><g id="screen_view"><g><use xlink:href="#g1" y="0"/><rect x="0" y="17" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="17"/></g><g><use xlink:href="#g1" y="884"/><use xlink:href="#g3" y="918"/><use xlink:href="#g4" y="952"/><use xlink:href="#g5" y="969"/><use xlink:href="#g6" y="986"/><use xlink:href="#g7" y="1003"/><use xlink:href="#g8" y="1020"/><use xlink:href="#g9" y="1037"/><use xlink:href="#g10" y="1054"/><use xlink:href="#g11" y="1071"/><use xlink:href="#g12" y="1088"/><use xlink:href="#g13" y="1105"/><use xlink:href="#g14" y="1122"/><use xlink:href="#g15" y="1139"/><use xlink:href="#g16" y="1156"/><use xlink:href="#g17" y="1173"/><use xlink:href="#g18" y="1190"/><use xlink:href="#g19" y="1207"/><use xlink:href="#g20" y="1224"/><use xlink:href="#g21" y="1241"/><use xlink:href="#g22" y="1258"/><use xlink:href="#g23" y="1275"/><use xlink:href="#g24" y="1292"/><use xlink:href="#g25" y="1309"/><use xlink:href="#g26" y="1326"/><use xlink:href="#g27" y="1343"/><use xlink:href="#g28" y="1360"/><use xlink:href="#g29" y="1377"/><use xlink:href="#g30" y="1394"/><rect x="0" y="1411" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="1411"/></g></g></svg>
+</svg>
