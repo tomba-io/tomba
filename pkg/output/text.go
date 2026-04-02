@@ -965,39 +965,100 @@ func formatReveal(data map[string]interface{}) string {
 func formatPhoneFinder(data map[string]interface{}) string {
 	var sb strings.Builder
 
-	if d, ok := data["data"].(map[string]interface{}); ok {
-		// Contact info
-		writeField(&sb, "\n  ", "Email", getStr(d, "email"))
-		writeField(&sb, "  ", "Domain", getStr(d, "domain"))
-		writeField(&sb, "  ", "Name", getStr(d, "full_name"))
-		writeField(&sb, "  ", "Company", getStr(d, "company"))
-		writeField(&sb, "  ", "Country", getStr(d, "country"))
+	// data can be: a single phone object, an array of phone objects,
+	// or an object with a phones[] array inside
+	var phones []map[string]interface{}
 
-		if phones, ok := d["phones"].([]interface{}); ok {
-			sb.WriteString(fmt.Sprintf("\n%s Found %d phone number(s)\n\n", util.SuccessIcon(), len(phones)))
-			sb.WriteString(fmt.Sprintf("  %-4s %-20s %-12s %-15s %-12s %s\n", "#", "Number", "Type", "Country", "Carrier", "Valid"))
-			sb.WriteString(fmt.Sprintf("  %s\n", strings.Repeat("─", 80)))
-			for i, p := range phones {
-				if phone, ok := p.(map[string]interface{}); ok {
-					number := getStr(phone, "phone")
-					phoneType := getStr(phone, "type")
-					phoneCountry := getStr(phone, "country")
-					carrier := getStr(phone, "carrier")
-					valid := formatBoolStr(phone, "valid")
-					international := getStr(phone, "international_format")
-					national := getStr(phone, "national_format")
-
-					sb.WriteString(fmt.Sprintf("  %-4d %-20s %-12s %-15s %-12s %s\n",
-						i+1, util.Bold(number), util.Gray(phoneType), phoneCountry, carrier, valid))
-					if international != "" {
-						sb.WriteString(fmt.Sprintf("       International: %s\n", international))
-					}
-					if national != "" {
-						sb.WriteString(fmt.Sprintf("       National: %s\n", national))
-					}
+	switch d := data["data"].(type) {
+	case map[string]interface{}:
+		// Check if it has a phones[] sub-array (old format)
+		if p, ok := d["phones"].([]interface{}); ok {
+			// Show contact info header
+			writeField(&sb, "\n  ", "Email", getStr(d, "email"))
+			writeField(&sb, "  ", "Domain", getStr(d, "domain"))
+			writeField(&sb, "  ", "Name", getStr(d, "full_name"))
+			writeField(&sb, "  ", "Company", getStr(d, "company"))
+			writeField(&sb, "  ", "Country", getStr(d, "country"))
+			for _, item := range p {
+				if m, ok := item.(map[string]interface{}); ok {
+					phones = append(phones, m)
 				}
 			}
+		} else {
+			// Single phone object at data level
+			phones = append(phones, d)
 		}
+	case []interface{}:
+		// data is an array of phone objects
+		for _, item := range d {
+			if m, ok := item.(map[string]interface{}); ok {
+				phones = append(phones, m)
+			}
+		}
+	}
+
+	if len(phones) == 0 {
+		return sb.String()
+	}
+
+	sb.WriteString(fmt.Sprintf("\n%s Found %d phone result(s)\n", util.SuccessIcon(), len(phones)))
+
+	for i, phone := range phones {
+		if len(phones) > 1 {
+			sb.WriteString(fmt.Sprintf("\n  --- Phone %d ---\n", i+1))
+		} else {
+			sb.WriteString("\n")
+		}
+
+		// Contact context
+		writeField(&sb, "  ", "Email", getStr(phone, "email"))
+		writeField(&sb, "  ", "Domain", getStr(phone, "domain"))
+
+		// Validation
+		writeBoolField(&sb, "  ", "Valid", phone, "valid")
+
+		// Formats
+		writeField(&sb, "  ", "Local Format", getStr(phone, "local_format"))
+		writeField(&sb, "  ", "Intl Format", getStr(phone, "intl_format"))
+		writeField(&sb, "  ", "E164 Format", getStr(phone, "e164_format"))
+		writeField(&sb, "  ", "RFC3966", getStr(phone, "rfc3966_format"))
+
+		// Country / type
+		writeField(&sb, "  ", "Country Code", getStr(phone, "country_code"))
+		writeField(&sb, "  ", "Country", getStr(phone, "country"))
+		writeField(&sb, "  ", "Line Type", getStr(phone, "line_type"))
+		writeField(&sb, "  ", "Type", getStr(phone, "type"))
+
+		// Carrier: can be string or object
+		if carrierStr := getStr(phone, "carrier"); carrierStr != "" {
+			writeField(&sb, "  ", "Carrier", carrierStr)
+		} else if carrierObj, ok := phone["carrier"].(map[string]interface{}); ok {
+			carrierName := getStr(carrierObj, "name")
+			if carrierName == "" {
+				carrierName = getStr(carrierObj, "carrier")
+			}
+			writeField(&sb, "  ", "Carrier", carrierName)
+		}
+
+		// Timezones: can be string or array
+		if tz := getStr(phone, "timezones"); tz != "" {
+			writeField(&sb, "  ", "Timezones", tz)
+		} else if tzArr, ok := phone["timezones"].([]interface{}); ok && len(tzArr) > 0 {
+			var tzs []string
+			for _, t := range tzArr {
+				if s, ok := t.(string); ok {
+					tzs = append(tzs, s)
+				}
+			}
+			if len(tzs) > 0 {
+				writeField(&sb, "  ", "Timezones", strings.Join(tzs, ", "))
+			}
+		}
+
+		// Extra fields from old format
+		writeField(&sb, "  ", "Phone", getStr(phone, "phone"))
+		writeField(&sb, "  ", "International", getStr(phone, "international_format"))
+		writeField(&sb, "  ", "National", getStr(phone, "national_format"))
 	}
 
 	return sb.String()
