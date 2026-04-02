@@ -25,7 +25,7 @@ func whoamiRun(cmd *cobra.Command, args []string) {
 	init := start.New(conn)
 	result, err := init.Tomba.Account()
 	if err != nil {
-		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
+		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
 	raw, _ := result.Marshal()

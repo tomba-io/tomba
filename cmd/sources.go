@@ -33,7 +33,7 @@ func sourcesRun(cmd *cobra.Command, args []string) {
 
 	result, err := init.Tomba.Sources(email)
 	if err != nil {
-		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
+		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
 	if len(result.Sources) > 0 {

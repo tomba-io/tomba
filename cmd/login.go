@@ -78,7 +78,7 @@ func loginRun(cmd *cobra.Command, args []string) {
 
 	me, err := tomba.Account()
 	if err != nil {
-		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
+		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
 

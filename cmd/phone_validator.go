@@ -53,7 +53,7 @@ func phoneValidatorRun(cmd *cobra.Command, args []string) {
 
 	result, err := init.Tomba.PhoneValidator(params)
 	if err != nil {
-		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
+		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
 

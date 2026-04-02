@@ -24,7 +24,7 @@ func logsRun(cmd *cobra.Command, args []string) {
 
 	result, err := init.Tomba.Logs()
 	if err != nil {
-		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
+		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
 	raw, _ := result.Marshal()

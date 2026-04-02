@@ -33,7 +33,7 @@ func authorRun(cmd *cobra.Command, args []string) {
 	}
 	result, err := init.Tomba.AuthorFinder(url)
 	if err != nil {
-		fmt.Println(util.ErrorIcon(), util.Red(start.ErrErrInvalidLogin.Error()))
+		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
 	finderData := start.GetFinderData(result.Data)
