@@ -10,3 +10,4 @@ test.go
 dist/
 .env
 snapcraft-login.txt
+*.csv
