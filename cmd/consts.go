@@ -22,7 +22,7 @@ const (
   tomba phone-finder --domain "stripe.com" --full`
 	phoneValidatorExample = `  tomba phone-validator --phone "+14155552671"
   tomba phone-validator --phone "4155552671" --country-code US`
-	revealExample = `  tomba reveal --query "Real Estate in France"
+	revealExample = `  tomba reveal --query "SaaS startups in Europe"
   tomba reveal --country US,UK --industry Technology
   tomba reveal --country US --size 101-500,501-1000 --page 2`
 	searchExample     = `  tomba search --target "tomba.io"`
@@ -32,4 +32,38 @@ const (
 	verifyExample     = `  tomba verify --target "b.mohamed@tomba.io"`
 	sourcesExample    = `  tomba source --target "b.mohamed@tomba.io"`
 	whoamiExample     = `  tomba whoami`
+	chatExample       = `  tomba chat
+  # Then type: Find the VP Sales at Stripe and get their email
+  # Or: Verify the email address b.mohamed@tomba.io
+
+  # Bulk mode: process a CSV file via AI chat
+  tomba chat --file contacts.csv --type enrich
+  tomba chat --file leads.csv --type verify
+  tomba chat --file prospects.csv --type finder`
+	skillExample = `  # List all available skills
+  tomba skill list
+
+  # Run a skill
+  tomba skill run find-email --target stripe.com first_name=David last_name=Singleton
+  tomba skill run company-intel --target tomba.io
+  tomba skill run enrich-verify --target b.mohamed@tomba.io
+  tomba skill run lead-gen --target stripe.com department=sales
+  tomba skill run linkedin-intel --target "https://www.linkedin.com/in/someone"
+
+  # Skill details
+  tomba skill info company-intel
+
+  # Create a custom skill
+  tomba skill create
+
+  # Import / Export
+  tomba skill export find-email > my-skill.yaml
+  tomba skill import my-skill.yaml
+
+  # Remove a custom skill
+  tomba skill remove my-custom-skill`
+	bulkExample = `  tomba bulk --file contacts.csv --type enrich
+  tomba bulk --file leads.csv --type verify --column "Email Address"
+  tomba bulk --file prospects.csv --type finder --domain-col company --first-col first --last-col last
+  tomba bulk --file domains.csv --type search --column domain -o results.csv`
 )

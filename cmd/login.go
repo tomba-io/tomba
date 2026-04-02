@@ -28,7 +28,7 @@ type Prompts struct {
 
 // loginRun the actual work login
 func loginRun(cmd *cobra.Command, args []string) {
-	fmt.Println(Long)
+
 	conn.Use = "login"
 	init := start.New(conn)
 	if init.Key != "" || init.Secret != "" {

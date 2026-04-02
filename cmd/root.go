@@ -25,13 +25,13 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(config.InitConfig)
-	rootCmd.AddCommand(authorCmd, countCmd, enrichCmd, finderCmd, httpCmd, linkedinCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, phoneValidatorCmd, revealCmd, searchCmd, similarCmd, sourcesCmd, statusCmd, technologyCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
+	rootCmd.AddCommand(authorCmd, bulkCmd, chatCmd, countCmd, enrichCmd, finderCmd, httpCmd, linkedinCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, phoneValidatorCmd, revealCmd, searchCmd, skillCmd, similarCmd, sourcesCmd, statusCmd, technologyCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
 	rootCmd.PersistentFlags().StringVarP(&conn.Key, "key", "k", "", "Tomba API KEY.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Secret, "secret", "s", "", "Tomba API SECRET.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Target, "target", "t", "", "TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Output, "output", "o", "", "Save the results to file.")
 	rootCmd.PersistentFlags().IntVarP(&conn.Port, "port", "p", 3000, "Sets the port on which the HTTP server should bind.")
-	rootCmd.PersistentFlags().BoolVarP(&conn.JSON, "json", "j", true, "output JSON format.")
+	rootCmd.PersistentFlags().BoolVarP(&conn.JSON, "json", "j", false, "output JSON format.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.YAML, "yaml", "y", false, "output YAML format.")
 	searchCmd.PersistentFlags().IntVar(&conn.Page, "page", 1, "Specifies the number of email addresses to skip. The default is 1.")
 	searchCmd.PersistentFlags().IntVar(&conn.Limit, "limit", 10, "Specifies the max number of email addresses to return. The default is 10. valid number(10,20,50)")
