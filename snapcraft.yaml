@@ -34,9 +34,13 @@ apps:
             - network
 
 parts:
+    go-deps:
+        plugin: nil
+        build-snaps:
+            - go/latest/stable
     tomba:
         plugin: go
         source-type: git
         source: https://github.com/tomba-io/tomba
-        build-snaps:
-            - go/latest/stable
+        after:
+            - go-deps
