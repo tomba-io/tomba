@@ -5,6 +5,16 @@ All notable changes to the Tomba CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-04-03
+
+### Added
+
+- **Cloudflare Workers deploy workflow** — automatically publishes install scripts to `releases.tomba.io` after GoReleaser completes, with manual dispatch support.
+
+### Fixed
+
+- Snapcraft build failure on `core24` — added `go-deps` part to satisfy Snapcraft 8.x Go plugin dependency validation.
+
 ## [1.1.3] - 2026-04-02
 
 ### Added
@@ -201,7 +211,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Snap package distribution.
 - Goreleaser multi-platform builds (Linux, macOS, Windows).
 
-[1.1.3]: https://github.com/tomba-io/tomba/compare/v1.1.2...HEAD
+[1.1.4]: https://github.com/tomba-io/tomba/compare/v1.1.3...HEAD
+[1.1.3]: https://github.com/tomba-io/tomba/compare/v1.1.2...v1.1.3
 [1.1.2]: https://github.com/tomba-io/tomba/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/tomba-io/tomba/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/tomba-io/tomba/compare/v1.0.9...v1.1.0
