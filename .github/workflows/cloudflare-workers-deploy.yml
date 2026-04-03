@@ -1,0 +1,33 @@
+name: Deploy to Cloudflare Workers
+
+on:
+    workflow_run:
+        workflows: ["Goreleaser build and publish"]
+        types:
+            - completed
+        branches:
+            - master
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+        permissions:
+            contents: read
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Create dist folder and copy install scripts
+              run: |
+                  mkdir -p docs/dist
+                  cp res/package/scripts/install.sh docs/dist/
+                  cp res/package/scripts/install.ps1 docs/dist/
+
+            - name: Deploy to Cloudflare Workers
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+              env:
+                  WRANGLER_LOG: debug

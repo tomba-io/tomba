@@ -1,0 +1,19 @@
+{
+    "name": "tomba-releases",
+    "compatibility_date": "2024-09-19",
+    "account_id": "136df4a66d2c0bc4a0f0b6edb131396c",
+    "workers_dev": true,
+    "minify": true,
+    "routes": [
+        {
+            "pattern": "releases.tomba.io/*",
+            "zone_name": "tomba.io"
+        }
+    ],
+    "placement": {
+        "mode": "smart"
+    },
+    "assets": {
+        "directory": "./dist"
+    }
+}
