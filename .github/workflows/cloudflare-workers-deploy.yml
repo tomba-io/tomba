@@ -21,13 +21,14 @@ jobs:
 
             - name: Create dist folder and copy install scripts
               run: |
-                  mkdir -p docs/dist
-                  cp res/package/scripts/install.sh docs/dist/
-                  cp res/package/scripts/install.ps1 docs/dist/
+                  mkdir -p dist
+                  cp res/package/scripts/install.sh dist/
+                  cp res/package/scripts/install.ps1 dist/
 
             - name: Deploy to Cloudflare Workers
               uses: cloudflare/wrangler-action@v3
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  command: deploy --assets=./dist
               env:
                   WRANGLER_LOG: debug
