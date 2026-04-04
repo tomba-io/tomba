@@ -24,13 +24,13 @@ CLI utility to search or verify email addresses in minutes.
 ### Quick Install (Linux / macOS)
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/tomba-io/tomba/master/res/package/scripts/install.sh | sh
+curl -sSL https://releases.tomba.io/install.sh | sh
 ```
 
 ### Quick Install (Windows PowerShell)
 
 ```powershell
-irm https://raw.githubusercontent.com/tomba-io/tomba/master/res/package/scripts/install.ps1 | iex
+irm https://releases.tomba.io/install.ps1 | iex
 ```
 
 ### Using Snap
