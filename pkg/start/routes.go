@@ -1,6 +1,8 @@
 package start
 
 import (
+	"encoding/json"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/tomba-io/go/tomba"
@@ -35,13 +37,8 @@ type Request struct {
 
 func request(c *fiber.Ctx) Request {
 	req := Request{}
-	c.BodyParser(&req)
+	_ = c.BodyParser(&req)
 	return req
-}
-
-// getFinderData extracts FinderData from Finder result (Data can be FinderData or []FinderData)
-func getFinderData(data interface{}) *models.FinderData {
-	return GetFinderData(data)
 }
 
 // GetFinderData extracts FinderData from Finder result (Data can be FinderData or []FinderData)
@@ -78,12 +75,12 @@ func (init *Conn) Author(c *fiber.Ctx) error {
 		log.Error(ErrArgumentsURL.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsURL.Error()})
 	}
-	result, err := init.Tomba.AuthorFinder(url)
+	result, err := init.AuthorFinder(tomba.Params{"url": url})
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	finderData := getFinderData(result.Data)
+	finderData := GetFinderData(result.Data)
 	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the author finder return any result? https://help.tomba.io/en/questions/reasons-why-author-finder-don-t-find-any-result"})
 	}
@@ -130,12 +127,12 @@ func (init *Conn) Enrich(c *fiber.Ctx) error {
 	if req.EnrichMobile {
 		params["enrich_mobile"] = true
 	}
-	result, err := init.Tomba.Enrichment(params)
+	result, err := init.Enrichment(params)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	finderData := getFinderData(result.Data)
+	finderData := GetFinderData(result.Data)
 	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the enrichment return any result? https://help.tomba.io/en/questions/reasons-why-enrichment-don-t-find-any-emails"})
 	}
@@ -160,12 +157,12 @@ func (init *Conn) Linkedin(c *fiber.Ctx) error {
 	if req.EnrichMobile {
 		params["enrich_mobile"] = true
 	}
-	result, err := init.Tomba.LinkedinFinder(params)
+	result, err := init.LinkedinFinder(params)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	finderData := getFinderData(result.Data)
+	finderData := GetFinderData(result.Data)
 	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the Linkedin return any result? https://help.tomba.io/en/questions/reasons-why-linkedin-don-t-find-any-emails"})
 	}
@@ -196,7 +193,7 @@ func (init *Conn) Search(c *fiber.Ctx) error {
 		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
-	result, err := init.Tomba.DomainSearch(tomba.Params{"domain": domain})
+	result, err := init.DomainSearch(tomba.Params{"domain": domain})
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -246,7 +243,7 @@ func (init *Conn) Verify(c *fiber.Ctx) error {
 		log.Error(ErrArgumentEmail.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentEmail.Error()})
 	}
-	result, err := init.Tomba.EmailVerifier(tomba.Params{"email": email})
+	result, err := init.EmailVerifier(tomba.Params{"email": email})
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -287,12 +284,12 @@ func (init *Conn) Finder(c *fiber.Ctx) error {
 	if req.EnrichMobile {
 		params["enrich_mobile"] = true
 	}
-	result, err := init.Tomba.EmailFinder(params)
+	result, err := init.EmailFinder(params)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
-	finderData := getFinderData(result.Data)
+	finderData := GetFinderData(result.Data)
 	if finderData == nil || finderData.Email == "" {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Why doesn't the finder return any result? https://help.tomba.io/en/questions/reasons-why-finder-don-t-find-any-emails"})
 	}
@@ -372,21 +369,19 @@ func (init *Conn) Reveal(c *fiber.Ctx) error {
 	}
 
 	if len(req.Country) > 0 || len(req.Industry) > 0 || len(req.Size) > 0 {
-		request.Filters = &models.RevealSearchFilters{
-			Company: &models.RevealCompanyFilters{},
-		}
+		request.Filters = &models.RevealFilters{}
 		if len(req.Country) > 0 {
-			request.Filters.Company.LocationCountry = &models.RevealCircularFilter{Include: req.Country}
+			request.Filters.LocationCountry = &models.SearchFilter{Include: req.Country}
 		}
 		if len(req.Industry) > 0 {
-			request.Filters.Company.Industry = &models.RevealCircularFilter{Include: req.Industry}
+			request.Filters.Industry = &models.SearchFilter{Include: req.Industry}
 		}
 		if len(req.Size) > 0 {
-			request.Filters.Company.Size = &models.RevealCircularFilter{Include: req.Size}
+			request.Filters.Size = &models.SearchFilter{Include: req.Size}
 		}
 	}
 
-	result, err := init.Tomba.SearchCompanies(request)
+	result, err := init.SearchCompanies(request)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -401,7 +396,7 @@ func (init *Conn) Similar(c *fiber.Ctx) error {
 		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
-	result, err := init.Tomba.SimilarDomains(req.Domain)
+	result, err := init.SimilarDomains(req.Domain)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -435,7 +430,7 @@ func (init *Conn) Technology(c *fiber.Ctx) error {
 		log.Error(ErrArgumentsDomain.Error())
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
 	}
-	result, err := init.Tomba.TechnologyCheck(req.Domain)
+	result, err := init.TechnologyCheck(req.Domain)
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
@@ -445,10 +440,310 @@ func (init *Conn) Technology(c *fiber.Ctx) error {
 
 // Whoami query account info
 func (init *Conn) Whoami(c *fiber.Ctx) error {
-	result, err := init.Tomba.Account()
+	result, err := init.Account()
 	if err != nil {
 		log.Error(ErrErrInvalidLogin.Error())
 		return c.Status(401).JSON(fiber.Map{"status": "error", "message": ErrErrInvalidLogin.Error()})
 	}
 	return c.Status(200).JSON(result)
+}
+
+// params parses the request body into a tomba.Params map.
+func params(c *fiber.Ctx) tomba.Params {
+	p := tomba.Params{}
+	_ = json.Unmarshal(c.Body(), &p)
+	return p
+}
+
+// Format query email format
+func (init *Conn) Format(c *fiber.Ctx) error {
+	req := request(c)
+	if !_domain.IsValidDomain(req.Domain) {
+		log.Error(ErrArgumentsDomain.Error())
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
+	}
+	result, err := init.EmailFormat(req.Domain)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// Location query employees count
+func (init *Conn) Location(c *fiber.Ctx) error {
+	req := request(c)
+	if !_domain.IsValidDomain(req.Domain) {
+		log.Error(ErrArgumentsDomain.Error())
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": ErrArgumentsDomain.Error()})
+	}
+	result, err := init.EmployeesCount(req.Domain)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// AutoCompleteHandler query autocomplete
+func (init *Conn) AutoCompleteHandler(c *fiber.Ctx) error {
+	req := request(c)
+	if req.Query == "" {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "query is required"})
+	}
+	result, err := init.AutoComplete(req.Query)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// CompanyFindHandler query company find
+func (init *Conn) CompanyFindHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.CompanyFind(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// PersonFindHandler query person find
+func (init *Conn) PersonFindHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.PersonFind(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// CombinedFindHandler query combined find
+func (init *Conn) CombinedFindHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.CombinedFind(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Status(200).JSON(result)
+}
+
+// ListLeadsHandler query list leads
+func (init *Conn) ListLeadsHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.ListLeads(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// CreateLeadHandler query create lead
+func (init *Conn) CreateLeadHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.CreateLead(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// GetLeadHandler query get lead
+func (init *Conn) GetLeadHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.GetLead(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// UpdateLeadHandler query update lead
+func (init *Conn) UpdateLeadHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	p := params(c)
+	result, err := init.UpdateLead(id, p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// DeleteLeadHandler query delete lead
+func (init *Conn) DeleteLeadHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.DeleteLead(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// ListLeadsListsHandler query list leads lists
+func (init *Conn) ListLeadsListsHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.ListLeadsLists(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// CreateLeadsListHandler query create leads list
+func (init *Conn) CreateLeadsListHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.CreateLeadsList(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// GetLeadsListHandler query get leads list
+func (init *Conn) GetLeadsListHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.GetLeadsList(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// UpdateLeadsListHandler query update leads list
+func (init *Conn) UpdateLeadsListHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	p := params(c)
+	result, err := init.UpdateLeadsList(id, p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// DeleteLeadsListHandler query delete leads list
+func (init *Conn) DeleteLeadsListHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.DeleteLeadsList(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// ListAttributesHandler query list attributes
+func (init *Conn) ListAttributesHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.ListAttributes(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// CreateAttributeHandler query create attribute
+func (init *Conn) CreateAttributeHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.CreateAttribute(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// GetAttributeHandler query get attribute
+func (init *Conn) GetAttributeHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.GetAttribute(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// UpdateAttributeHandler query update attribute
+func (init *Conn) UpdateAttributeHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	p := params(c)
+	result, err := init.UpdateAttribute(id, p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// DeleteAttributeHandler query delete attribute
+func (init *Conn) DeleteAttributeHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.DeleteAttribute(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// ListKeysHandler query list keys
+func (init *Conn) ListKeysHandler(c *fiber.Ctx) error {
+	result, err := init.ListKeys()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// CreateKeyHandler query create key
+func (init *Conn) CreateKeyHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.CreateKey(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// GetKeyHandler query get key
+func (init *Conn) GetKeyHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.GetKey(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// DeleteKeyHandler query delete key
+func (init *Conn) DeleteKeyHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.DeleteKey(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// ResetKeyHandler query reset key
+func (init *Conn) ResetKeyHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	result, err := init.ResetKey(id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// ListFlagsHandler query list flags
+func (init *Conn) ListFlagsHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.ListFlags(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
+}
+
+// CreateFlagHandler query create flag
+func (init *Conn) CreateFlagHandler(c *fiber.Ctx) error {
+	p := params(c)
+	result, err := init.CreateFlag(p)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.Send(result)
 }
