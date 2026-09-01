@@ -6,7 +6,12 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/tomba-io/tomba/pkg/config"
+	"github.com/tomba-io/tomba/pkg/output"
+	"github.com/tomba-io/tomba/pkg/util"
+	"github.com/tomba-io/tomba/pkg/version"
 )
+
+var noColor bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -24,8 +29,15 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(config.InitConfig)
-	rootCmd.AddCommand(authorCmd, bulkCmd, chatCmd, countCmd, enrichCmd, finderCmd, httpCmd, linkedinCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, phoneValidatorCmd, revealCmd, searchCmd, skillCmd, similarCmd, sourcesCmd, statusCmd, technologyCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
+	cobra.OnInitialize(config.InitConfig, func() {
+		if noColor {
+			util.NoColor = true
+		}
+		output.CSVFlag = conn.CSV
+	})
+	rootCmd.Version = version.Version
+	rootCmd.SetVersionTemplate("tomba version {{.Version}}\n")
+	rootCmd.AddCommand(attributeCmd, authorCmd, autocompleteCmd, bulkCmd, chatCmd, countCmd, enrichCmd, enrichmentCmd, finderCmd, flagCmd, formatCmd, httpCmd, keyCmd, leadCmd, leadsListCmd, linkedinCmd, locationCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, phoneValidatorCmd, revealCmd, searchCmd, skillCmd, similarCmd, sourcesCmd, statusCmd, technologyCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
 	rootCmd.PersistentFlags().StringVarP(&conn.Key, "key", "k", "", "Tomba API KEY.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Secret, "secret", "s", "", "Tomba API SECRET.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Target, "target", "t", "", "TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.")
@@ -33,11 +45,14 @@ func init() {
 	rootCmd.PersistentFlags().IntVarP(&conn.Port, "port", "p", 3000, "Sets the port on which the HTTP server should bind.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.JSON, "json", "j", false, "output JSON format.")
 	rootCmd.PersistentFlags().BoolVarP(&conn.YAML, "yaml", "y", false, "output YAML format.")
+	rootCmd.PersistentFlags().BoolVar(&conn.CSV, "csv", false, "output CSV format.")
+	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable colored output.")
+	rootCmd.PersistentFlags().BoolVar(&conn.Verbose, "verbose", false, "Enable verbose output.")
 	searchCmd.PersistentFlags().IntVar(&conn.Page, "page", 1, "Specifies the number of email addresses to skip. The default is 1.")
 	searchCmd.PersistentFlags().IntVar(&conn.Limit, "limit", 10, "Specifies the max number of email addresses to return. The default is 10. valid number(10,20,50)")
 	searchCmd.PersistentFlags().StringVar(&conn.Department, "department", "", "Get only email addresses for people working in the selected department(s).")
 	finderCmd.PersistentFlags().StringVar(&conn.FullName, "full", "", "The person's full name")
-	finderCmd.PersistentFlags().StringVarP(&conn.FirstName, "fist", "f", "", "The person's first name. It doesn't need to be in lowercase..")
+	finderCmd.PersistentFlags().StringVarP(&conn.FirstName, "first", "f", "", "The person's first name. It doesn't need to be in lowercase..")
 	finderCmd.PersistentFlags().StringVarP(&conn.LastName, "last", "l", "", "The person's last name. It doesn't need to be in lowercase..")
 	finderCmd.PersistentFlags().BoolVar(&conn.EnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found.")
 	enrichCmd.PersistentFlags().BoolVar(&conn.EnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found.")

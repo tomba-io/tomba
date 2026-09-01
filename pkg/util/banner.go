@@ -2,7 +2,6 @@ package util
 
 import (
 	"math/rand"
-	"time"
 )
 
 func RandomBanner() string {
@@ -32,7 +31,6 @@ func RandomBanner() string {
                                                        
     `}
 
-	rand.Seed(time.Now().UnixNano())
 	index := rand.Intn(len(banners))
 	return Bold(Gray(banners[index]))
 }
