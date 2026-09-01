@@ -16,7 +16,7 @@ CLI utility to search or verify email addresses in minutes.
 - 🛡️ Search for companies using natural language or structured filters.
 - 🛡️ Print current account information.
 - 🤖 AI Chat — natural language queries powered by OpenAI with Tomba tools.
-- 📦 Bulk CSV processing — enrich, verify, or find emails from CSV files with auto column mapping.
+- 📦 Bulk CSV processing — enrich, verify, find, author, linkedin, phone, and sources from CSV files with auto column mapping.
 - 🧩 ClawHub Skills — reusable multi-step workflows that chain API calls into one command.
 
 ## Installation
@@ -77,16 +77,31 @@ tomba
 
 ### Login
 
-Sign in to Tomba account.
+Sign in to Tomba account. Two methods available:
+
+**OAuth (browser-based, no keys needed):**
 
 ```bash
 tomba login
 ```
 
 <details>
-<summary>Demo: tomba login</summary>
+<summary>Demo: tomba login (OAuth)</summary>
 
-![tomba login](svg/login.svg)
+![tomba login](svg/login-oauth.svg)
+
+</details>
+
+**API Key + Secret:**
+
+```bash
+tomba login --key ta_xxxx --secret ts_xxxx
+```
+
+<details>
+<summary>Demo: tomba login (API Key)</summary>
+
+![tomba login key](svg/login-key.svg)
 
 </details>
 
@@ -354,6 +369,101 @@ tomba version
 
 </details>
 
+### Email Format
+
+Get the email format used by a domain.
+
+```bash
+# Email Format
+tomba format -t stripe.com
+```
+
+### Employee Location
+
+Get employee location data for a domain.
+
+```bash
+# Employee Location
+tomba location -t stripe.com
+```
+
+### Domain Suggestions
+
+Get domain suggestions from a partial query.
+
+```bash
+# Domain Suggestions
+tomba autocomplete -t "goo"
+```
+
+### Enrichment
+
+Enrich person, company, or combined data.
+
+```bash
+# Enrichment
+tomba enrichment person -t user@example.com
+tomba enrichment company -t example.com
+tomba enrichment combined -t user@example.com
+```
+
+### Lead Management
+
+Manage leads.
+
+```bash
+# Lead Management
+tomba lead list
+tomba lead create --email user@example.com --list-id 1
+tomba lead get --id 123
+```
+
+### API Keys
+
+Manage API keys.
+
+```bash
+# API Keys
+tomba key list
+tomba key create
+tomba key delete --id 123
+```
+
+### Attributes
+
+Manage custom lead attributes.
+
+```bash
+# Attributes
+tomba attribute list
+tomba attribute create --name "Company Size" --type "text"
+```
+
+### Flags
+
+Report incorrect data for credit recovery.
+
+```bash
+# List flags
+tomba flag list
+tomba flag list --page 2 --limit 20
+
+# Create a flag (all required: --type, --value, --reason)
+tomba flag create --type email --value bounce@example.com --reason hard_bounce
+tomba flag create --type organization --value example.com --reason wrong_company
+tomba flag create --type phone --value "+1234567890" --reason wrong_phone --comment "Number disconnected"
+```
+
+**Flag types & valid reasons:**
+
+| Flag Type      | Valid Reasons                                                       |
+| -------------- | ------------------------------------------------------------------- |
+| `email`        | `hard_bounce`, `invalid_email`, `wrong_person`, `outdated`, `other` |
+| `organization` | `wrong_company`, `outdated`, `other`                                |
+| `phone`        | `wrong_phone`, `outdated`, `other`                                  |
+| `author_url`   | `broken_url`, `wrong_person`, `outdated`, `other`                   |
+| `website`      | `broken_url`, `wrong_company`, `outdated`, `other`                  |
+
 ---
 
 ### AI Chat
@@ -399,7 +509,7 @@ tomba chat --model gpt-4o-mini
 
 ### Bulk CSV Processing
 
-Process a CSV file in bulk — auto-maps columns or use custom mapping.
+Process a CSV file in bulk with **concurrent workers** — auto-maps columns, auto-detects concurrency from your plan, and respects API rate limits.
 
 ```bash
 tomba bulk --file contacts.csv --type enrich
@@ -407,25 +517,63 @@ tomba bulk --file contacts.csv --type enrich
 
 ```
 ✓ Authenticated as info@tomba.io
-
   Columns: email, first_name, last_name, company
-  Rows: 1000
+  Rows: 1,000
 
   ✓ Using column 'email' for email
+
+  Plan: Pro | Workers: 8 | Rows: 1,000
 
   Processing: ██████████████████████████████ 100% (1000/1000)
 
 ✓ 847/1000 emails found (84.7% hit rate)
+ℹ️  Completed in 2m15s
 ✓ Results saved to contacts_enriched.csv
 ```
 
-Supported operation types:
+**Supported operation types:**
+
+| Type       | Input         | Description                        |
+| ---------- | ------------- | ---------------------------------- |
+| `enrich`   | email         | Enrich emails with contact data    |
+| `verify`   | email         | Verify email deliverability        |
+| `finder`   | domain + name | Find email from domain and name    |
+| `search`   | domain        | Search all emails for a domain     |
+| `author`   | URL           | Find article author emails         |
+| `linkedin` | URL           | Find emails from LinkedIn profiles |
+| `phone`    | email         | Find phone numbers for emails      |
+| `sources`  | email         | Find email sources on the web      |
+
+**Concurrency** is auto-detected from your plan (max 60 workers):
+
+| Plan       | Workers  |
+| ---------- | -------- |
+| Free       | 1        |
+| Basic      | 3        |
+| Growth     | 5        |
+| Pro        | 8        |
+| PAYG 20k   | 10       |
+| 50k+ plans | 60 (max) |
 
 ```bash
+# Basic usage (auto-detects columns and concurrency)
 tomba bulk --file contacts.csv --type enrich
+
+# Specify column mapping
 tomba bulk --file leads.csv --type verify --column "Email Address"
 tomba bulk --file prospects.csv --type finder --domain-col company --first-col first --last-col last
+
+# Override concurrency (useful for testing or rate limit control)
+tomba bulk --file contacts.csv --type verify --concurrency 10
+
+# Custom output file
 tomba bulk --file domains.csv --type search --column domain -o results.csv
+
+# All operation types
+tomba bulk --file articles.csv --type author --url-col article_url
+tomba bulk --file profiles.csv --type linkedin --url-col linkedin_url
+tomba bulk --file contacts.csv --type phone --column email
+tomba bulk --file emails.csv --type sources --column email
 ```
 
 <details>
@@ -581,50 +729,78 @@ output:
 
 </details>
 
-## Http
+## HTTP Server
 
-**_Tomba Reverse Proxy_**
+Run a local HTTP server exposing all Tomba API endpoints as a reverse proxy.
 
 ```bash
-tomba http
+tomba http                  # starts on port 3000
+tomba http --port 8080      # custom port
 ```
 
-## Endpoints
+### Endpoints (45 routes)
 
-| Name            | Route            | Body                                                 | State     | Slack | Method |
-| --------------- | ---------------- | ---------------------------------------------------- | --------- | ----- | ------ |
-| author finder   | /author          | `url`                                                | Completed | Yes   | Post   |
-| email counter   | /count           | `domain`                                             | Completed | No    | Post   |
-| enrichment      | /enrich          | `email`, `enrich_mobile`                             | Completed | Yes   | Post   |
-| email finder    | /finder          | `domain`, `first_name`, `last_name`, `enrich_mobile` | Completed | No    | Post   |
-| linkedin finder | /linkedin        | `url`, `enrich_mobile`                               | Completed | Yes   | Post   |
-| phone finder    | /phone-finder    | `email`, `domain`, or `linkedin`                     | Completed | No    | Post   |
-| phone validator | /phone-validator | `phone`, `country_code`                              | Completed | No    | Post   |
-| reveal          | /reveal          | `query`, `country`, `industry`, `size`               | Completed | No    | Post   |
-| domain search   | /search          | `domain`                                             | Completed | Yes   | Post   |
-| similar domains | /similar         | `domain`                                             | Completed | No    | Post   |
-| email sources   | /sources         | `email`                                              | Completed | No    | Post   |
-| domain status   | /status          | `domain`                                             | Completed | No    | Post   |
-| technology      | /technology      | `domain`                                             | Completed | No    | Post   |
-| email verifier  | /verify          | `email`                                              | Completed | Yes   | Post   |
-| logs            | /logs            | No                                                   | Completed | No    | Get    |
-| usage           | /usage           | No                                                   | Completed | No    | Get    |
-| whoami          | /whoami          | No                                                   | Completed | No    | Get    |
+**Core API:**
+
+| Route              | Method | Body                                                 |
+| ------------------ | ------ | ---------------------------------------------------- |
+| `/author`          | POST   | `url`                                                |
+| `/count`           | POST   | `domain`                                             |
+| `/enrich`          | POST   | `email`, `enrich_mobile`                             |
+| `/finder`          | POST   | `domain`, `first_name`, `last_name`, `enrich_mobile` |
+| `/linkedin`        | POST   | `url`, `enrich_mobile`                               |
+| `/phone-finder`    | POST   | `email`, `domain`, or `linkedin`                     |
+| `/phone-validator` | POST   | `phone`, `country_code`                              |
+| `/reveal`          | POST   | `query`, filters                                     |
+| `/search`          | POST   | `domain`                                             |
+| `/similar`         | POST   | `domain`                                             |
+| `/sources`         | POST   | `email`                                              |
+| `/status`          | POST   | `domain`                                             |
+| `/technology`      | POST   | `domain`                                             |
+| `/verify`          | POST   | `email`                                              |
+| `/format`          | POST   | `domain`                                             |
+| `/location`        | POST   | `domain`                                             |
+| `/autocomplete`    | POST   | `query`                                              |
+| `/companies/find`  | POST   | `domain`                                             |
+| `/people/find`     | POST   | `email`                                              |
+| `/combined/find`   | POST   | `email`                                              |
+| `/logs`            | GET    | —                                                    |
+| `/usage`           | GET    | —                                                    |
+| `/whoami`          | GET    | —                                                    |
+
+**Leads CRUD:**
+
+| Route        | Method         | Description              |
+| ------------ | -------------- | ------------------------ |
+| `/leads`     | GET            | List leads               |
+| `/leads`     | POST           | Create lead              |
+| `/leads/:id` | GET/PUT/DELETE | Get, update, delete lead |
+
+**Lead Lists, Attributes, Keys, Flags** — same CRUD pattern on `/leads_lists`, `/attributes`, `/keys`, `/flag`.
 
 ### Available Commands
 
 | Command name    | Description                                                                               |
 | --------------- | ----------------------------------------------------------------------------------------- |
+| attribute       | Manage custom lead attributes (list, create, update, delete)                              |
 | author          | Instantly discover the email addresses of article authors.                                |
+| autocomplete    | Get domain suggestions from a partial query                                               |
 | bulk            | Process a CSV file in bulk — auto-maps columns or use custom mapping.                     |
 | chat            | Open AI chat with Tomba tools — auto-initializes your project on first run.               |
 | completion      | Generate the autocompletion script for the specified shell                                |
 | count           | Returns total email addresses we have for one domain.                                     |
 | enrich          | Locate and include data in your emails.                                                   |
+| enrichment      | Enrich person, company, or combined data                                                  |
 | finder          | Retrieves the most likely email address from a domain name, a first name and a last name. |
+| flag            | Report incorrect data for credit recovery                                                 |
+| format          | Get the email format used by a domain                                                     |
 | help            | Help about any command                                                                    |
 | http            | Runs a HTTP server (reverse proxy).                                                       |
+| key             | Manage API keys (list, create, delete, reset)                                             |
+| lead            | Manage leads (list, get, create, update, delete)                                          |
+| leads-list      | Manage lead lists (list, create, update, delete)                                          |
 | linkedin        | Instantly discover the email addresses of Linkedin URLs.                                  |
+| location        | Get employee location data for a domain                                                   |
 | login           | Sign in to Tomba account                                                                  |
 | logout          | delete your current KEY & SECRET API session.                                             |
 | logs            | Check your last 1,000 requests you made during the last 3 months.                         |
@@ -643,16 +819,20 @@ tomba http
 
 ### Command Global Flags
 
-| shortopts | longopts   | Description                                                        |
-| --------- | ---------- | ------------------------------------------------------------------ |
-| `-h`      | `--help`   | help for tomba                                                     |
-| `-j`      | `--json`   | output JSON format.                                                |
-| `-k`      | `--key`    | Tomba API KEY.                                                     |
-| `-o`      | `--output` | Save the results to file.                                          |
-| `-p`      | `--port`   | Sets the port on which the HTTP server should bind. (default 3000) |
-| `-s`      | `--secret` | Tomba API SECRET.                                                  |
-| `-t`      | `--target` | TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.    |
-| `-y`      | `--yaml`   | output YAML format.                                                |
+| shortopts | longopts     | Description                                                       |
+| --------- | ------------ | ----------------------------------------------------------------- |
+| `-h`      | `--help`     | help for tomba                                                    |
+| `-j`      | `--json`     | output JSON format                                                |
+| `-k`      | `--key`      | Tomba API KEY                                                     |
+| `-o`      | `--output`   | Save the results to file                                          |
+| `-p`      | `--port`     | Sets the port on which the HTTP server should bind (default 3000) |
+| `-s`      | `--secret`   | Tomba API SECRET                                                  |
+| `-t`      | `--target`   | TARGET SPECIFICATION: email, Domain, URL, or LinkedIn URL         |
+| `-v`      | `--version`  | Print version number                                              |
+| `-y`      | `--yaml`     | output YAML format                                                |
+|           | `--csv`      | output CSV format                                                 |
+|           | `--no-color` | Disable colored output (also respects `NO_COLOR` env var)         |
+|           | `--verbose`  | Enable verbose output                                             |
 
 ### Output Formats
 
@@ -703,11 +883,34 @@ Detailed changes for each release are documented in the [release notes](https://
 
 See the [official documentation](https://docs.tomba.io/).
 
-### About Tomba
+## About Tomba
 
-Founded in 2021, Tomba prides itself on being the most reliable, accurate, and in-depth source of Email address data available anywhere. We process terabytes of data to produce our Email finder API, company.
+Founded to solve the problem of unreliable email data, [Tomba.io](https://tomba.io) is the leading B2B email intelligence platform.
 
-[![image](https://avatars.githubusercontent.com/u/67979591?s=200&v=4)](https://tomba.io/)
+### Products
+
+- **[Email Finder](https://tomba.io/email-finder)** — Find any professional email address
+- **[Email Verifier](https://tomba.io/email-verifier)** — Verify emails in real-time
+- **[Domain Search](https://tomba.io/domain-search)** — Find all emails for a company
+- **[Phone Finder](https://tomba.io/phone-finder)** — Find direct phone numbers
+- **[Bulk Enrichment](https://tomba.io/bulks)** — Enrich contacts at scale
+- **[AI Company Search](https://tomba.io/reveal)** — Find companies with AI-powered search
+- **[CLI](https://tomba.io/cli)** — Command-line interface
+- **[MCP Server](https://tomba.io/mcp)** — Connect AI tools to Tomba
+- **[REST API](https://tomba.io/api)** — Full programmatic access
+
+### Browser Extensions & Add-ons
+
+- **[Chrome Extension](https://chromewebstore.google.com/detail/tomba-email-finder-email/icmjegjggphchjckknoooajmklibccjb)** — Find emails while browsing
+- **[Google Sheets Add-on](https://tomba.io/sheets)** — Enrich leads in spreadsheets
+
+### Resources
+
+- [Blog](https://tomba.io/blog) · [Help Center](https://help.tomba.io) · [API Docs](https://docs.tomba.io) · [Pricing](https://tomba.io/pricing) · [Status](https://status.tomba.io)
+
+---
+
+**[Try Tomba Free](https://app.tomba.io/auth/register)** — Find your first email in seconds. No credit card required.
 
 ## Contribution
 
