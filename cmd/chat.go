@@ -104,7 +104,7 @@ func chatRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Get account info for greeting
-	account, err := init.Tomba.Account()
+	account, err := init.Account()
 	if err == nil {
 		raw, _ := account.Marshal()
 		var accData map[string]interface{}
@@ -218,7 +218,7 @@ func chatBulkRun(conn *start.Conn, openaiKey string) {
 		fmt.Printf("%s Cannot open file: %s\n", util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
@@ -308,36 +308,36 @@ func buildRowPrompt(headers []string, row []string, opType string) string {
 		for i, h := range headers {
 			lower := strings.ToLower(h)
 			if i < len(row) && (lower == "email" || lower == "e-mail" || lower == "mail" || lower == "email_address") {
-				sb.WriteString(fmt.Sprintf("Enrich this email and return all available data: %s", row[i]))
+				fmt.Fprintf(&sb, "Enrich this email and return all available data: %s", row[i])
 				return sb.String()
 			}
 		}
-		sb.WriteString(fmt.Sprintf("Enrich: %s", strings.Join(row, ", ")))
+		fmt.Fprintf(&sb, "Enrich: %s", strings.Join(row, ", "))
 	case "verify":
 		for i, h := range headers {
 			lower := strings.ToLower(h)
 			if i < len(row) && (lower == "email" || lower == "e-mail" || lower == "mail" || lower == "email_address") {
-				sb.WriteString(fmt.Sprintf("Verify this email address: %s", row[i]))
+				fmt.Fprintf(&sb, "Verify this email address: %s", row[i])
 				return sb.String()
 			}
 		}
-		sb.WriteString(fmt.Sprintf("Verify: %s", strings.Join(row, ", ")))
+		fmt.Fprintf(&sb, "Verify: %s", strings.Join(row, ", "))
 	case "finder":
 		sb.WriteString("Find the email for: ")
 		for i, h := range headers {
 			if i < len(row) && row[i] != "" {
-				sb.WriteString(fmt.Sprintf("%s=%s ", h, row[i]))
+				fmt.Fprintf(&sb, "%s=%s ", h, row[i])
 			}
 		}
 	case "search":
 		for i, h := range headers {
 			lower := strings.ToLower(h)
 			if i < len(row) && (lower == "domain" || lower == "company_domain" || lower == "website") {
-				sb.WriteString(fmt.Sprintf("Search all emails for domain: %s", row[i]))
+				fmt.Fprintf(&sb, "Search all emails for domain: %s", row[i])
 				return sb.String()
 			}
 		}
-		sb.WriteString(fmt.Sprintf("Search: %s", strings.Join(row, ", ")))
+		fmt.Fprintf(&sb, "Search: %s", strings.Join(row, ", "))
 	}
 	return sb.String()
 }
@@ -367,12 +367,8 @@ func processOneRow(conn *start.Conn, apiKey, model string, messages []chatMessag
 					ToolCallID: tc.ID,
 				})
 				// Parse the tool result as our row result
-				var data map[string]interface{}
-				if json.Unmarshal([]byte(result), &data) == nil {
-					if _, hasErr := data["error"]; !hasErr {
-						// Keep going, the AI might call more tools
-					}
-				}
+				// Parse result, continue regardless
+				_ = result
 			}
 			continue
 		}
@@ -399,7 +395,7 @@ func writeChatBulkOutput(filename string, headers []string, rows [][]string, res
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
@@ -558,7 +554,7 @@ func callOpenAI(apiKey, model string, messages []chatMessage, tools []toolDef) (
 	if err != nil {
 		return nil, fmt.Errorf("API request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -589,7 +585,7 @@ func executeTombaToolCall(conn *start.Conn, name, arguments string) string {
 		if limit := getArgStr(args, "limit"); limit != "" {
 			params["limit"] = limit
 		}
-		result, err := conn.Tomba.DomainSearch(params)
+		result, err := conn.DomainSearch(params)
 		if err != nil {
 			return fmt.Sprintf(`{"error": "%s"}`, err.Error())
 		}
@@ -608,7 +604,7 @@ func executeTombaToolCall(conn *start.Conn, name, arguments string) string {
 		if full := getArgStr(args, "full_name"); full != "" {
 			params["full_name"] = full
 		}
-		result, err := conn.Tomba.EmailFinder(params)
+		result, err := conn.EmailFinder(params)
 		if err != nil {
 			return fmt.Sprintf(`{"error": "%s"}`, err.Error())
 		}
@@ -617,7 +613,7 @@ func executeTombaToolCall(conn *start.Conn, name, arguments string) string {
 
 	case "email_enrichment":
 		email := getArgStr(args, "email")
-		result, err := conn.Tomba.Enrichment(tomba.Params{"email": email})
+		result, err := conn.Enrichment(tomba.Params{"email": email})
 		if err != nil {
 			return fmt.Sprintf(`{"error": "%s"}`, err.Error())
 		}
@@ -626,7 +622,7 @@ func executeTombaToolCall(conn *start.Conn, name, arguments string) string {
 
 	case "email_verifier":
 		email := getArgStr(args, "email")
-		result, err := conn.Tomba.EmailVerifier(tomba.Params{"email": email})
+		result, err := conn.EmailVerifier(tomba.Params{"email": email})
 		if err != nil {
 			return fmt.Sprintf(`{"error": "%s"}`, err.Error())
 		}
@@ -653,7 +649,7 @@ func executeTombaToolCall(conn *start.Conn, name, arguments string) string {
 
 	case "linkedin_finder":
 		url := getArgStr(args, "url")
-		result, err := conn.Tomba.LinkedinFinder(tomba.Params{"url": url})
+		result, err := conn.LinkedinFinder(tomba.Params{"url": url})
 		if err != nil {
 			return fmt.Sprintf(`{"error": "%s"}`, err.Error())
 		}
@@ -662,7 +658,7 @@ func executeTombaToolCall(conn *start.Conn, name, arguments string) string {
 
 	case "author_finder":
 		url := getArgStr(args, "url")
-		result, err := conn.Tomba.AuthorFinder(url)
+		result, err := conn.AuthorFinder(tomba.Params{"url": url})
 		if err != nil {
 			return fmt.Sprintf(`{"error": "%s"}`, err.Error())
 		}

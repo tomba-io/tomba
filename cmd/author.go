@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/tomba-io/go/tomba"
 
 	"github.com/tomba-io/tomba/pkg/output"
 	"github.com/tomba-io/tomba/pkg/start"
@@ -31,7 +32,7 @@ func authorRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsURL.Error()))
 		return
 	}
-	result, err := init.Tomba.AuthorFinder(url)
+	result, err := init.AuthorFinder(tomba.Params{"url": url})
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

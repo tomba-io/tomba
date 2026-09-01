@@ -45,7 +45,7 @@ func searchRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentsDomainLimit.Error()), init.Page)
 		return
 	}
-	result, err := init.Tomba.DomainSearch(params)
+	result, err := init.DomainSearch(params)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

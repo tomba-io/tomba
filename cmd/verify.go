@@ -33,7 +33,7 @@ func verifyRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	result, err := init.Tomba.EmailVerifier(tomba.Params{"email": email})
+	result, err := init.EmailVerifier(tomba.Params{"email": email})
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

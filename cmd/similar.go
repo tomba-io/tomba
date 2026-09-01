@@ -33,7 +33,7 @@ func similarRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	result, err := init.Tomba.SimilarDomains(domain)
+	result, err := init.SimilarDomains(domain)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

@@ -12,10 +12,11 @@ import (
 
 // logsCmd represents the logs command
 var logsCmd = &cobra.Command{
-	Use:   "logs",
-	Short: "Check your last 1,000 requests you made during the last 3 months.",
-	Long:  Long,
-	Run:   logsRun,
+	Use:     "logs",
+	Short:   "Check your last 1,000 requests you made during the last 3 months.",
+	Long:    Long,
+	Example: logsExample,
+	Run:     logsRun,
 }
 
 // logsRun the actual work logs

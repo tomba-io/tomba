@@ -51,7 +51,7 @@ func finderRun(cmd *cobra.Command, args []string) {
 		params["enrich_mobile"] = true
 	}
 
-	result, err := init.Tomba.EmailFinder(params)
+	result, err := init.EmailFinder(params)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

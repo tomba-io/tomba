@@ -33,7 +33,7 @@ func technologyRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	result, err := init.Tomba.TechnologyCheck(domain)
+	result, err := init.TechnologyCheck(domain)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

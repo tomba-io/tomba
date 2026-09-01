@@ -37,7 +37,7 @@ func enrichRun(cmd *cobra.Command, args []string) {
 	if init.EnrichMobile {
 		params["enrich_mobile"] = true
 	}
-	result, err := init.Tomba.Enrichment(params)
+	result, err := init.Enrichment(params)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

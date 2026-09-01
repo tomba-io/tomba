@@ -23,7 +23,7 @@ var whoamiCmd = &cobra.Command{
 // whoamiRun the actual work whoami
 func whoamiRun(cmd *cobra.Command, args []string) {
 	init := start.New(conn)
-	result, err := init.Tomba.Account()
+	result, err := init.Account()
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

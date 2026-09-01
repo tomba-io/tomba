@@ -186,7 +186,7 @@ func (r *Runner) executeStep(step SkillStep) (map[string]interface{}, error) {
 		return ParseStepResult(raw)
 
 	case "author":
-		result, err := r.Tomba.AuthorFinder(params["url"])
+		result, err := r.Tomba.AuthorFinder(tomba.Params{"url": params["url"]})
 		if err != nil {
 			return nil, err
 		}

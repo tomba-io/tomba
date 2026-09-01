@@ -110,9 +110,7 @@ func ListSkills() ([]*Skill, error) {
 	var skills []*Skill
 
 	// Built-in skills
-	for _, s := range BuiltinSkills() {
-		skills = append(skills, s)
-	}
+	skills = append(skills, BuiltinSkills()...)
 
 	// User skills from disk
 	dir := SkillDir()
