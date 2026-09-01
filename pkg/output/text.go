@@ -1212,25 +1212,35 @@ func formatLocation(data map[string]interface{}) string {
 func formatAutocomplete(data map[string]interface{}) string {
 	var sb strings.Builder
 
+	// Show meta info if available
+	if meta, ok := data["meta"].(map[string]interface{}); ok {
+		query := getStr(meta, "query")
+		total := getFloat(meta, "total_found")
+		if query != "" {
+			fmt.Fprintf(&sb, "\n%s Domain Suggestions for %s (%.0f found)\n\n", util.SuccessIcon(), util.Bold(query), total)
+		}
+	}
+
 	if items, ok := data["data"].([]interface{}); ok && len(items) > 0 {
-		fmt.Fprintf(&sb, "\n%s Domain Suggestions (%d)\n\n", util.SuccessIcon(), len(items))
+		if _, hasMeta := data["meta"]; !hasMeta {
+			fmt.Fprintf(&sb, "\n%s Domain Suggestions (%d)\n\n", util.SuccessIcon(), len(items))
+		}
+		fmt.Fprintf(&sb, "  %-4s %-25s %-30s %s\n", "#", "Domain", "Company", "Emails")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 65))
 		for i, item := range items {
 			if m, ok := item.(map[string]interface{}); ok {
 				domain := getStr(m, "domain")
 				name := getStr(m, "name")
-				if domain != "" {
-					fmt.Fprintf(&sb, "  %d. %s", i+1, util.Green(domain))
-					if name != "" {
-						fmt.Fprintf(&sb, " (%s)", name)
-					}
-					sb.WriteString("\n")
-				}
+				emailCount := getFloat(m, "email_count")
+				fmt.Fprintf(&sb, "  %-4d %-25s %-30s %.0f\n", i+1, util.Green(domain), name, emailCount)
 			} else if s, ok := item.(string); ok {
-				fmt.Fprintf(&sb, "  %d. %s\n", i+1, util.Green(s))
+				fmt.Fprintf(&sb, "  %-4d %s\n", i+1, util.Green(s))
 			}
 		}
 	} else {
-		fmt.Fprintf(&sb, "\n%s No suggestions found.\n", util.WarningIcon())
+		if _, hasMeta := data["meta"]; !hasMeta {
+			fmt.Fprintf(&sb, "\n%s No suggestions found.\n", util.WarningIcon())
+		}
 	}
 
 	return sb.String()
