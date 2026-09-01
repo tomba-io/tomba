@@ -12,7 +12,7 @@ import (
 )
 
 // statusCmd represents the status command
-// see https://docs.tomba.io/api/~endpoints#domain-status
+// see https://docs.tomba.io/api/domain#domain-status
 var statusCmd = &cobra.Command{
 	Use:     "status",
 	Aliases: []string{"t"},

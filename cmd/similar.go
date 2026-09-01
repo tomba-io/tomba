@@ -12,7 +12,7 @@ import (
 )
 
 // similarCmd represents the similar command
-// see https://docs.tomba.io/api/~endpoints#similar
+// see https://docs.tomba.io/api/domain#similar
 var similarCmd = &cobra.Command{
 	Use:     "similar",
 	Aliases: []string{"sim"},

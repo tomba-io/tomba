@@ -12,7 +12,7 @@ import (
 )
 
 // technologyCmd represents the technology command
-// see https://docs.tomba.io/api/~endpoints#technology
+// see https://docs.tomba.io/api/domain#technology
 var technologyCmd = &cobra.Command{
 	Use:     "technology",
 	Aliases: []string{"tech"},
