@@ -33,13 +33,13 @@ func httpRun(cmd *cobra.Command, args []string) {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*", //
 		AllowHeaders: "Origin, Content-Type, Accept",
-		AllowMethods: "GET,POST,HEAD,OPTIONS",
+		AllowMethods: "GET,POST,PUT,DELETE,HEAD,OPTIONS",
 		Next:         nil,
 	}))
 	// if you want to prevent crashes
 	app.Use(recover.New())
 	setUpRoutes(app, init)
-	app.Listen(`:` + strconv.Itoa(init.Port))
+	_ = app.Listen(`:` + strconv.Itoa(init.Port))
 }
 
 func setUpRoutes(app *fiber.App, conn *start.Conn) {
@@ -61,4 +61,46 @@ func setUpRoutes(app *fiber.App, conn *start.Conn) {
 	app.Get("usage", conn.Usage)
 	app.Post("verify", conn.Verify)
 	app.Get("whoami", conn.Whoami)
+
+	// Format, Location, AutoComplete
+	app.Post("format", conn.Format)
+	app.Post("location", conn.Location)
+	app.Post("autocomplete", conn.AutoCompleteHandler)
+
+	// Enrichment lookups
+	app.Post("companies/find", conn.CompanyFindHandler)
+	app.Post("people/find", conn.PersonFindHandler)
+	app.Post("combined/find", conn.CombinedFindHandler)
+
+	// Leads CRUD
+	app.Get("leads", conn.ListLeadsHandler)
+	app.Post("leads", conn.CreateLeadHandler)
+	app.Get("leads/:id", conn.GetLeadHandler)
+	app.Put("leads/:id", conn.UpdateLeadHandler)
+	app.Delete("leads/:id", conn.DeleteLeadHandler)
+
+	// Lead Lists CRUD
+	app.Get("leads_lists", conn.ListLeadsListsHandler)
+	app.Post("leads_lists", conn.CreateLeadsListHandler)
+	app.Get("leads_lists/:id", conn.GetLeadsListHandler)
+	app.Put("leads_lists/:id", conn.UpdateLeadsListHandler)
+	app.Delete("leads_lists/:id", conn.DeleteLeadsListHandler)
+
+	// Attributes CRUD
+	app.Get("attributes", conn.ListAttributesHandler)
+	app.Post("attributes", conn.CreateAttributeHandler)
+	app.Get("attributes/:id", conn.GetAttributeHandler)
+	app.Put("attributes/:id", conn.UpdateAttributeHandler)
+	app.Delete("attributes/:id", conn.DeleteAttributeHandler)
+
+	// Keys
+	app.Get("keys", conn.ListKeysHandler)
+	app.Post("keys", conn.CreateKeyHandler)
+	app.Get("keys/:id", conn.GetKeyHandler)
+	app.Delete("keys/:id", conn.DeleteKeyHandler)
+	app.Put("keys/:id", conn.ResetKeyHandler)
+
+	// Flags
+	app.Get("flag", conn.ListFlagsHandler)
+	app.Post("flag", conn.CreateFlagHandler)
 }
