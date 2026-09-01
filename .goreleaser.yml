@@ -38,7 +38,7 @@ builds:
             goarch: ppc64
       mod_timestamp: "{{ .CommitTimestamp }}"
       ldflags:
-          - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=source
+          - -s -w -X github.com/tomba-io/tomba/pkg/version.Version={{.Version}} -X github.com/tomba-io/tomba/pkg/version.BuildDate={{.CommitDate}} -X github.com/tomba-io/tomba/pkg/version.Commit={{.ShortCommit}}
 archives:
     - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
       formats:

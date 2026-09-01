@@ -10,9 +10,10 @@ import (
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print version number and build information.",
-	Long:  Long,
+	Use:     "version",
+	Short:   "Print version number and build information.",
+	Long:    Long,
+	Example: versionExample,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(version.String())
 	},
