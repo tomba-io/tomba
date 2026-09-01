@@ -14,7 +14,7 @@ const (
 	authorExample      = `  tomba author --target "https://clearbit.com/blog/company-name-to-domain-api"`
 	countExample       = `  tomba count --target "clearbit.com"`
 	enrichExample      = `  tomba enrich --target "b.mohamed@tomba.io"`
-	finderExample      = `  tomba finder --target "tomba.io" --fist "mohamed" --last "ben rebia"`
+	finderExample      = `  tomba finder --target "tomba.io" --first "mohamed" --last "ben rebia"`
 	linkedinExample    = `  tomba linkedin --target "https://www.linkedin.com/in/mohamed-ben-rebia"`
 	phoneFinderExample = `  tomba phone-finder --email "info@stripe.com"
   tomba phone-finder --domain "tomba.io"
@@ -65,5 +65,58 @@ const (
 	bulkExample = `  tomba bulk --file contacts.csv --type enrich
   tomba bulk --file leads.csv --type verify --column "Email Address"
   tomba bulk --file prospects.csv --type finder --domain-col company --first-col first --last-col last
-  tomba bulk --file domains.csv --type search --column domain -o results.csv`
+  tomba bulk --file domains.csv --type search --column domain -o results.csv
+  tomba bulk --file articles.csv --type author --url-col article_url
+  tomba bulk --file profiles.csv --type linkedin --url-col linkedin_url
+  tomba bulk --file contacts.csv --type phone --column email
+  tomba bulk --file emails.csv --type sources --column email`
+
+	attributeExample = `  tomba attribute list
+  tomba attribute create --name "Company Size" --type "text"
+  tomba attribute get --id 123
+  tomba attribute delete --id 123`
+
+	autocompleteExample = `  tomba autocomplete -t "googl"
+  tomba autocomplete -t "tomba" -j`
+
+	enrichmentExample = `  tomba enrichment person -t "user@example.com"
+  tomba enrichment company -t "example.com"
+  tomba enrichment combined -t "user@example.com"`
+
+	formatExample = `  tomba format -t "tomba.io"
+  tomba format -t "stripe.com" -j`
+
+	keyExample = `  tomba key list
+  tomba key create
+  tomba key delete --id 123
+  tomba key reset --id 123`
+
+	leadExample = `  tomba lead list
+  tomba lead list --page 2 --limit 20
+  tomba lead create --email "user@example.com" --list-id 1
+  tomba lead get --id 123
+  tomba lead delete --id 123`
+
+	leadsListExample = `  tomba leads-list list
+  tomba leads-list create --name "My List"
+  tomba leads-list update --id 1 --name "New Name"
+  tomba leads-list delete --id 1`
+
+	locationExample = `  tomba location -t "tomba.io"
+  tomba location -t "stripe.com" -j`
+
+	loginExample = `  tomba login`
+
+	logoutExample = `  tomba logout`
+
+	logsExample = `  tomba logs
+  tomba logs -j`
+
+	usageExample = `  tomba usage
+  tomba usage -j`
+
+	versionExample = `  tomba version`
+
+	flagExample = `  tomba flag list
+  tomba flag create --email "bounce@example.com" --reason "hard bounce"`
 )
