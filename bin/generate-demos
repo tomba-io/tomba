@@ -93,7 +93,7 @@ record "whoami" "tomba whoami"
 record "search" "tomba search --target tomba.io"
 
 # Finder
-record "finder" "tomba finder --target tomba.io --fist mohamed --last 'ben rebia'"
+record "finder" "tomba finder --target tomba.io --first mohamed --last 'ben rebia'"
 
 # Enrich
 record "enrich" "tomba enrich --target b.mohamed@tomba.io"
@@ -114,7 +114,7 @@ record "sources" "tomba sources --target b.mohamed@tomba.io"
 record "count" "tomba count --target tomba.io"
 
 # Status
-record "status" "tomba status --target gmail.io"
+record "status" "tomba status --target gmail.com"
 
 # Similar
 record "similar" "tomba similar --target tomba.io"
@@ -169,6 +169,76 @@ record "skill-export" "tomba skill export find-email"
 
 # Skill - help
 record "skill-help" "tomba skill --help"
+
+# Format help
+record "format" "tomba format --help"
+
+# Location help
+record "location" "tomba location --help"
+
+# Autocomplete help
+record "autocomplete" "tomba autocomplete --help"
+
+# Lead help (shows subcommands)
+record "lead" "tomba lead --help"
+
+# Lead list help
+record "lead-list" "tomba lead list --help"
+
+# Key help (shows subcommands)
+record "key" "tomba key --help"
+
+# Attribute help
+record "attribute" "tomba attribute --help"
+
+# Flag help
+record "flag" "tomba flag --help"
+
+# Enrichment help (shows subcommands)
+record "enrichment" "tomba enrichment --help"
+
+# Login demos - use --no-color to avoid ANSI breaking JSON cast format
+record_raw() {
+    local name="$1"
+    local display_cmd="$2"
+    local raw_output="$3"
+    local output="$SVG_DIR/${name}.svg"
+    echo -n "  $name ... "
+    local castfile=$(mktemp /tmp/demo-XXXXXX.cast)
+    echo "{\"version\": 2, \"width\": $COLS, \"height\": $ROWS}" > "$castfile"
+    python3 -c "
+import json
+prompt = '\033[1;32m\$ \033[0m$display_cmd'
+print(json.dumps([0.0, 'o', prompt + '\r\n']))
+data = '''$(echo "$raw_output" | sed "s/'/\\\\'/g")'''
+print(json.dumps([0.5, 'o', data.replace(chr(10), '\r\n')]))
+" >> "$castfile"
+    termtosvg render "$castfile" "$output" -t "$TEMPLATE" -M 5000 -m 30 2>/dev/null
+    rm -f "$castfile"
+    if [ -f "$output" ] && [ -s "$output" ]; then
+        local size=$(wc -c < "$output")
+        echo "OK (${size} bytes)"
+    else
+        echo "FAILED"
+    fi
+    sleep "$DELAY"
+}
+
+# Login with API key
+login_key_output=$($TOMBA login --key "${TOMBA_API_KEY:-ta_xxxx}" --secret "${TOMBA_SECRET_KEY:-ts_xxxx}" --no-color 2>&1 || true)
+record_raw "login-key" "tomba login --key ta_xxxx --secret ts_xxxx" "$login_key_output"
+
+# OAuth login - capture device code prompt (timeout 8s)
+config_bak=""
+if [ -f "$HOME/.tomba.json" ]; then
+    config_bak=$(cat "$HOME/.tomba.json")
+    echo '{}' > "$HOME/.tomba.json"
+fi
+login_oauth_output=$(timeout 8 $TOMBA login --no-color 2>&1 || true)
+if [ -n "$config_bak" ]; then
+    echo "$config_bak" > "$HOME/.tomba.json"
+fi
+record_raw "login-oauth" "tomba login" "$login_oauth_output"
 
 # Cleanup
 rm -f /tmp/tomba-dev

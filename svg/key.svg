@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="terminal" baseProfile="full" viewBox="0 0 1167 931" width="1167" version="1.1">
+    <defs>
+        <termtosvg:template_settings xmlns:termtosvg="https://github.com/nbedos/termtosvg">
+            <termtosvg:screen_geometry columns="140" rows="50"/>
+            <termtosvg:animation type="css"/>
+        </termtosvg:template_settings>
+        <style type="text/css" id="generated-style"><![CDATA[#screen {
+                font-family: 'DejaVu Sans Mono', monospace;
+                font-style: normal;
+                font-size: 14px;
+            }
+
+        text {
+            dominant-baseline: text-before-edge;
+            white-space: pre;
+        }
+    
+            :root {
+                --animation-duration: 1500ms;
+            }
+
+            @keyframes roll {
+                0.000%{transform:translateY(0px)}
+33.333%{transform:translateY(-884px)}
+100.000%{transform:translateY(-884px)}
+            }
+
+            #screen_view {
+                animation-duration: 1500ms;
+                animation-iteration-count:infinite;
+                animation-name:roll;
+                animation-timing-function: steps(1,end);
+                animation-fill-mode: forwards;
+            }
+        ]]></style>
+        <style type="text/css" id="user-style">
+            /* The colors defined below are the default 16 colors used for rendering text of the terminal. Adjust
+               them as needed.
+               gjm8 color theme (source: https://terminal.sexy/) */
+            .foreground {fill: #f8f8f2}
+            .background {fill: #272822}
+            .color0 {fill: #272822}
+            .color1 {fill: #f92672}
+            .color2 {fill: #a6e22e}
+            .color3 {fill: #f4bf75}
+            .color4 {fill: #66d9ef}
+            .color5 {fill: #ae81ff}
+            .color6 {fill: #a1efe4}
+            .color7 {fill: #f8f8f2}
+            .color8 {fill: #75715e}
+            .color9 {fill: #fd971f}
+            .color10 {fill: #383830}
+            .color11 {fill: #49483e}
+            .color12 {fill: #a59f85}
+            .color13 {fill: #f5f4f1}
+            .color14 {fill: #cc6633}
+            .color15 {fill: #f9f8f5}
+        </style>
+    </defs>
+    <rect id="terminalui" class="background" width="100%" height="100%" ry="4.5826941"/>
+    <circle cx="24" cy="23" r="7" class="color1"/>
+    <circle cx="44" cy="23" r="7" class="color3"/>
+    <circle cx="64" cy="23" r="7" class="color2"/>
+    <svg id="screen" width="1120" height="850" x="23" y="50" viewBox="0 0 1120 850" preserveAspectRatio="xMidYMin slice"><rect class="background" height="100%" width="100%" x="0" y="0"/><defs><g id="g1"><text x="0" textLength="16" font-weight="bold" class="color10">$ </text><text x="16" textLength="128" class="foreground">tomba key --help</text></g><g id="g2"><text x="0" textLength="8" class="background"> </text></g><g id="g3"><text x="0" textLength="1120" class="foreground">CLI utility to search or verify lists of email addresses in seconds can significantly improve productivity and efficiency for individuals an</text></g><g id="g4"><text x="0" textLength="384" class="foreground">d businesses dealing with large email databases.</text></g><g id="g5"><text x="0" textLength="432" class="color8">    ______ ____   __  ___ ____   ___        ____ ____ </text></g><g id="g6"><text x="0" textLength="440" class="color8">    /_  __// __ \ /  |/  // __ ) /   |      /  _// __ \</text></g><g id="g7"><text x="0" textLength="440" class="color8">     / /  / / / // /|_/ // __  |/ /| |      / / / / / /</text></g><g id="g8"><text x="0" textLength="440" class="color8">    / /  / /_/ // /  / // /_/ // ___ | _  _/ / / /_/ / </text></g><g id="g9"><text x="0" textLength="440" class="color8">   /_/   \____//_/  /_//_____//_/  |_|(_)/___/ \____/  </text></g><g id="g10"><text x="0" textLength="440" class="color8">                                                       </text></g><g id="g11"><text x="0" textLength="32" class="color8">    </text></g><g id="g12"><text x="0" textLength="48" class="foreground">Usage:</text></g><g id="g13"><text x="0" textLength="168" class="foreground">  tomba key [command]</text></g><g id="g14"><text x="0" textLength="72" class="foreground">Examples:</text></g><g id="g15"><text x="0" textLength="128" class="foreground">  tomba key list</text></g><g id="g16"><text x="0" textLength="144" class="foreground">  tomba key create</text></g><g id="g17"><text x="0" textLength="216" class="foreground">  tomba key delete --id 123</text></g><g id="g18"><text x="0" textLength="208" class="foreground">  tomba key reset --id 123</text></g><g id="g19"><text x="0" textLength="152" class="foreground">Available Commands:</text></g><g id="g20"><text x="0" textLength="280" class="foreground">  create      Create a new API key.</text></g><g id="g21"><text x="0" textLength="304" class="foreground">  delete      Delete an API key by ID.</text></g><g id="g22"><text x="0" textLength="344" class="foreground">  get         Get a specific API key by ID.</text></g><g id="g23"><text x="0" textLength="256" class="foreground">  list        List all API keys.</text></g><g id="g24"><text x="0" textLength="296" class="foreground">  reset       Reset an API key by ID.</text></g><g id="g25"><text x="0" textLength="48" class="foreground">Flags:</text></g><g id="g26"><text x="0" textLength="216" class="foreground">  -h, --help   help for key</text></g><g id="g27"><text x="0" textLength="104" class="foreground">Global Flags:</text></g><g id="g28"><text x="0" textLength="336" class="foreground">      --csv             output CSV format.</text></g><g id="g29"><text x="0" textLength="344" class="foreground">  -j, --json            output JSON format.</text></g><g id="g30"><text x="0" textLength="304" class="foreground">  -k, --key string      Tomba API KEY.</text></g><g id="g31"><text x="0" textLength="376" class="foreground">      --no-color        Disable colored output.</text></g><g id="g32"><text x="0" textLength="392" class="foreground">  -o, --output string   Save the results to file.</text></g><g id="g33"><text x="0" textLength="720" class="foreground">  -p, --port int        Sets the port on which the HTTP server should bind. (default 3000)</text></g><g id="g34"><text x="0" textLength="328" class="foreground">  -s, --secret string   Tomba API SECRET.</text></g><g id="g35"><text x="0" textLength="696" class="foreground">  -t, --target string   TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.</text></g><g id="g36"><text x="0" textLength="368" class="foreground">      --verbose         Enable verbose output.</text></g><g id="g37"><text x="0" textLength="344" class="foreground">  -y, --yaml            output YAML format.</text></g><g id="g38"><text x="0" textLength="560" class="foreground">Use "tomba key [command] --help" for more information about a command.</text></g></defs><g id="screen_view"><g><use xlink:href="#g1" y="0"/><rect x="0" y="17" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="17"/></g><g><use xlink:href="#g1" y="884"/><use xlink:href="#g3" y="901"/><use xlink:href="#g4" y="918"/><use xlink:href="#g5" y="969"/><use xlink:href="#g6" y="986"/><use xlink:href="#g7" y="1003"/><use xlink:href="#g8" y="1020"/><use xlink:href="#g9" y="1037"/><use xlink:href="#g10" y="1054"/><use xlink:href="#g11" y="1071"/><use xlink:href="#g12" y="1105"/><use xlink:href="#g13" y="1122"/><use xlink:href="#g14" y="1156"/><use xlink:href="#g15" y="1173"/><use xlink:href="#g16" y="1190"/><use xlink:href="#g17" y="1207"/><use xlink:href="#g18" y="1224"/><use xlink:href="#g19" y="1258"/><use xlink:href="#g20" y="1275"/><use xlink:href="#g21" y="1292"/><use xlink:href="#g22" y="1309"/><use xlink:href="#g23" y="1326"/><use xlink:href="#g24" y="1343"/><use xlink:href="#g25" y="1377"/><use xlink:href="#g26" y="1394"/><use xlink:href="#g27" y="1428"/><use xlink:href="#g28" y="1445"/><use xlink:href="#g29" y="1462"/><use xlink:href="#g30" y="1479"/><use xlink:href="#g31" y="1496"/><use xlink:href="#g32" y="1513"/><use xlink:href="#g33" y="1530"/><use xlink:href="#g34" y="1547"/><use xlink:href="#g35" y="1564"/><use xlink:href="#g36" y="1581"/><use xlink:href="#g37" y="1598"/><use xlink:href="#g38" y="1632"/><rect x="0" y="1649" width="8" height="17" class="foreground"/><use xlink:href="#g2" y="1649"/></g></g></svg>
+</svg>
