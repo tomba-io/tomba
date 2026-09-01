@@ -12,10 +12,11 @@ import (
 
 // usageCmd represents the usage command
 var usageCmd = &cobra.Command{
-	Use:   "usage",
-	Short: "Check your monthly requests.",
-	Long:  Long,
-	Run:   usageRun,
+	Use:     "usage",
+	Short:   "Check your monthly requests.",
+	Long:    Long,
+	Example: usageExample,
+	Run:     usageRun,
 }
 
 // usageRun the actual work usage
@@ -26,6 +27,10 @@ func usageRun(cmd *cobra.Command, args []string) {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
-	raw, _ := result.Marshal()
+	raw, err := result.Marshal()
+	if err != nil {
+		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
+		return
+	}
 	output.Render(string(raw), init.JSON, init.YAML, init.Output, "usage")
 }

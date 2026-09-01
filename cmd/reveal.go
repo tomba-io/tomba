@@ -79,90 +79,88 @@ func revealRun(cmd *cobra.Command, args []string) {
 		len(revealSimilar) > 0 || len(revealRevenue) > 0 || len(revealSIC) > 0 || len(revealNAICS) > 0
 
 	if hasFilters {
-		request.Filters = &models.RevealSearchFilters{
-			Company: &models.RevealCompanyFilters{},
-		}
+		request.Filters = &models.RevealFilters{}
 
 		if len(revealCountry) > 0 {
-			request.Filters.Company.LocationCountry = &models.RevealCircularFilter{
+			request.Filters.LocationCountry = &models.SearchFilter{
 				Include: revealCountry,
 			}
 		}
 
 		if len(revealCity) > 0 {
-			request.Filters.Company.LocationCity = &models.RevealCircularFilter{
+			request.Filters.LocationCity = &models.SearchFilter{
 				Include: revealCity,
 			}
 		}
 
 		if len(revealState) > 0 {
-			request.Filters.Company.LocationState = &models.RevealCircularFilter{
+			request.Filters.LocationState = &models.SearchFilter{
 				Include: revealState,
 			}
 		}
 
 		if len(revealIndustry) > 0 {
-			request.Filters.Company.Industry = &models.RevealCircularFilter{
+			request.Filters.Industry = &models.SearchFilter{
 				Include: revealIndustry,
 			}
 		}
 
 		if len(revealSize) > 0 {
-			request.Filters.Company.Size = &models.RevealCircularFilter{
+			request.Filters.Size = &models.SearchFilter{
 				Include: revealSize,
 			}
 		}
 
 		if len(revealType) > 0 {
-			request.Filters.Company.Type = &models.RevealCircularFilter{
+			request.Filters.Type = &models.SearchFilter{
 				Include: revealType,
 			}
 		}
 
 		if len(revealKeywords) > 0 {
-			request.Filters.Company.Keywords = &models.RevealCircularFilter{
+			request.Filters.Keywords = &models.SearchFilter{
 				Include: revealKeywords,
 			}
 		}
 
 		if len(revealFounded) > 0 {
-			request.Filters.Company.Founded = &models.RevealCircularFilter{
+			request.Filters.Founded = &models.SearchFilter{
 				Include: revealFounded,
 			}
 		}
 
 		if len(revealTechnologies) > 0 {
-			request.Filters.Company.Technologies = &models.RevealCircularFilter{
+			request.Filters.Technologies = &models.SearchFilter{
 				Include: revealTechnologies,
 			}
 		}
 
 		if len(revealSimilar) > 0 {
-			request.Filters.Company.Similar = &models.RevealCircularFilter{
+			request.Filters.Similar = &models.SearchFilter{
 				Include: revealSimilar,
 			}
 		}
 
 		if len(revealRevenue) > 0 {
-			request.Filters.Company.Revenue = &models.RevealCircularFilter{
+			request.Filters.Revenue = &models.SearchFilter{
 				Include: revealRevenue,
 			}
 		}
 
 		if len(revealSIC) > 0 {
-			request.Filters.Company.SIC = &models.RevealCircularFilter{
+			request.Filters.SIC = &models.SearchFilter{
 				Include: revealSIC,
 			}
 		}
 
 		if len(revealNAICS) > 0 {
-			request.Filters.Company.NAICS = &models.RevealCircularFilter{
+			request.Filters.NAICS = &models.SearchFilter{
 				Include: revealNAICS,
 			}
 		}
 	}
 
-	result, err := init.Tomba.SearchCompanies(request)
+	result, err := init.SearchCompanies(request)
 	if err != nil {
 		fmt.Println(util.ErrorIcon(), util.Red(err.Error()))
 		return

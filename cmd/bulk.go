@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -17,12 +19,14 @@ import (
 )
 
 var (
-	bulkFile      string
-	bulkType      string
-	bulkColumn    string
-	bulkDomainCol string
-	bulkFirstCol  string
-	bulkLastCol   string
+	bulkFile        string
+	bulkType        string
+	bulkColumn      string
+	bulkDomainCol   string
+	bulkFirstCol    string
+	bulkLastCol     string
+	bulkUrlCol      string
+	bulkConcurrency int
 )
 
 // bulkCmd represents the bulk command
@@ -37,26 +41,63 @@ var bulkCmd = &cobra.Command{
 
 func init() {
 	bulkCmd.Flags().StringVar(&bulkFile, "file", "", "Input CSV file path (required).")
-	bulkCmd.Flags().StringVar(&bulkType, "type", "enrich", "Operation type: enrich, verify, finder, search.")
+	bulkCmd.Flags().StringVar(&bulkType, "type", "enrich", "Operation type: enrich, verify, finder, search, author, linkedin, phone, sources.")
 	bulkCmd.Flags().StringVar(&bulkColumn, "column", "", "Column name for email or domain (auto-detected if empty).")
 	bulkCmd.Flags().StringVar(&bulkDomainCol, "domain-col", "", "Column name for domain (for finder type).")
 	bulkCmd.Flags().StringVar(&bulkFirstCol, "first-col", "", "Column name for first name (for finder type).")
 	bulkCmd.Flags().StringVar(&bulkLastCol, "last-col", "", "Column name for last name (for finder type).")
+	bulkCmd.Flags().StringVar(&bulkUrlCol, "url-col", "", "Column name for URL (for author/linkedin type).")
+	bulkCmd.Flags().IntVar(&bulkConcurrency, "concurrency", 0, "Number of concurrent workers (0=auto from plan, max 60).")
 	_ = bulkCmd.MarkFlagRequired("file")
+}
+
+// getConcurrency determines the number of concurrent workers based on the plan name.
+func getConcurrency(planName string) int {
+	switch strings.ToLower(strings.TrimSpace(planName)) {
+	case "free":
+		return 1
+	case "basic":
+		return 3
+	case "growth":
+		return 5
+	case "pro":
+		return 8
+	case "pay-as-you-go 20k", "payg 20k":
+		return 10
+	default:
+		// Pro Plus, Enterprise, Scale, PAYG 50k+ = unlimited, cap at 60
+		return 60
+	}
+}
+
+type bulkJob struct {
+	index int
+	row   []string
+}
+
+type bulkResult struct {
+	index  int
+	result map[string]any
 }
 
 func bulkRun(cmd *cobra.Command, args []string) {
 	init := start.New(conn)
 
-	// Show authenticated user
-	account, err := init.Tomba.Account()
+	// Show authenticated user and detect plan for concurrency
+	var planName string
+	account, err := init.Account()
 	if err == nil {
 		raw, _ := account.Marshal()
-		var accData map[string]interface{}
+		var accData map[string]any
 		if json.Unmarshal(raw, &accData) == nil {
-			if d, ok := accData["data"].(map[string]interface{}); ok {
+			if d, ok := accData["data"].(map[string]any); ok {
 				if email, ok := d["email"].(string); ok {
-					fmt.Printf("%s Authenticated as %s\n\n", util.SuccessIcon(), util.Green(email))
+					fmt.Printf("%s Authenticated as %s\n", util.SuccessIcon(), util.Green(email))
+				}
+				if pricing, ok := d["pricing"].(map[string]any); ok {
+					if name, ok := pricing["name"].(string); ok {
+						planName = name
+					}
 				}
 			}
 		}
@@ -68,7 +109,7 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		fmt.Printf("%s Cannot open file: %s\n", util.ErrorIcon(), util.Red(err.Error()))
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
@@ -100,19 +141,76 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		outputFile = strings.TrimSuffix(bulkFile, ".csv") + "_enriched.csv"
 	}
 
-	// Process rows
+	// Determine concurrency
+	workers := bulkConcurrency
+	if workers <= 0 {
+		workers = getConcurrency(planName)
+	}
+	if workers > 60 {
+		workers = 60
+	}
+	if workers > len(rows) {
+		workers = len(rows)
+	}
+
+	fmt.Printf("  Plan: %s | Workers: %s | Rows: %s\n\n",
+		util.Bold(planName), util.Cyan(fmt.Sprintf("%d", workers)), util.Bold(fmt.Sprintf("%d", len(rows))))
+
+	startTime := time.Now()
+
+	// Process rows concurrently
 	progress := output.NewProgressBar(len(rows))
 	stats := &output.BulkStats{
 		Total:      len(rows),
 		OutputFile: outputFile,
 	}
 
-	var results []map[string]interface{}
+	results := make([]map[string]any, len(rows))
+	jobs := make(chan bulkJob, workers*2)
+	resultsCh := make(chan bulkResult, workers*2)
 
-	for _, row := range rows {
-		result := processBulkRow(init, row, headers, colMap, bulkType)
-		if result != nil {
-			if _, hasError := result["_error"]; hasError {
+	// Start workers
+	var wg sync.WaitGroup
+	for w := 0; w < workers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			// Per-worker rate limiter: spread requests across workers
+			interval := time.Second / time.Duration(workers)
+			if interval < 10*time.Millisecond {
+				interval = 10 * time.Millisecond
+			}
+			ticker := time.NewTicker(interval)
+			defer ticker.Stop()
+			for job := range jobs {
+				<-ticker.C
+				result := processBulkRow(init, job.row, headers, colMap, bulkType)
+				resultsCh <- bulkResult{index: job.index, result: result}
+			}
+		}()
+	}
+
+	// Send jobs
+	go func() {
+		for i, row := range rows {
+			jobs <- bulkJob{index: i, row: row}
+		}
+		close(jobs)
+	}()
+
+	// Close results channel when all workers are done
+	go func() {
+		wg.Wait()
+		close(resultsCh)
+	}()
+
+	// Collect results
+	var mu sync.Mutex
+	for r := range resultsCh {
+		results[r.index] = r.result
+		mu.Lock()
+		if r.result != nil {
+			if _, hasError := r.result["_error"]; hasError {
 				stats.Errors++
 			} else {
 				stats.Found++
@@ -120,7 +218,7 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		} else {
 			stats.NotFound++
 		}
-		results = append(results, result)
+		mu.Unlock()
 		progress.Increment()
 	}
 
@@ -130,6 +228,8 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	elapsed := time.Since(startTime)
+	stats.Elapsed = elapsed
 	stats.PrintStats()
 }
 
@@ -138,6 +238,7 @@ type columnMapping struct {
 	domainIdx int
 	firstIdx  int
 	lastIdx   int
+	urlIdx    int
 }
 
 func mapColumns(headers []string, opType string) *columnMapping {
@@ -146,6 +247,7 @@ func mapColumns(headers []string, opType string) *columnMapping {
 		domainIdx: -1,
 		firstIdx:  -1,
 		lastIdx:   -1,
+		urlIdx:    -1,
 	}
 
 	// Auto-detect columns
@@ -160,6 +262,8 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			cm.firstIdx = i
 		case bulkLastCol != "" && strings.EqualFold(h, bulkLastCol):
 			cm.lastIdx = i
+		case bulkUrlCol != "" && strings.EqualFold(h, bulkUrlCol):
+			cm.urlIdx = i
 		case cm.emailIdx == -1 && (lower == "email" || lower == "e-mail" || lower == "email_address" || lower == "emailaddress" || lower == "mail"):
 			cm.emailIdx = i
 		case cm.domainIdx == -1 && (lower == "domain" || lower == "company_domain" || lower == "website" || lower == "company_website"):
@@ -168,6 +272,8 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			cm.firstIdx = i
 		case cm.lastIdx == -1 && (lower == "last_name" || lower == "lastname" || lower == "last" || lower == "lname"):
 			cm.lastIdx = i
+		case cm.urlIdx == -1 && (lower == "url" || lower == "link" || lower == "linkedin" || lower == "linkedin_url" || lower == "article_url" || lower == "profile_url"):
+			cm.urlIdx = i
 		}
 	}
 
@@ -214,6 +320,33 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			}
 		}
 		fmt.Printf("  %s Using column '%s' for domain\n", util.SuccessIcon(), util.Bold(headers[cm.domainIdx]))
+	case "author", "linkedin":
+		if cm.urlIdx == -1 {
+			cm.urlIdx = promptColumnSelect(headers, "URL")
+			if cm.urlIdx == -1 {
+				fmt.Printf("%s Could not find URL column. Use --url-col to specify.\n", util.ErrorIcon())
+				return nil
+			}
+		}
+		fmt.Printf("  %s Using column '%s' for URL\n", util.SuccessIcon(), util.Bold(headers[cm.urlIdx]))
+	case "phone":
+		if cm.emailIdx == -1 {
+			cm.emailIdx = promptColumnSelect(headers, "email")
+			if cm.emailIdx == -1 {
+				fmt.Printf("%s Could not find email column. Use --column to specify.\n", util.ErrorIcon())
+				return nil
+			}
+		}
+		fmt.Printf("  %s Using column '%s' for email\n", util.SuccessIcon(), util.Bold(headers[cm.emailIdx]))
+	case "sources":
+		if cm.emailIdx == -1 {
+			cm.emailIdx = promptColumnSelect(headers, "email")
+			if cm.emailIdx == -1 {
+				fmt.Printf("%s Could not find email column. Use --column to specify.\n", util.ErrorIcon())
+				return nil
+			}
+		}
+		fmt.Printf("  %s Using column '%s' for email\n", util.SuccessIcon(), util.Bold(headers[cm.emailIdx]))
 	}
 
 	fmt.Println()
@@ -242,13 +375,13 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		if email == "" {
 			return nil
 		}
-		result, err := conn.Tomba.Enrichment(tomba.Params{"email": email})
+		result, err := conn.Enrichment(tomba.Params{"email": email})
 		if err != nil {
 			return map[string]interface{}{"_error": err.Error()}
 		}
 		raw, _ := result.Marshal()
 		var data map[string]interface{}
-		json.Unmarshal(raw, &data)
+		_ = json.Unmarshal(raw, &data)
 		return data
 
 	case "verify":
@@ -259,13 +392,13 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		if email == "" {
 			return nil
 		}
-		result, err := conn.Tomba.EmailVerifier(tomba.Params{"email": email})
+		result, err := conn.EmailVerifier(tomba.Params{"email": email})
 		if err != nil {
 			return map[string]interface{}{"_error": err.Error()}
 		}
 		raw, _ := result.Marshal()
 		var data map[string]interface{}
-		json.Unmarshal(raw, &data)
+		_ = json.Unmarshal(raw, &data)
 		return data
 
 	case "finder":
@@ -283,13 +416,13 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		if cm.lastIdx >= 0 && cm.lastIdx < len(row) {
 			params["last_name"] = strings.TrimSpace(row[cm.lastIdx])
 		}
-		result, err := conn.Tomba.EmailFinder(params)
+		result, err := conn.EmailFinder(params)
 		if err != nil {
 			return map[string]interface{}{"_error": err.Error()}
 		}
 		raw, _ := result.Marshal()
 		var data map[string]interface{}
-		json.Unmarshal(raw, &data)
+		_ = json.Unmarshal(raw, &data)
 		return data
 
 	case "search":
@@ -300,13 +433,81 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		if domain == "" {
 			return nil
 		}
-		result, err := conn.Tomba.DomainSearch(tomba.Params{"domain": domain})
+		result, err := conn.DomainSearch(tomba.Params{"domain": domain})
 		if err != nil {
 			return map[string]interface{}{"_error": err.Error()}
 		}
 		raw, _ := result.Marshal()
 		var data map[string]interface{}
-		json.Unmarshal(raw, &data)
+		_ = json.Unmarshal(raw, &data)
+		return data
+
+	case "author":
+		if cm.urlIdx >= len(row) {
+			return map[string]interface{}{"_error": "index out of range"}
+		}
+		url := strings.TrimSpace(row[cm.urlIdx])
+		if url == "" {
+			return nil
+		}
+		result, err := conn.AuthorFinder(tomba.Params{"url": url})
+		if err != nil {
+			return map[string]interface{}{"_error": err.Error()}
+		}
+		raw, _ := result.Marshal()
+		var data map[string]interface{}
+		_ = json.Unmarshal(raw, &data)
+		return data
+
+	case "linkedin":
+		if cm.urlIdx >= len(row) {
+			return map[string]interface{}{"_error": "index out of range"}
+		}
+		url := strings.TrimSpace(row[cm.urlIdx])
+		if url == "" {
+			return nil
+		}
+		result, err := conn.LinkedinFinder(tomba.Params{"url": url})
+		if err != nil {
+			return map[string]interface{}{"_error": err.Error()}
+		}
+		raw, _ := result.Marshal()
+		var data map[string]interface{}
+		_ = json.Unmarshal(raw, &data)
+		return data
+
+	case "phone":
+		if cm.emailIdx >= len(row) {
+			return map[string]interface{}{"_error": "index out of range"}
+		}
+		email := strings.TrimSpace(row[cm.emailIdx])
+		if email == "" {
+			return nil
+		}
+		result, err := conn.Tomba.PhoneFinder(tomba.Params{"email": email})
+		if err != nil {
+			return map[string]interface{}{"_error": err.Error()}
+		}
+		raw, _ := result.Marshal()
+		var data map[string]interface{}
+		_ = json.Unmarshal(raw, &data)
+		return data
+
+	case "sources":
+		if cm.emailIdx >= len(row) {
+			return map[string]interface{}{"_error": "index out of range"}
+		}
+		email := strings.TrimSpace(row[cm.emailIdx])
+		if email == "" {
+			return nil
+		}
+		result, err := conn.Tomba.Sources(email)
+		if err != nil {
+			return map[string]interface{}{"_error": err.Error()}
+		}
+		raw, _ := result.Marshal()
+		var data map[string]interface{}
+		_ = json.Unmarshal(raw, &data)
 		return data
 	}
 
@@ -318,7 +519,7 @@ func writeBulkOutput(filename string, headers []string, rows [][]string, results
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
@@ -355,41 +556,41 @@ func getExtraHeaders(opType string) []string {
 		return []string{"found_email", "score", "position", "company"}
 	case "search":
 		return []string{"total_emails", "first_email"}
+	case "author":
+		return []string{"found_email", "first_name", "last_name", "position", "company", "country"}
+	case "linkedin":
+		return []string{"found_email", "first_name", "last_name", "position", "company", "country", "linkedin"}
+	case "phone":
+		return []string{"phone_number", "phone_type", "country_code", "country_name"}
+	case "sources":
+		return []string{"total_sources", "first_source_url", "first_source_domain"}
 	default:
 		return []string{}
 	}
 }
 
 func extractExtraCols(result map[string]interface{}, opType string) []string {
+	extraCount := map[string]int{
+		"enrich":   8,
+		"verify":   5,
+		"finder":   4,
+		"search":   2,
+		"author":   6,
+		"linkedin": 7,
+		"phone":    4,
+		"sources":  3,
+	}
+	count := extraCount[opType]
+
 	if result == nil {
-		switch opType {
-		case "enrich":
-			return make([]string, 8)
-		case "verify":
-			return make([]string, 5)
-		case "finder":
-			return make([]string, 4)
-		case "search":
-			return make([]string, 2)
-		default:
-			return []string{}
-		}
+		return make([]string, count)
 	}
 
 	if _, hasError := result["_error"]; hasError {
 		errMsg := fmt.Sprintf("%v", result["_error"])
-		switch opType {
-		case "enrich":
-			return []string{errMsg, "", "", "", "", "", "", ""}
-		case "verify":
-			return []string{errMsg, "", "", "", ""}
-		case "finder":
-			return []string{errMsg, "", "", ""}
-		case "search":
-			return []string{errMsg, ""}
-		default:
-			return []string{errMsg}
-		}
+		cols := make([]string, count)
+		cols[0] = errMsg
+		return cols
 	}
 
 	switch opType {
@@ -433,6 +634,57 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 			}
 		}
 		return []string{getMapFloat(m, "total"), firstEmail}
+	case "author":
+		d := getNestedMap(result, "data")
+		return []string{
+			getMapStr(d, "email"),
+			getMapStr(d, "first_name"),
+			getMapStr(d, "last_name"),
+			getMapStr(d, "position"),
+			getMapStr(d, "company"),
+			getMapStr(d, "country"),
+		}
+	case "linkedin":
+		d := getNestedMap(result, "data")
+		return []string{
+			getMapStr(d, "email"),
+			getMapStr(d, "first_name"),
+			getMapStr(d, "last_name"),
+			getMapStr(d, "position"),
+			getMapStr(d, "company"),
+			getMapStr(d, "country"),
+			getMapStr(d, "linkedin"),
+		}
+	case "phone":
+		d := getNestedMap(result, "data")
+		phone := ""
+		phoneType := ""
+		countryCode := ""
+		countryName := ""
+		if phones, ok := d["phones"].([]interface{}); ok && len(phones) > 0 {
+			if p, ok := phones[0].(map[string]interface{}); ok {
+				phone = getMapStr(p, "phone")
+				phoneType = getMapStr(p, "type")
+				countryCode = getMapStr(p, "country_code")
+				countryName = getMapStr(p, "country_name")
+			}
+		}
+		return []string{phone, phoneType, countryCode, countryName}
+	case "sources":
+		d := getNestedMap(result, "data")
+		totalSources := ""
+		firstURL := ""
+		firstDomain := ""
+		if sources, ok := d["sources"].([]interface{}); ok {
+			totalSources = fmt.Sprintf("%d", len(sources))
+			if len(sources) > 0 {
+				if s, ok := sources[0].(map[string]interface{}); ok {
+					firstURL = getMapStr(s, "url")
+					firstDomain = getMapStr(s, "domain")
+				}
+			}
+		}
+		return []string{totalSources, firstURL, firstDomain}
 	default:
 		return []string{}
 	}

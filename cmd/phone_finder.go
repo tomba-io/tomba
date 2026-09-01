@@ -47,6 +47,11 @@ func phoneFinderRun(cmd *cobra.Command, args []string) {
 	// Build params based on provided flags
 	params := tomba.Params{}
 
+	// Also accept -t (target) as email if no explicit flags provided
+	if phoneEmail == "" && phoneDomain == "" && phoneLinkedin == "" && init.Target != "" {
+		phoneEmail = init.Target
+	}
+
 	if phoneEmail != "" {
 		if !_email.IsValidEmail(phoneEmail) {
 			fmt.Println(util.ErrorIcon(), util.Red(start.ErrArgumentEmail.Error()))

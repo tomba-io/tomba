@@ -30,7 +30,7 @@ var phoneValidatorCmd = &cobra.Command{
 func init() {
 	phoneValidatorCmd.Flags().StringVar(&validatorPhone, "phone", "", "Phone number to validate (e.g., +14155552671).")
 	phoneValidatorCmd.Flags().StringVar(&validatorCountryCode, "country-code", "", "Country code for parsing local numbers (e.g., US).")
-	phoneValidatorCmd.MarkFlagRequired("phone")
+	_ = phoneValidatorCmd.MarkFlagRequired("phone")
 }
 
 // phoneValidatorRun the actual work phone-validator
