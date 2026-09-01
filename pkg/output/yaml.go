@@ -24,12 +24,12 @@ func DisplayYAML(jsonString string) (string, error) {
 		return "", err
 	}
 
-	// Use chroma to highlight YMAL syntax
-	var highlightedYMAL bytes.Buffer
-	er := quick.Highlight(&highlightedYMAL, string(yamlBytes), "ymal", "terminal", "monokai")
+	// Use chroma to highlight YAML syntax
+	var highlightedYAML bytes.Buffer
+	er := quick.Highlight(&highlightedYAML, string(yamlBytes), "yaml", "terminal", "monokai")
 	if er != nil {
 		return "", er
 	}
 
-	return highlightedYMAL.String(), nil
+	return highlightedYAML.String(), nil
 }

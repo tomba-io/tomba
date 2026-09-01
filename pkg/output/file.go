@@ -9,7 +9,7 @@ func CreateOutput(filename string, data string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// Write the data to the file
 	_, err = file.WriteString(data)

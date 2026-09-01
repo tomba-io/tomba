@@ -3,6 +3,7 @@ package output
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/tomba-io/tomba/pkg/util"
 )
@@ -53,6 +54,7 @@ type BulkStats struct {
 	NotFound   int
 	Errors     int
 	OutputFile string
+	Elapsed    time.Duration
 }
 
 // PrintStats displays the final bulk operation statistics
@@ -65,6 +67,9 @@ func (s *BulkStats) PrintStats() {
 	fmt.Printf("%s %d/%d emails found (%.1f%% hit rate)\n", util.SuccessIcon(), s.Found, s.Total, hitRate)
 	if s.Errors > 0 {
 		fmt.Printf("%s %d errors encountered\n", util.WarningIcon(), s.Errors)
+	}
+	if s.Elapsed > 0 {
+		fmt.Printf("%s Completed in %s\n", util.InfoIcon(), util.Bold(s.Elapsed.Round(time.Millisecond).String()))
 	}
 	if s.OutputFile != "" {
 		fmt.Printf("%s Results saved to %s\n", util.SuccessIcon(), util.Bold(s.OutputFile))

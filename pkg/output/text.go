@@ -48,6 +48,64 @@ func DisplayText(jsonString string, command string) string {
 		return formatPhoneFinder(data)
 	case "phone-validator":
 		return formatPhoneValidator(data)
+	case "format":
+		return formatFormat(data)
+	case "location":
+		return formatLocation(data)
+	case "autocomplete":
+		return formatAutocomplete(data)
+	case "logs":
+		return formatLogs(data)
+	case "enrichment-person":
+		return formatFinder(data)
+	case "enrichment-company":
+		return formatEnrichmentCompany(data)
+	case "enrichment-combined":
+		return formatEnrichmentCombined(data)
+	case "lead-list":
+		return formatLeadList(data)
+	case "lead-get":
+		return formatLeadGet(data)
+	case "lead-create":
+		return formatSuccessAction(data, "Lead", "created")
+	case "lead-update":
+		return formatSuccessAction(data, "Lead", "updated")
+	case "lead-delete":
+		return formatSuccessAction(data, "Lead", "deleted")
+	case "leads-list-list":
+		return formatLeadsListList(data)
+	case "leads-list-get":
+		return formatLeadGet(data)
+	case "leads-list-create":
+		return formatSuccessAction(data, "Leads list", "created")
+	case "leads-list-update":
+		return formatSuccessAction(data, "Leads list", "updated")
+	case "leads-list-delete":
+		return formatSuccessAction(data, "Leads list", "deleted")
+	case "attribute-list":
+		return formatAttributeList(data)
+	case "attribute-get":
+		return formatLeadGet(data)
+	case "attribute-create":
+		return formatSuccessAction(data, "Attribute", "created")
+	case "attribute-update":
+		return formatSuccessAction(data, "Attribute", "updated")
+	case "attribute-delete":
+		return formatSuccessAction(data, "Attribute", "deleted")
+	case "key-list":
+		return formatKeyList(data)
+	case "key-get":
+		return formatLeadGet(data)
+	case "key-create":
+		return formatSuccessAction(data, "API key", "created")
+	case "key-delete":
+		return formatSuccessAction(data, "API key", "deleted")
+	case "key-reset":
+		return formatSuccessAction(data, "API key", "reset")
+	case "flag-list":
+		return formatFlagList(data)
+	case "flag-create":
+		return formatSuccessAction(data, "Flag", "created")
 	default:
 		return formatGeneric(data, 0)
 	}
@@ -61,13 +119,13 @@ func formatSearch(data map[string]interface{}) string {
 		total := getFloat(meta, "total")
 		page := getFloat(meta, "page")
 		limit := getFloat(meta, "limit")
-		sb.WriteString(fmt.Sprintf("\n%s Domain Search Results\n", util.SuccessIcon()))
-		sb.WriteString(fmt.Sprintf("  Total:   %s\n", util.Bold(fmt.Sprintf("%.0f", total))))
+		fmt.Fprintf(&sb, "\n%s Domain Search Results\n", util.SuccessIcon())
+		fmt.Fprintf(&sb, "  Total:   %s\n", util.Bold(fmt.Sprintf("%.0f", total)))
 		if page > 0 {
-			sb.WriteString(fmt.Sprintf("  Page:    %.0f\n", page))
+			fmt.Fprintf(&sb, "  Page:    %.0f\n", page)
 		}
 		if limit > 0 {
-			sb.WriteString(fmt.Sprintf("  Limit:   %.0f\n", limit))
+			fmt.Fprintf(&sb, "  Limit:   %.0f\n", limit)
 		}
 	}
 
@@ -105,7 +163,7 @@ func formatSearch(data map[string]interface{}) string {
 					}
 				}
 				if len(techNames) > 0 {
-					sb.WriteString(fmt.Sprintf("    Technologies: %s\n", util.Gray(strings.Join(techNames, ", "))))
+					fmt.Fprintf(&sb, "    Technologies: %s\n", util.Gray(strings.Join(techNames, ", ")))
 				}
 			}
 
@@ -118,7 +176,7 @@ func formatSearch(data map[string]interface{}) string {
 					}
 				}
 				if len(codes) > 0 {
-					sb.WriteString(fmt.Sprintf("    SIC Codes: %s\n", strings.Join(codes, ", ")))
+					fmt.Fprintf(&sb, "    SIC Codes: %s\n", strings.Join(codes, ", "))
 				}
 			}
 			if naics, ok := org["naics"].([]interface{}); ok && len(naics) > 0 {
@@ -129,7 +187,7 @@ func formatSearch(data map[string]interface{}) string {
 					}
 				}
 				if len(codes) > 0 {
-					sb.WriteString(fmt.Sprintf("    NAICS Codes: %s\n", strings.Join(codes, ", ")))
+					fmt.Fprintf(&sb, "    NAICS Codes: %s\n", strings.Join(codes, ", "))
 				}
 			}
 		}
@@ -138,17 +196,17 @@ func formatSearch(data map[string]interface{}) string {
 		writeField(&sb, "  ", "Email Pattern", getStr(d, "pattern"))
 		if accept, ok := d["accept_all"].(bool); ok {
 			if accept {
-				sb.WriteString(fmt.Sprintf("  Accept All: %s\n", util.Yellow("yes (catch-all)")))
+				fmt.Fprintf(&sb, "  Accept All: %s\n", util.Yellow("yes (catch-all)"))
 			} else {
-				sb.WriteString(fmt.Sprintf("  Accept All: %s\n", util.Green("no")))
+				fmt.Fprintf(&sb, "  Accept All: %s\n", util.Green("no"))
 			}
 		}
 
 		// Email list
 		if emails, ok := d["emails"].([]interface{}); ok && len(emails) > 0 {
-			sb.WriteString(fmt.Sprintf("\n  Emails (%d):\n", len(emails)))
-			sb.WriteString(fmt.Sprintf("  %-4s %-35s %-22s %-18s %-12s %-8s %s\n", "#", "Email", "Name", "Position", "Department", "Type", "Score"))
-			sb.WriteString(fmt.Sprintf("  %s\n", strings.Repeat("─", 120)))
+			fmt.Fprintf(&sb, "\n  Emails (%d):\n", len(emails))
+			fmt.Fprintf(&sb, "  %-4s %-35s %-22s %-18s %-12s %-8s %s\n", "#", "Email", "Name", "Position", "Department", "Type", "Score")
+			fmt.Fprintf(&sb, "  %s\n", strings.Repeat("─", 120))
 			for i, e := range emails {
 				if em, ok := e.(map[string]interface{}); ok {
 					email := getStr(em, "email")
@@ -166,38 +224,38 @@ func formatSearch(data map[string]interface{}) string {
 					linkedin := getStr(em, "linkedin")
 					twitter := getStr(em, "twitter")
 
-					sb.WriteString(fmt.Sprintf("  %-4d %-35s %-22s %-18s %-12s %-8s %s\n",
-						i+1, util.Green(email), name, util.Gray(position), dept, emailType, score))
+					fmt.Fprintf(&sb, "  %-4d %-35s %-22s %-18s %-12s %-8s %s\n",
+						i+1, util.Green(email), name, util.Gray(position), dept, emailType, score)
 
 					// Extra details per email
 					if country != "" {
-						sb.WriteString(fmt.Sprintf("       Country: %s", country))
+						fmt.Fprintf(&sb, "       Country: %s", country)
 						if linkedin != "" {
-							sb.WriteString(fmt.Sprintf("  LinkedIn: %s", linkedin))
+							fmt.Fprintf(&sb, "  LinkedIn: %s", linkedin)
 						}
 						if twitter != "" {
-							sb.WriteString(fmt.Sprintf("  Twitter: %s", twitter))
+							fmt.Fprintf(&sb, "  Twitter: %s", twitter)
 						}
 						sb.WriteString("\n")
 					} else if linkedin != "" || twitter != "" {
 						sb.WriteString("      ")
 						if linkedin != "" {
-							sb.WriteString(fmt.Sprintf(" LinkedIn: %s", linkedin))
+							fmt.Fprintf(&sb, " LinkedIn: %s", linkedin)
 						}
 						if twitter != "" {
-							sb.WriteString(fmt.Sprintf("  Twitter: %s", twitter))
+							fmt.Fprintf(&sb, "  Twitter: %s", twitter)
 						}
 						sb.WriteString("\n")
 					}
 
 					// Phone number if available
 					if phone := getStr(em, "phone_number"); phone != "" {
-						sb.WriteString(fmt.Sprintf("       Phone: %s\n", phone))
+						fmt.Fprintf(&sb, "       Phone: %s\n", phone)
 					}
 
 					// Sources
 					if sources, ok := em["sources"].([]interface{}); ok && len(sources) > 0 {
-						sb.WriteString(fmt.Sprintf("       Sources: %d found\n", len(sources)))
+						fmt.Fprintf(&sb, "       Sources: %d found\n", len(sources))
 					}
 
 					// Verification
@@ -205,9 +263,9 @@ func formatSearch(data map[string]interface{}) string {
 						vDate := getStr(verif, "date")
 						vStatus := getStr(verif, "status")
 						if vStatus != "" {
-							sb.WriteString(fmt.Sprintf("       Verification: %s", vStatus))
+							fmt.Fprintf(&sb, "       Verification: %s", vStatus)
 							if vDate != "" {
-								sb.WriteString(fmt.Sprintf(" (%s)", vDate))
+								fmt.Fprintf(&sb, " (%s)", vDate)
 							}
 							sb.WriteString("\n")
 						}
@@ -215,7 +273,7 @@ func formatSearch(data map[string]interface{}) string {
 
 					// Last updated
 					if lastUpdated := getStr(em, "last_updated"); lastUpdated != "" {
-						sb.WriteString(fmt.Sprintf("       Last Updated: %s\n", util.Gray(lastUpdated)))
+						fmt.Fprintf(&sb, "       Last Updated: %s\n", util.Gray(lastUpdated))
 					}
 				}
 			}
@@ -231,7 +289,7 @@ func formatFinder(data map[string]interface{}) string {
 	if d, ok := data["data"].(map[string]interface{}); ok {
 		email := getStr(d, "email")
 		if email != "" {
-			sb.WriteString(fmt.Sprintf("\n%s Found: %s\n", util.SuccessIcon(), util.Green(email)))
+			fmt.Fprintf(&sb, "\n%s Found: %s\n", util.SuccessIcon(), util.Green(email))
 		}
 
 		sb.WriteString("\n  Contact Details:\n")
@@ -239,7 +297,7 @@ func formatFinder(data map[string]interface{}) string {
 		first := getStr(d, "first_name")
 		last := getStr(d, "last_name")
 		if first != "" || last != "" {
-			sb.WriteString(fmt.Sprintf("    Name:         %s\n", util.Bold(strings.TrimSpace(first+" "+last))))
+			fmt.Fprintf(&sb, "    Name:         %s\n", util.Bold(strings.TrimSpace(first+" "+last)))
 		}
 		writeField(&sb, "    ", "First Name", first)
 		writeField(&sb, "    ", "Last Name", last)
@@ -255,7 +313,7 @@ func formatFinder(data map[string]interface{}) string {
 
 		// Score
 		if score, ok := d["score"].(float64); ok {
-			sb.WriteString(fmt.Sprintf("    Score:        %s\n", util.Bold(fmt.Sprintf("%.0f%%", score))))
+			fmt.Fprintf(&sb, "    Score:        %s\n", util.Bold(fmt.Sprintf("%.0f%%", score)))
 		}
 
 		// Type
@@ -270,15 +328,15 @@ func formatFinder(data map[string]interface{}) string {
 
 		// Phone
 		if phone := getStr(d, "phone_number"); phone != "" {
-			sb.WriteString(fmt.Sprintf("\n  Phone: %s\n", util.Bold(phone)))
+			fmt.Fprintf(&sb, "\n  Phone: %s\n", util.Bold(phone))
 		}
 
 		// Accept all
 		if accept, ok := d["accept_all"].(bool); ok {
 			if accept {
-				sb.WriteString(fmt.Sprintf("    Accept All:   %s\n", util.Yellow("yes (catch-all domain)")))
+				fmt.Fprintf(&sb, "    Accept All:   %s\n", util.Yellow("yes (catch-all domain)"))
 			} else {
-				sb.WriteString(fmt.Sprintf("    Accept All:   %s\n", util.Green("no")))
+				fmt.Fprintf(&sb, "    Accept All:   %s\n", util.Green("no"))
 			}
 		}
 
@@ -294,14 +352,14 @@ func formatFinder(data map[string]interface{}) string {
 
 		// Sources
 		if sources, ok := d["sources"].([]interface{}); ok && len(sources) > 0 {
-			sb.WriteString(fmt.Sprintf("\n  Sources (%d):\n", len(sources)))
+			fmt.Fprintf(&sb, "\n  Sources (%d):\n", len(sources))
 			for i, s := range sources {
 				if src, ok := s.(map[string]interface{}); ok {
 					uri := getStr(src, "uri")
 					extracted := getStr(src, "extracted_on")
-					sb.WriteString(fmt.Sprintf("    %d. %s", i+1, util.Cyan(uri)))
+					fmt.Fprintf(&sb, "    %d. %s", i+1, util.Cyan(uri))
 					if extracted != "" {
-						sb.WriteString(fmt.Sprintf(" (%s)", util.Gray(extracted)))
+						fmt.Fprintf(&sb, " (%s)", util.Gray(extracted))
 					}
 					sb.WriteString("\n")
 				}
@@ -321,7 +379,7 @@ func formatEnrich(data map[string]interface{}) string {
 	if d, ok := data["data"].(map[string]interface{}); ok {
 		email := getStr(d, "email")
 		if email != "" {
-			sb.WriteString(fmt.Sprintf("\n%s Enriched: %s\n", util.SuccessIcon(), util.Green(email)))
+			fmt.Fprintf(&sb, "\n%s Enriched: %s\n", util.SuccessIcon(), util.Green(email))
 		}
 
 		sb.WriteString("\n  Contact Information:\n")
@@ -329,7 +387,7 @@ func formatEnrich(data map[string]interface{}) string {
 		first := getStr(d, "first_name")
 		last := getStr(d, "last_name")
 		if first != "" || last != "" {
-			sb.WriteString(fmt.Sprintf("    Full Name:    %s\n", util.Bold(strings.TrimSpace(first+" "+last))))
+			fmt.Fprintf(&sb, "    Full Name:    %s\n", util.Bold(strings.TrimSpace(first+" "+last)))
 		}
 		writeField(&sb, "    ", "First Name", first)
 		writeField(&sb, "    ", "Last Name", last)
@@ -356,12 +414,12 @@ func formatEnrich(data map[string]interface{}) string {
 
 		// Phone
 		if phone := getStr(d, "phone_number"); phone != "" {
-			sb.WriteString(fmt.Sprintf("\n  Phone: %s\n", util.Bold(phone)))
+			fmt.Fprintf(&sb, "\n  Phone: %s\n", util.Bold(phone))
 		}
 
 		// Score
 		if score, ok := d["score"].(float64); ok {
-			sb.WriteString(fmt.Sprintf("\n  Score:          %s\n", util.Bold(fmt.Sprintf("%.0f%%", score))))
+			fmt.Fprintf(&sb, "\n  Score:          %s\n", util.Bold(fmt.Sprintf("%.0f%%", score)))
 		}
 
 		writeField(&sb, "  ", "Type", getStr(d, "type"))
@@ -370,9 +428,9 @@ func formatEnrich(data map[string]interface{}) string {
 		// Accept all
 		if accept, ok := d["accept_all"].(bool); ok {
 			if accept {
-				sb.WriteString(fmt.Sprintf("  Accept All:     %s\n", util.Yellow("yes")))
+				fmt.Fprintf(&sb, "  Accept All:     %s\n", util.Yellow("yes"))
 			} else {
-				sb.WriteString(fmt.Sprintf("  Accept All:     %s\n", util.Green("no")))
+				fmt.Fprintf(&sb, "  Accept All:     %s\n", util.Green("no"))
 			}
 		}
 
@@ -385,14 +443,14 @@ func formatEnrich(data map[string]interface{}) string {
 
 		// Sources
 		if sources, ok := d["sources"].([]interface{}); ok && len(sources) > 0 {
-			sb.WriteString(fmt.Sprintf("\n  Sources (%d):\n", len(sources)))
+			fmt.Fprintf(&sb, "\n  Sources (%d):\n", len(sources))
 			for i, s := range sources {
 				if src, ok := s.(map[string]interface{}); ok {
 					uri := getStr(src, "uri")
 					extracted := getStr(src, "extracted_on")
-					sb.WriteString(fmt.Sprintf("    %d. %s", i+1, util.Cyan(uri)))
+					fmt.Fprintf(&sb, "    %d. %s", i+1, util.Cyan(uri))
 					if extracted != "" {
-						sb.WriteString(fmt.Sprintf(" (%s)", util.Gray(extracted)))
+						fmt.Fprintf(&sb, " (%s)", util.Gray(extracted))
 					}
 					sb.WriteString("\n")
 				}
@@ -413,17 +471,20 @@ func formatVerify(data map[string]interface{}) string {
 			email := getStr(emailData, "email")
 			result := getStr(emailData, "result")
 
-			icon := util.SuccessIcon()
-			statusColor := util.Green(result)
-			if result == "undeliverable" {
+			var icon, statusColor string
+			switch result {
+			case "undeliverable":
 				icon = util.ErrorIcon()
 				statusColor = util.Red(result)
-			} else if result == "risky" {
+			case "risky":
 				icon = util.WarningIcon()
 				statusColor = util.Yellow(result)
+			default:
+				icon = util.SuccessIcon()
+				statusColor = util.Green(result)
 			}
 
-			sb.WriteString(fmt.Sprintf("\n%s %s is %s\n", icon, util.Bold(email), statusColor))
+			fmt.Fprintf(&sb, "\n%s %s is %s\n", icon, util.Bold(email), statusColor)
 
 			sb.WriteString("\n  Email Details:\n")
 			writeField(&sb, "    ", "Email", email)
@@ -431,7 +492,7 @@ func formatVerify(data map[string]interface{}) string {
 			writeField(&sb, "    ", "Status", getStr(emailData, "status"))
 
 			if score, ok := emailData["score"].(float64); ok {
-				sb.WriteString(fmt.Sprintf("    Score:        %.0f%%\n", score))
+				fmt.Fprintf(&sb, "    Score:        %.0f%%\n", score)
 			}
 
 			writeField(&sb, "    ", "Regex", formatBoolStr(emailData, "regex"))
@@ -453,14 +514,14 @@ func formatVerify(data map[string]interface{}) string {
 
 			// Sources
 			if sources, ok := emailData["sources"].([]interface{}); ok && len(sources) > 0 {
-				sb.WriteString(fmt.Sprintf("\n  Sources (%d):\n", len(sources)))
+				fmt.Fprintf(&sb, "\n  Sources (%d):\n", len(sources))
 				for i, s := range sources {
 					if src, ok := s.(map[string]interface{}); ok {
 						uri := getStr(src, "uri")
 						extracted := getStr(src, "extracted_on")
-						sb.WriteString(fmt.Sprintf("    %d. %s", i+1, util.Cyan(uri)))
+						fmt.Fprintf(&sb, "    %d. %s", i+1, util.Cyan(uri))
 						if extracted != "" {
-							sb.WriteString(fmt.Sprintf(" (%s)", util.Gray(extracted)))
+							fmt.Fprintf(&sb, " (%s)", util.Gray(extracted))
 						}
 						sb.WriteString("\n")
 					}
@@ -480,14 +541,14 @@ func formatCount(data map[string]interface{}) string {
 
 	if d, ok := data["data"].(map[string]interface{}); ok {
 		if total, ok := d["total"].(float64); ok {
-			sb.WriteString(fmt.Sprintf("\n%s Email Count\n", util.SuccessIcon()))
-			sb.WriteString(fmt.Sprintf("  Total:     %s\n", util.Bold(fmt.Sprintf("%.0f", total))))
+			fmt.Fprintf(&sb, "\n%s Email Count\n", util.SuccessIcon())
+			fmt.Fprintf(&sb, "  Total:     %s\n", util.Bold(fmt.Sprintf("%.0f", total)))
 		}
 		if personal, ok := d["personal_emails"].(float64); ok {
-			sb.WriteString(fmt.Sprintf("  Personal:  %.0f\n", personal))
+			fmt.Fprintf(&sb, "  Personal:  %.0f\n", personal)
 		}
 		if generic, ok := d["generic_emails"].(float64); ok {
-			sb.WriteString(fmt.Sprintf("  Generic:   %.0f\n", generic))
+			fmt.Fprintf(&sb, "  Generic:   %.0f\n", generic)
 		}
 
 		if dept, ok := d["department"].(map[string]interface{}); ok {
@@ -503,7 +564,7 @@ func formatCount(data map[string]interface{}) string {
 						}
 						bar = fmt.Sprintf(" %s %.0f%%", strings.Repeat("█", filled)+strings.Repeat("░", 20-filled), pct)
 					}
-					sb.WriteString(fmt.Sprintf("    %-20s %5.0f%s\n", k, count, util.Gray(bar)))
+					fmt.Fprintf(&sb, "    %-20s %5.0f%s\n", k, count, util.Gray(bar))
 				}
 			}
 		}
@@ -520,7 +581,7 @@ func formatStatus(data map[string]interface{}) string {
 	d := data
 
 	domain := getStr(d, "domain")
-	sb.WriteString(fmt.Sprintf("\n  Domain Status: %s\n\n", util.Bold(domain)))
+	fmt.Fprintf(&sb, "\n  Domain Status: %s\n\n", util.Bold(domain))
 
 	writeBoolField(&sb, "  ", "Webmail", d, "webmail")
 	writeBoolField(&sb, "  ", "Disposable", d, "disposable")
@@ -532,9 +593,9 @@ func formatSources(data map[string]interface{}) string {
 	var sb strings.Builder
 
 	if d, ok := data["data"].([]interface{}); ok {
-		sb.WriteString(fmt.Sprintf("\n%s Found %d sources\n\n", util.SuccessIcon(), len(d)))
-		sb.WriteString(fmt.Sprintf("  %-4s %-60s %-20s %s\n", "#", "URL", "Extracted On", "Still On Page"))
-		sb.WriteString(fmt.Sprintf("  %s\n", strings.Repeat("─", 100)))
+		fmt.Fprintf(&sb, "\n%s Found %d sources\n\n", util.SuccessIcon(), len(d))
+		fmt.Fprintf(&sb, "  %-4s %-60s %-20s %s\n", "#", "URL", "Extracted On", "Still On Page")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("─", 100))
 		for i, s := range d {
 			if src, ok := s.(map[string]interface{}); ok {
 				uri := getStr(src, "uri")
@@ -548,12 +609,12 @@ func formatSources(data map[string]interface{}) string {
 					displayURI = displayURI[:55] + "..."
 				}
 
-				sb.WriteString(fmt.Sprintf("  %-4d %-60s %-20s %s\n", i+1, util.Cyan(displayURI), util.Gray(extracted), stillOnPage))
+				fmt.Fprintf(&sb, "  %-4d %-60s %-20s %s\n", i+1, util.Cyan(displayURI), util.Gray(extracted), stillOnPage)
 				if lastSeen != "" {
-					sb.WriteString(fmt.Sprintf("       Last Seen: %s\n", lastSeen))
+					fmt.Fprintf(&sb, "       Last Seen: %s\n", lastSeen)
 				}
 				if website := getStr(src, "website_url"); website != "" {
-					sb.WriteString(fmt.Sprintf("       Website: %s\n", website))
+					fmt.Fprintf(&sb, "       Website: %s\n", website)
 				}
 			}
 		}
@@ -570,20 +631,20 @@ func formatSimilar(data map[string]interface{}) string {
 		total := getFloat(meta, "total")
 		current := getFloat(meta, "current")
 		totalPages := getFloat(meta, "total_pages")
-		sb.WriteString(fmt.Sprintf("\n%s Found %.0f similar domains", util.SuccessIcon(), total))
+		fmt.Fprintf(&sb, "\n%s Found %.0f similar domains", util.SuccessIcon(), total)
 		if totalPages > 0 {
-			sb.WriteString(fmt.Sprintf("  (page %.0f/%.0f)", current, totalPages))
+			fmt.Fprintf(&sb, "  (page %.0f/%.0f)", current, totalPages)
 		}
 		sb.WriteString("\n")
 	}
 
 	if d, ok := data["data"].([]interface{}); ok {
 		if _, hasMeta := data["meta"]; !hasMeta {
-			sb.WriteString(fmt.Sprintf("\n%s Found %d similar domains\n", util.SuccessIcon(), len(d)))
+			fmt.Fprintf(&sb, "\n%s Found %d similar domains\n", util.SuccessIcon(), len(d))
 		}
 
-		sb.WriteString(fmt.Sprintf("\n  %-4s %-30s %-30s %s\n", "#", "Domain", "Name", "Industry"))
-		sb.WriteString(fmt.Sprintf("  %s\n", strings.Repeat("─", 100)))
+		fmt.Fprintf(&sb, "\n  %-4s %-30s %-30s %s\n", "#", "Domain", "Name", "Industry")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("─", 100))
 		for i, s := range d {
 			if sim, ok := s.(map[string]interface{}); ok {
 				// website_url or host
@@ -606,8 +667,8 @@ func formatSimilar(data map[string]interface{}) string {
 					nameDisplay = util.Gray("-")
 				}
 
-				sb.WriteString(fmt.Sprintf("  %-4d %-30s %-30s %s\n",
-					i+1, util.Green(domain), nameDisplay, util.Gray(extra)))
+				fmt.Fprintf(&sb, "  %-4d %-30s %-30s %s\n",
+					i+1, util.Green(domain), nameDisplay, util.Gray(extra))
 			}
 		}
 	}
@@ -639,9 +700,9 @@ func formatTechnology(data map[string]interface{}) string {
 	}
 
 	if len(techs) > 0 {
-		sb.WriteString(fmt.Sprintf("\n  Technologies (%d):\n\n", len(techs)))
-		sb.WriteString(fmt.Sprintf("  %-4s %-22s %-35s %s\n", "#", "Name", "Categories", "Website"))
-		sb.WriteString(fmt.Sprintf("  %s\n", strings.Repeat("─", 100)))
+		fmt.Fprintf(&sb, "\n  Technologies (%d):\n\n", len(techs))
+		fmt.Fprintf(&sb, "  %-4s %-22s %-35s %s\n", "#", "Name", "Categories", "Website")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("─", 100))
 		for i, t := range techs {
 			if tech, ok := t.(map[string]interface{}); ok {
 				name := getStr(tech, "name")
@@ -663,8 +724,8 @@ func formatTechnology(data map[string]interface{}) string {
 					cats = strings.Join(catNames, ", ")
 				}
 
-				sb.WriteString(fmt.Sprintf("  %-4d %-22s %-35s %s\n",
-					i+1, util.Bold(name), util.Gray(cats), util.Cyan(website)))
+				fmt.Fprintf(&sb, "  %-4d %-22s %-35s %s\n",
+					i+1, util.Bold(name), util.Gray(cats), util.Cyan(website))
 
 				// Description
 				if desc := getStr(tech, "description"); desc != "" {
@@ -672,7 +733,7 @@ func formatTechnology(data map[string]interface{}) string {
 					if len(displayDesc) > 95 {
 						displayDesc = displayDesc[:92] + "..."
 					}
-					sb.WriteString(fmt.Sprintf("       %s\n", util.Gray(displayDesc)))
+					fmt.Fprintf(&sb, "       %s\n", util.Gray(displayDesc))
 				}
 			}
 		}
@@ -686,14 +747,14 @@ func formatWhoami(data map[string]interface{}) string {
 
 	if d, ok := data["data"].(map[string]interface{}); ok {
 		email := getStr(d, "email")
-		sb.WriteString(fmt.Sprintf("\n%s Authenticated as %s\n", util.SuccessIcon(), util.Green(email)))
+		fmt.Fprintf(&sb, "\n%s Authenticated as %s\n", util.SuccessIcon(), util.Green(email))
 
 		sb.WriteString("\n  Account Details:\n")
 		writeField(&sb, "    ", "Email", email)
 		first := getStr(d, "first_name")
 		last := getStr(d, "last_name")
 		if first != "" || last != "" {
-			sb.WriteString(fmt.Sprintf("    Name:         %s\n", util.Bold(strings.TrimSpace(first+" "+last))))
+			fmt.Fprintf(&sb, "    Name:         %s\n", util.Bold(strings.TrimSpace(first+" "+last)))
 		}
 		writeField(&sb, "    ", "First Name", first)
 		writeField(&sb, "    ", "Last Name", last)
@@ -705,7 +766,7 @@ func formatWhoami(data map[string]interface{}) string {
 		writeField(&sb, "    ", "Image", getStr(d, "image"))
 
 		if id, ok := d["user_id"].(float64); ok {
-			sb.WriteString(fmt.Sprintf("    User ID:      %.0f\n", id))
+			fmt.Fprintf(&sb, "    User ID:      %.0f\n", id)
 		}
 
 		// IP info
@@ -718,12 +779,12 @@ func formatWhoami(data map[string]interface{}) string {
 			if searches, ok := plan["search"].(map[string]interface{}); ok {
 				used := getFloat(searches, "used")
 				limit := getFloat(searches, "limit")
-				sb.WriteString(fmt.Sprintf("    Search:       %.0f/%.0f\n", used, limit))
+				fmt.Fprintf(&sb, "    Search:       %.0f/%.0f\n", used, limit)
 			}
 			if verify, ok := plan["verification"].(map[string]interface{}); ok {
 				used := getFloat(verify, "used")
 				limit := getFloat(verify, "limit")
-				sb.WriteString(fmt.Sprintf("    Verification: %.0f/%.0f\n", used, limit))
+				fmt.Fprintf(&sb, "    Verification: %.0f/%.0f\n", used, limit)
 			}
 		}
 
@@ -736,34 +797,41 @@ func formatWhoami(data map[string]interface{}) string {
 func formatUsage(data map[string]interface{}) string {
 	var sb strings.Builder
 
-	if d, ok := data["data"].(map[string]interface{}); ok {
-		sb.WriteString(fmt.Sprintf("\n%s API Usage\n", util.SuccessIcon()))
+	// Show totals summary
+	if total, ok := data["total"].(map[string]interface{}); ok {
+		fmt.Fprintf(&sb, "\n%s API Usage Summary\n\n", util.SuccessIcon())
+		fmt.Fprintf(&sb, "  %-20s %s\n", "Category", "Count")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 35))
 
-		if usage, ok := d["usage"].(map[string]interface{}); ok {
-			sb.WriteString(fmt.Sprintf("\n  %-25s %-10s %-10s %s\n", "Endpoint", "Used", "Limit", "Progress"))
-			sb.WriteString(fmt.Sprintf("  %s\n", strings.Repeat("─", 70)))
-			for key, val := range usage {
-				if v, ok := val.(map[string]interface{}); ok {
-					used := getFloat(v, "used")
-					limit := getFloat(v, "limit")
-					pct := float64(0)
-					if limit > 0 {
-						pct = used / limit * 100
-					}
-					filled := int(pct / 5)
-					if filled > 20 {
-						filled = 20
-					}
-					bar := strings.Repeat("█", filled) + strings.Repeat("░", 20-filled)
-					color := util.Green
-					if pct > 80 {
-						color = util.Red
-					} else if pct > 50 {
-						color = util.Yellow
-					}
-					sb.WriteString(fmt.Sprintf("  %-25s %-10.0f %-10.0f %s %.0f%%\n",
-						util.Bold(key), used, limit, color(bar), pct))
-				}
+		categories := []string{"domain", "finder", "verifier", "technologies", "website", "bulk", "extension", "api", "mobile", "desktop", "sheets"}
+		for _, cat := range categories {
+			val := getFloat(total, cat)
+			if val > 0 {
+				fmt.Fprintf(&sb, "  %-20s %s\n", util.Bold(cat), util.Green(fmt.Sprintf("%.0f", val)))
+			} else {
+				fmt.Fprintf(&sb, "  %-20s %.0f\n", cat, val)
+			}
+		}
+	}
+
+	// Show daily breakdown
+	if items, ok := data["data"].([]interface{}); ok && len(items) > 0 {
+		fmt.Fprintf(&sb, "\n  Daily Breakdown:\n\n")
+		fmt.Fprintf(&sb, "  %-4s %-25s %s\n", "#", "Date", "Usage")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 40))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			date := getStr(m, "created_at")
+			if len(date) > 10 {
+				date = date[:10]
+			}
+			usage := getFloat(m, "usage")
+			verifier := getFloat(m, "verifier")
+			total := usage + verifier
+			if total > 0 {
+				fmt.Fprintf(&sb, "  %-4d %-25s %s\n", i+1, date, util.Green(fmt.Sprintf("%.0f", total)))
+			} else {
+				fmt.Fprintf(&sb, "  %-4d %-25s %.0f\n", i+1, date, total)
 			}
 		}
 	}
@@ -799,9 +867,9 @@ func formatReveal(data map[string]interface{}) string {
 		}
 	}
 
-	sb.WriteString(fmt.Sprintf("\n%s Found %.0f companies", util.SuccessIcon(), total))
+	fmt.Fprintf(&sb, "\n%s Found %.0f companies", util.SuccessIcon(), total)
 	if pages > 0 {
-		sb.WriteString(fmt.Sprintf("  (page %.0f/%.0f, %.0f per page)", page, pages, limit))
+		fmt.Fprintf(&sb, "  (page %.0f/%.0f, %.0f per page)", page, pages, limit)
 	}
 	sb.WriteString("\n")
 
@@ -825,7 +893,7 @@ func formatReveal(data map[string]interface{}) string {
 				}
 			}
 			if len(activeFilters) > 0 {
-				sb.WriteString(fmt.Sprintf("  Filters: %s\n", util.Gray(strings.Join(activeFilters, "  |  "))))
+				fmt.Fprintf(&sb, "  Filters: %s\n", util.Gray(strings.Join(activeFilters, "  |  ")))
 			}
 		}
 	}
@@ -844,9 +912,9 @@ func formatReveal(data map[string]interface{}) string {
 	}
 
 	if len(companies) > 0 {
-		sb.WriteString(fmt.Sprintf("\n  %-4s %-28s %-18s %-15s %-12s %-10s %s\n",
-			"#", "Company", "Industry", "Country", "Size", "Founded", "Website"))
-		sb.WriteString(fmt.Sprintf("  %s\n", strings.Repeat("─", 120)))
+		fmt.Fprintf(&sb, "\n  %-4s %-28s %-18s %-15s %-12s %-10s %s\n",
+			"#", "Company", "Industry", "Country", "Size", "Founded", "Website")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("─", 120))
 
 		for i, c := range companies {
 			company, ok := c.(map[string]interface{})
@@ -873,8 +941,8 @@ func formatReveal(data map[string]interface{}) string {
 				website = getStr(company, "domain")
 			}
 
-			sb.WriteString(fmt.Sprintf("  %-4d %-28s %-18s %-15s %-12s %-10s %s\n",
-				i+1, util.Bold(name), industry, country, size, founded, util.Cyan(website)))
+			fmt.Fprintf(&sb, "  %-4d %-28s %-18s %-15s %-12s %-10s %s\n",
+				i+1, util.Bold(name), industry, country, size, founded, util.Cyan(website))
 
 			// Description
 			if desc := getStr(company, "description"); desc != "" {
@@ -882,7 +950,7 @@ func formatReveal(data map[string]interface{}) string {
 				if len(displayDesc) > 100 {
 					displayDesc = displayDesc[:97] + "..."
 				}
-				sb.WriteString(fmt.Sprintf("       %s\n", util.Gray(displayDesc)))
+				fmt.Fprintf(&sb, "       %s\n", util.Gray(displayDesc))
 			}
 
 			// Location
@@ -904,7 +972,7 @@ func formatReveal(data map[string]interface{}) string {
 				location = append(location, postal)
 			}
 			if len(location) > 0 {
-				sb.WriteString(fmt.Sprintf("       Location: %s\n", strings.Join(location, ", ")))
+				fmt.Fprintf(&sb, "       Location: %s\n", strings.Join(location, ", "))
 			}
 
 			// Extra details
@@ -927,7 +995,7 @@ func formatReveal(data map[string]interface{}) string {
 				details = append(details, "Phone: available")
 			}
 			if len(details) > 0 {
-				sb.WriteString(fmt.Sprintf("       %s\n", strings.Join(details, "  |  ")))
+				fmt.Fprintf(&sb, "       %s\n", strings.Join(details, "  |  "))
 			}
 
 			// Social links
@@ -954,7 +1022,7 @@ func formatReveal(data map[string]interface{}) string {
 				social = append(social, fmt.Sprintf("Facebook: %s", facebook))
 			}
 			if len(social) > 0 {
-				sb.WriteString(fmt.Sprintf("       %s\n", util.Gray(strings.Join(social, "  |  "))))
+				fmt.Fprintf(&sb, "       %s\n", util.Gray(strings.Join(social, "  |  ")))
 			}
 		}
 	}
@@ -1001,11 +1069,11 @@ func formatPhoneFinder(data map[string]interface{}) string {
 		return sb.String()
 	}
 
-	sb.WriteString(fmt.Sprintf("\n%s Found %d phone result(s)\n", util.SuccessIcon(), len(phones)))
+	fmt.Fprintf(&sb, "\n%s Found %d phone result(s)\n", util.SuccessIcon(), len(phones))
 
 	for i, phone := range phones {
 		if len(phones) > 1 {
-			sb.WriteString(fmt.Sprintf("\n  --- Phone %d ---\n", i+1))
+			fmt.Fprintf(&sb, "\n  --- Phone %d ---\n", i+1)
 		} else {
 			sb.WriteString("\n")
 		}
@@ -1072,9 +1140,9 @@ func formatPhoneValidator(data map[string]interface{}) string {
 		valid, hasValid := d["valid"].(bool)
 
 		if hasValid && valid {
-			sb.WriteString(fmt.Sprintf("\n%s %s is %s\n", util.SuccessIcon(), util.Bold(phone), util.Green("valid")))
+			fmt.Fprintf(&sb, "\n%s %s is %s\n", util.SuccessIcon(), util.Bold(phone), util.Green("valid"))
 		} else {
-			sb.WriteString(fmt.Sprintf("\n%s %s is %s\n", util.ErrorIcon(), util.Bold(phone), util.Red("invalid")))
+			fmt.Fprintf(&sb, "\n%s %s is %s\n", util.ErrorIcon(), util.Bold(phone), util.Red("invalid"))
 		}
 
 		sb.WriteString("\n  Phone Details:\n")
@@ -1094,6 +1162,361 @@ func formatPhoneValidator(data map[string]interface{}) string {
 	return sb.String()
 }
 
+func formatFormat(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	// data.data is an array of {format, percentage}
+	if items, ok := data["data"].([]interface{}); ok && len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s Email Formats (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-30s %s\n", "#", "Pattern", "Percentage")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 50))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			format := getStr(m, "format")
+			pct := getFloat(m, "percentage")
+			fmt.Fprintf(&sb, "  %-4d %-30s %.0f%%\n", i+1, util.Green(format), pct)
+		}
+	} else if d, ok := data["data"].(map[string]interface{}); ok {
+		// Fallback for single object response
+		fmt.Fprintf(&sb, "\n%s Email Format\n", util.SuccessIcon())
+		writeField(&sb, "  ", "Domain", getStr(d, "domain"))
+		writeField(&sb, "  ", "Pattern", getStr(d, "pattern"))
+	} else {
+		fmt.Fprintf(&sb, "\n%s No email format found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatLocation(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	// data.data is an array of {name, total}
+	if items, ok := data["data"].([]interface{}); ok && len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s Employee Locations (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-25s %s\n", "#", "Country", "Total")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 40))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			name := getStr(m, "name")
+			total := getFloat(m, "total")
+			fmt.Fprintf(&sb, "  %-4d %-25s %.0f\n", i+1, util.Bold(name), total)
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No location data found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatAutocomplete(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	if items, ok := data["data"].([]interface{}); ok && len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s Domain Suggestions (%d)\n\n", util.SuccessIcon(), len(items))
+		for i, item := range items {
+			if m, ok := item.(map[string]interface{}); ok {
+				domain := getStr(m, "domain")
+				name := getStr(m, "name")
+				if domain != "" {
+					fmt.Fprintf(&sb, "  %d. %s", i+1, util.Green(domain))
+					if name != "" {
+						fmt.Fprintf(&sb, " (%s)", name)
+					}
+					sb.WriteString("\n")
+				}
+			} else if s, ok := item.(string); ok {
+				fmt.Fprintf(&sb, "  %d. %s\n", i+1, util.Green(s))
+			}
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No suggestions found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatLogs(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	if items, ok := data["data"].([]interface{}); ok && len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s API Logs (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-8s %-45s %-15s %s\n", "#", "Method", "URI", "Type", "Date")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 90))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			method := getStr(m, "http_method")
+			if method == "" {
+				method = getStr(m, "method")
+			}
+			uri := getStr(m, "uri")
+			logType := getStr(m, "type")
+			date := getStr(m, "created_at")
+			fmt.Fprintf(&sb, "  %-4d %-8s %-45s %-15s %s\n", i+1, util.Bold(method), uri, logType, util.Gray(date))
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No logs found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatEnrichmentCompany(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	if d, ok := data["data"].(map[string]interface{}); ok {
+		name := getStr(d, "name")
+		if name == "" {
+			name = getStr(d, "organization")
+		}
+		fmt.Fprintf(&sb, "\n%s Company: %s\n", util.SuccessIcon(), util.Bold(name))
+
+		sb.WriteString("\n  Company Details:\n")
+		writeField(&sb, "    ", "Name", name)
+		writeField(&sb, "    ", "Industry", getStr(d, "industry"))
+		writeField(&sb, "    ", "Size", getStr(d, "size"))
+		writeField(&sb, "    ", "Country", getStr(d, "country"))
+		writeField(&sb, "    ", "Website", getStr(d, "website_url"))
+		writeField(&sb, "    ", "Description", getStr(d, "description"))
+		writeField(&sb, "    ", "Type", getStr(d, "type"))
+		writeField(&sb, "    ", "Founded", getStr(d, "founded"))
+		writeField(&sb, "    ", "Revenue", getStr(d, "revenue"))
+		writeField(&sb, "    ", "LinkedIn", getStr(d, "linkedin"))
+		writeField(&sb, "    ", "Twitter", getStr(d, "twitter"))
+	}
+
+	return sb.String()
+}
+
+func formatEnrichmentCombined(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	if d, ok := data["data"].(map[string]interface{}); ok {
+		// Person section
+		if person, ok := d["person"].(map[string]interface{}); ok {
+			email := getStr(person, "email")
+			name := strings.TrimSpace(getStr(person, "first_name") + " " + getStr(person, "last_name"))
+			fmt.Fprintf(&sb, "\n%s Person: %s\n", util.SuccessIcon(), util.Green(email))
+			writeField(&sb, "    ", "Name", name)
+			writeField(&sb, "    ", "Position", getStr(person, "position"))
+			writeField(&sb, "    ", "Company", getStr(person, "company"))
+			writeField(&sb, "    ", "LinkedIn", getStr(person, "linkedin"))
+		}
+
+		// Company section
+		if company, ok := d["company"].(map[string]interface{}); ok {
+			compName := getStr(company, "name")
+			if compName == "" {
+				compName = getStr(company, "organization")
+			}
+			fmt.Fprintf(&sb, "\n  Company: %s\n", util.Bold(compName))
+			writeField(&sb, "    ", "Industry", getStr(company, "industry"))
+			writeField(&sb, "    ", "Size", getStr(company, "size"))
+			writeField(&sb, "    ", "Country", getStr(company, "country"))
+			writeField(&sb, "    ", "Website", getStr(company, "website_url"))
+		}
+	}
+
+	return sb.String()
+}
+
+func formatLeadList(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	// Try data.data.leads[] first, then data.data[]
+	items, _ := data["data"].([]interface{})
+	if items == nil {
+		if d, ok := data["data"].(map[string]interface{}); ok {
+			items, _ = d["leads"].([]interface{})
+		}
+	}
+	if len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s Leads (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-30s %-20s %-20s\n", "#", "Email", "Name", "Created")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 80))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			email := getStr(m, "email")
+			name := getStr(m, "full_name")
+			if name == "" {
+				name = strings.TrimSpace(getStr(m, "first_name") + " " + getStr(m, "last_name"))
+			}
+			created := getStr(m, "created_at")
+			fmt.Fprintf(&sb, "  %-4d %-30s %-20s %-20s\n", i+1, util.Green(email), name, util.Gray(created))
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No leads found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatLeadGet(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	if d, ok := data["data"].(map[string]interface{}); ok {
+		fmt.Fprintf(&sb, "\n%s Details\n\n", util.SuccessIcon())
+		for k, v := range d {
+			switch val := v.(type) {
+			case string:
+				if val != "" {
+					fmt.Fprintf(&sb, "  %-18s %s\n", k+":", val)
+				}
+			case float64:
+				fmt.Fprintf(&sb, "  %-18s %.0f\n", k+":", val)
+			case bool:
+				if val {
+					fmt.Fprintf(&sb, "  %-18s %s\n", k+":", util.Green("true"))
+				} else {
+					fmt.Fprintf(&sb, "  %-18s %s\n", k+":", util.Red("false"))
+				}
+			}
+		}
+	}
+
+	return sb.String()
+}
+
+func formatSuccessAction(data map[string]interface{}, entity, action string) string {
+	var sb strings.Builder
+
+	id := getStr(data, "id")
+	if id == "" {
+		id = fmt.Sprintf("%.0f", getFloat(data, "id"))
+	}
+	if id == "0" {
+		// Try data.data.id
+		if d, ok := data["data"].(map[string]interface{}); ok {
+			id = getStr(d, "id")
+			if id == "" {
+				id = fmt.Sprintf("%.0f", getFloat(d, "id"))
+			}
+		}
+	}
+	if id != "" && id != "0" {
+		fmt.Fprintf(&sb, "\n%s %s %s (ID: %s)\n", util.SuccessIcon(), entity, action, util.Bold(id))
+	} else {
+		fmt.Fprintf(&sb, "\n%s %s %s\n", util.SuccessIcon(), entity, action)
+	}
+
+	return sb.String()
+}
+
+func formatLeadsListList(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	items, _ := data["data"].([]interface{})
+	if items == nil {
+		if d, ok := data["data"].(map[string]interface{}); ok {
+			items, _ = d["list_leads"].([]interface{})
+		}
+	}
+	if len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s Leads Lists (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-30s %-15s %s\n", "#", "Name", "Lead Count", "Created")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 70))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			name := getStr(m, "name")
+			count := getFloat(m, "leads_count")
+			created := getStr(m, "created_at")
+			fmt.Fprintf(&sb, "  %-4d %-30s %-15.0f %s\n", i+1, util.Bold(name), count, util.Gray(created))
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No leads lists found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatAttributeList(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	items, _ := data["data"].([]interface{})
+	if items == nil {
+		if d, ok := data["data"].(map[string]interface{}); ok {
+			items, _ = d["attributes"].([]interface{})
+		}
+	}
+	if len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s Attributes (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-30s %-15s %s\n", "#", "Name", "Type", "Created")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 70))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			name := getStr(m, "name")
+			attrType := getStr(m, "type")
+			created := getStr(m, "created_at")
+			fmt.Fprintf(&sb, "  %-4d %-30s %-15s %s\n", i+1, util.Bold(name), attrType, util.Gray(created))
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No attributes found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatKeyList(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	// Try data.data.keys[] first, then data.data[]
+	items, _ := data["data"].([]interface{})
+	if items == nil {
+		if d, ok := data["data"].(map[string]interface{}); ok {
+			items, _ = d["keys"].([]interface{})
+		}
+	}
+	if len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s API Keys (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-20s %-25s %s\n", "#", "Key", "Created", "Last Used")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 75))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			key := getStr(m, "key")
+			if len(key) > 10 {
+				key = key[:10] + "..."
+			}
+			created := getStr(m, "created_at")
+			lastUsed := getStr(m, "last_used_at")
+			if lastUsed == "" {
+				lastUsed = getStr(m, "last_used")
+			}
+			fmt.Fprintf(&sb, "  %-4d %-20s %-25s %s\n", i+1, util.Bold(key), util.Gray(created), util.Gray(lastUsed))
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No API keys found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
+func formatFlagList(data map[string]interface{}) string {
+	var sb strings.Builder
+
+	items, _ := data["data"].([]interface{})
+	if items == nil {
+		if d, ok := data["data"].(map[string]interface{}); ok {
+			items, _ = d["flags"].([]interface{})
+		}
+	}
+	if len(items) > 0 {
+		fmt.Fprintf(&sb, "\n%s Flags (%d)\n\n", util.SuccessIcon(), len(items))
+		fmt.Fprintf(&sb, "  %-4s %-30s %-25s %s\n", "#", "Email", "Reason", "Created")
+		fmt.Fprintf(&sb, "  %s\n", strings.Repeat("-", 85))
+		for i, item := range items {
+			m, _ := item.(map[string]interface{})
+			email := getStr(m, "email")
+			reason := getStr(m, "reason")
+			created := getStr(m, "created_at")
+			fmt.Fprintf(&sb, "  %-4d %-30s %-25s %s\n", i+1, util.Green(email), reason, util.Gray(created))
+		}
+	} else {
+		fmt.Fprintf(&sb, "\n%s No flags found.\n", util.WarningIcon())
+	}
+
+	return sb.String()
+}
+
 func formatGeneric(data map[string]interface{}, indent int) string {
 	var sb strings.Builder
 	prefix := strings.Repeat("  ", indent)
@@ -1101,34 +1524,34 @@ func formatGeneric(data map[string]interface{}, indent int) string {
 	for k, v := range data {
 		switch val := v.(type) {
 		case map[string]interface{}:
-			sb.WriteString(fmt.Sprintf("%s%s:\n", prefix, util.Bold(k)))
+			fmt.Fprintf(&sb, "%s%s:\n", prefix, util.Bold(k))
 			sb.WriteString(formatGeneric(val, indent+1))
 		case []interface{}:
-			sb.WriteString(fmt.Sprintf("%s%s: (%d items)\n", prefix, util.Bold(k), len(val)))
+			fmt.Fprintf(&sb, "%s%s: (%d items)\n", prefix, util.Bold(k), len(val))
 			for i, item := range val {
 				if m, ok := item.(map[string]interface{}); ok {
-					sb.WriteString(fmt.Sprintf("%s  [%d]:\n", prefix, i+1))
+					fmt.Fprintf(&sb, "%s  [%d]:\n", prefix, i+1)
 					sb.WriteString(formatGeneric(m, indent+2))
 				} else {
-					sb.WriteString(fmt.Sprintf("%s  [%d]: %v\n", prefix, i+1, item))
+					fmt.Fprintf(&sb, "%s  [%d]: %v\n", prefix, i+1, item)
 				}
 			}
 		case string:
 			if val != "" {
-				sb.WriteString(fmt.Sprintf("%s%-18s %s\n", prefix, k+":", val))
+				fmt.Fprintf(&sb, "%s%-18s %s\n", prefix, k+":", val)
 			}
 		case float64:
-			sb.WriteString(fmt.Sprintf("%s%-18s %.0f\n", prefix, k+":", val))
+			fmt.Fprintf(&sb, "%s%-18s %.0f\n", prefix, k+":", val)
 		case bool:
 			if val {
-				sb.WriteString(fmt.Sprintf("%s%-18s %s\n", prefix, k+":", util.Green("true")))
+				fmt.Fprintf(&sb, "%s%-18s %s\n", prefix, k+":", util.Green("true"))
 			} else {
-				sb.WriteString(fmt.Sprintf("%s%-18s %s\n", prefix, k+":", util.Red("false")))
+				fmt.Fprintf(&sb, "%s%-18s %s\n", prefix, k+":", util.Red("false"))
 			}
 		case nil:
 			// skip nil values
 		default:
-			sb.WriteString(fmt.Sprintf("%s%-18s %v\n", prefix, k+":", val))
+			fmt.Fprintf(&sb, "%s%-18s %v\n", prefix, k+":", val)
 		}
 	}
 
@@ -1138,7 +1561,7 @@ func formatGeneric(data map[string]interface{}, indent int) string {
 // writeField writes a labeled field only if the value is non-empty
 func writeField(sb *strings.Builder, prefix, label, value string) {
 	if value != "" {
-		sb.WriteString(fmt.Sprintf("%s%-14s %s\n", prefix, label+":", value))
+		fmt.Fprintf(sb, "%s%-14s %s\n", prefix, label+":", value)
 	}
 }
 
@@ -1146,9 +1569,9 @@ func writeField(sb *strings.Builder, prefix, label, value string) {
 func writeBoolField(sb *strings.Builder, prefix, label string, m map[string]interface{}, key string) {
 	if v, ok := m[key].(bool); ok {
 		if v {
-			sb.WriteString(fmt.Sprintf("%s%-14s %s\n", prefix, label+":", util.Green("yes")))
+			fmt.Fprintf(sb, "%s%-14s %s\n", prefix, label+":", util.Green("yes"))
 		} else {
-			sb.WriteString(fmt.Sprintf("%s%-14s %s\n", prefix, label+":", util.Red("no")))
+			fmt.Fprintf(sb, "%s%-14s %s\n", prefix, label+":", util.Red("no"))
 		}
 	}
 }
