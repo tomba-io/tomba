@@ -9,7 +9,7 @@ LDFLAGS := -s -w \
 	-X github.com/tomba-io/tomba/pkg/version.BuildDate=$(BUILD_DATE) \
 	-X github.com/tomba-io/tomba/pkg/version.Commit=$(COMMIT)
 
-.PHONY: vet deps clean
+.PHONY: vet deps clean demos
 
 build: ensure-dir build-linux build-windows build-darwin build-darwin-arm64 compress
 
@@ -47,6 +47,10 @@ build-darwin-arm64:
 compress:
 	$(info ******************** compress ********************)
 	cd ./bin && find . -name 'tomba*' | xargs -I{} tar czf {}.tar.gz {}
+
+demos:
+	$(info ******************** generating demos ********************)
+	./bin/generate-demos
 
 vet:
 	$(info ******************** vetting ********************)
