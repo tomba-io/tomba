@@ -354,6 +354,14 @@ tomba whoami
 
 </details>
 
+### Update
+
+Update tomba to the latest version. Also available as `tomba upgrade`.
+
+```bash
+tomba update
+```
+
 ### Version
 
 Print version number and build information.
@@ -812,6 +820,7 @@ tomba http --port 8080      # custom port
 | similar         | Retrieve domains similar to a specific domain.                                            |
 | status          | Returns domain status if is webmail or disposable.                                        |
 | technology      | Discover technologies detected for a domain.                                              |
+| update          | Update tomba to the latest version.                                                       |
 | usage           | Check your monthly requests.                                                              |
 | verify          | Verify the deliverability of an email address.                                            |
 | version         | Print version number and build information.                                               |
