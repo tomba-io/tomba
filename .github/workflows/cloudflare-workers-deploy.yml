@@ -24,11 +24,11 @@ jobs:
                   mkdir -p dist
                   cp res/package/scripts/install.sh dist/
                   cp res/package/scripts/install.ps1 dist/
+                  touch .env
 
             - name: Deploy to Cloudflare Workers
               uses: cloudflare/wrangler-action@v3
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-                  command: deploy --assets=./dist
-              env:
-                  WRANGLER_LOG: debug
+                  wranglerVersion: "4"
+                  command: deploy
