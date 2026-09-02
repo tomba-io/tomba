@@ -10,28 +10,33 @@ REPO="tomba-io/tomba"
 BINARY_NAME="tomba"
 INSTALL_DIR="/usr/local/bin"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m' # No Color
+# Colors — use printf to produce real escape characters
+RED=$(printf '\033[0;31m')
+GREEN=$(printf '\033[0;32m')
+YELLOW=$(printf '\033[1;33m')
+CYAN=$(printf '\033[0;36m')
+BOLD=$(printf '\033[1m')
+NC=$(printf '\033[0m')
+
+# Disable colors if not a terminal or NO_COLOR is set
+if [ ! -t 1 ] || [ -n "${NO_COLOR:-}" ]; then
+    RED="" GREEN="" YELLOW="" CYAN="" BOLD="" NC=""
+fi
 
 info() {
-    printf "${CYAN}ℹ${NC}  %s\n" "$1"
+    printf "%s\n" "${CYAN}i${NC}  $1"
 }
 
 success() {
-    printf "${GREEN}✓${NC}  %s\n" "$1"
+    printf "%s\n" "${GREEN}✓${NC}  $1"
 }
 
 warn() {
-    printf "${YELLOW}!${NC}  %s\n" "$1"
+    printf "%s\n" "${YELLOW}!${NC}  $1"
 }
 
 error() {
-    printf "${RED}❌${NC} %s\n" "$1"
+    printf "%s\n" "${RED}x${NC} $1"
     exit 1
 }
 
@@ -93,7 +98,7 @@ download() {
 }
 
 banner() {
-    printf "${GREEN}"
+    printf "%s" "${GREEN}"
     cat << 'BANNER'
 
     ████████╗ ██████╗ ███╗   ███╗██████╗  █████╗    ██╗ ██████╗
@@ -104,8 +109,8 @@ banner() {
        ╚═╝    ╚═════╝ ╚═╝     ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝╚═╝ ╚═════╝
 
 BANNER
-    printf "${NC}"
-    printf "    ${BOLD}CLI Installer${NC} — search or verify email addresses in seconds\n\n"
+    printf "%s\n" "${NC}"
+    printf "    %sCLI Installer%s — search or verify email addresses in seconds\n\n" "${BOLD}" "${NC}"
 }
 
 main() {
@@ -190,7 +195,7 @@ main() {
         printf "    export PATH=\"%s:\$PATH\"\n" "$INSTALL_DIR"
     fi
 
-    printf "\n${BOLD}Getting started:${NC}\n"
+    printf "\n%sGetting started:%s\n" "${BOLD}" "${NC}"
     printf "  tomba login          Sign in with your API key\n"
     printf "  tomba search -t      Search emails by domain\n"
     printf "  tomba chat           Start AI chat\n"
