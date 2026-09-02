@@ -37,7 +37,7 @@ func init() {
 	})
 	rootCmd.Version = version.Version
 	rootCmd.SetVersionTemplate("tomba version {{.Version}}\n")
-	rootCmd.AddCommand(attributeCmd, authorCmd, autocompleteCmd, bulkCmd, chatCmd, countCmd, enrichCmd, enrichmentCmd, finderCmd, flagCmd, formatCmd, httpCmd, keyCmd, leadCmd, leadsListCmd, linkedinCmd, locationCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, phoneValidatorCmd, revealCmd, searchCmd, skillCmd, similarCmd, sourcesCmd, statusCmd, technologyCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
+	rootCmd.AddCommand(attributeCmd, authorCmd, autocompleteCmd, bulkCmd, chatCmd, countCmd, enrichCmd, enrichmentCmd, finderCmd, flagCmd, formatCmd, httpCmd, keyCmd, leadCmd, leadsListCmd, linkedinCmd, locationCmd, logsCmd, logoutCmd, loginCmd, phoneFinderCmd, phoneValidatorCmd, revealCmd, searchCmd, skillCmd, similarCmd, sourcesCmd, statusCmd, technologyCmd, updateCmd, usageCmd, verifyCmd, versionCmd, whoamiCmd)
 	rootCmd.PersistentFlags().StringVarP(&conn.Key, "key", "k", "", "Tomba API KEY.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Secret, "secret", "s", "", "Tomba API SECRET.")
 	rootCmd.PersistentFlags().StringVarP(&conn.Target, "target", "t", "", "TARGET SPECIFICATION Can pass email, Domain, URL, Linkedin URL.")

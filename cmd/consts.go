@@ -115,6 +115,7 @@ const (
 	usageExample = `  tomba usage
   tomba usage -j`
 
+	updateExample  = `  tomba update`
 	versionExample = `  tomba version`
 
 	flagExample = `  tomba flag list
