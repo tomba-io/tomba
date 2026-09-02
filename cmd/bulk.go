@@ -27,6 +27,7 @@ var (
 	bulkLastCol     string
 	bulkUrlCol      string
 	bulkConcurrency int
+	bulkNoResume    bool
 )
 
 // bulkCmd represents the bulk command
@@ -48,6 +49,7 @@ func init() {
 	bulkCmd.Flags().StringVar(&bulkLastCol, "last-col", "", "Column name for last name (for finder type).")
 	bulkCmd.Flags().StringVar(&bulkUrlCol, "url-col", "", "Column name for URL (for author/linkedin type).")
 	bulkCmd.Flags().IntVar(&bulkConcurrency, "concurrency", 0, "Number of concurrent workers (0=auto from plan, max 60).")
+	bulkCmd.Flags().BoolVar(&bulkNoResume, "no-resume", false, "Ignore existing output and start fresh.")
 	_ = bulkCmd.MarkFlagRequired("file")
 }
 
@@ -78,6 +80,145 @@ type bulkJob struct {
 type bulkResult struct {
 	index  int
 	result map[string]any
+}
+
+// StreamingCSVWriter writes CSV rows incrementally as results arrive
+type StreamingCSVWriter struct {
+	mu     sync.Mutex
+	file   *os.File
+	writer *csv.Writer
+	rows   [][]string
+	opType string
+}
+
+// NewStreamingCSVWriter opens the output file and writes headers if needed
+func NewStreamingCSVWriter(filename string, inputHeaders []string, rows [][]string, opType string, appendMode bool) (*StreamingCSVWriter, error) {
+	var file *os.File
+	var err error
+
+	if appendMode {
+		file, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644)
+	} else {
+		file, err = os.Create(filename)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	writer := csv.NewWriter(file)
+
+	if !appendMode {
+		extraHeaders := getExtraHeaders(opType)
+		allHeaders := append(inputHeaders, extraHeaders...)
+		if err := writer.Write(allHeaders); err != nil {
+			_ = file.Close()
+			return nil, err
+		}
+		writer.Flush()
+	}
+
+	return &StreamingCSVWriter{
+		file:   file,
+		writer: writer,
+		rows:   rows,
+		opType: opType,
+	}, nil
+}
+
+// WriteResult writes a single result row to the CSV file (thread-safe)
+func (w *StreamingCSVWriter) WriteResult(index int, result map[string]any) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	extraCols := extractExtraCols(result, w.opType)
+	allCols := append(w.rows[index], extraCols...)
+	_ = w.writer.Write(allCols)
+	w.writer.Flush()
+}
+
+// Close flushes and closes the underlying file
+func (w *StreamingCSVWriter) Close() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.writer.Flush()
+	return w.file.Close()
+}
+
+// detectResumableRows checks if the output file exists and returns indices of already-processed rows
+func detectResumableRows(outputFile string, inputHeaders []string, rows [][]string, opType string) (completed map[int]bool, resumeFound int, resumeNotFound int, err error) {
+	if _, statErr := os.Stat(outputFile); os.IsNotExist(statErr) {
+		return nil, 0, 0, nil
+	}
+
+	file, err := os.Open(outputFile)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	defer func() { _ = file.Close() }()
+
+	reader := csv.NewReader(file)
+	reader.FieldsPerRecord = -1 // allow variable field count (handle truncated last row)
+
+	allRecords, err := reader.ReadAll()
+	if err != nil {
+		return nil, 0, 0, err
+	}
+	if len(allRecords) < 2 {
+		return nil, 0, 0, nil
+	}
+
+	// Validate headers match
+	existingHeaders := allRecords[0]
+	expectedHeaders := append(inputHeaders, getExtraHeaders(opType)...)
+	if len(existingHeaders) != len(expectedHeaders) {
+		return nil, 0, 0, fmt.Errorf("header mismatch: expected %d columns, got %d", len(expectedHeaders), len(existingHeaders))
+	}
+	for i, h := range expectedHeaders {
+		if existingHeaders[i] != h {
+			return nil, 0, 0, fmt.Errorf("header mismatch at column %d: expected %q, got %q", i, h, existingHeaders[i])
+		}
+	}
+
+	// Build a set of completed input row keys
+	inputColCount := len(inputHeaders)
+	extraColCount := len(getExtraHeaders(opType))
+	completedKeys := make(map[string][]string) // key -> extra cols
+	for _, record := range allRecords[1:] {
+		if len(record) < inputColCount {
+			continue
+		}
+		key := strings.Join(record[:inputColCount], "\x00")
+		completedKeys[key] = record[inputColCount:]
+	}
+
+	// Match against input rows
+	completed = make(map[int]bool)
+	found := 0
+	notFound := 0
+	for i, row := range rows {
+		key := strings.Join(row, "\x00")
+		if extraCols, ok := completedKeys[key]; ok {
+			completed[i] = true
+			// Determine if it was found or not by checking if extra cols are all empty
+			hasData := false
+			if len(extraCols) >= extraColCount {
+				for _, col := range extraCols {
+					if col != "" {
+						hasData = true
+						break
+					}
+				}
+			}
+			if hasData {
+				found++
+			} else {
+				notFound++
+			}
+			delete(completedKeys, key) // handle duplicates: only match once
+		}
+	}
+
+	return completed, found, notFound, nil
 }
 
 func bulkRun(cmd *cobra.Command, args []string) {
@@ -141,6 +282,34 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		outputFile = strings.TrimSuffix(bulkFile, ".csv") + "_enriched.csv"
 	}
 
+	// Check for resume
+	var completedIndices map[int]bool
+	var resumeFound, resumeNotFound int
+	if !bulkNoResume {
+		completedIndices, resumeFound, resumeNotFound, err = detectResumableRows(outputFile, headers, rows, bulkType)
+		if err != nil {
+			fmt.Printf("%s Could not parse existing output for resume: %s\n", util.WarningIcon(), util.Yellow(err.Error()))
+			fmt.Printf("%s Starting fresh run\n", util.InfoIcon())
+			completedIndices = nil
+		}
+	}
+
+	resumeCount := len(completedIndices)
+	remainingCount := len(rows) - resumeCount
+	appendMode := resumeCount > 0
+
+	if resumeCount > 0 {
+		fmt.Printf("  %s Resuming: %s rows already processed, %s remaining\n\n",
+			util.InfoIcon(),
+			util.Green(fmt.Sprintf("%d", resumeCount)),
+			util.Bold(fmt.Sprintf("%d", remainingCount)))
+	}
+
+	if remainingCount <= 0 {
+		fmt.Printf("  %s All rows already processed. Use --no-resume to start fresh.\n", util.SuccessIcon())
+		return
+	}
+
 	// Determine concurrency
 	workers := bulkConcurrency
 	if workers <= 0 {
@@ -149,12 +318,19 @@ func bulkRun(cmd *cobra.Command, args []string) {
 	if workers > 60 {
 		workers = 60
 	}
-	if workers > len(rows) {
-		workers = len(rows)
+	if workers > remainingCount {
+		workers = remainingCount
 	}
 
 	fmt.Printf("  Plan: %s | Workers: %s | Rows: %s\n\n",
-		util.Bold(planName), util.Cyan(fmt.Sprintf("%d", workers)), util.Bold(fmt.Sprintf("%d", len(rows))))
+		util.Bold(planName), util.Cyan(fmt.Sprintf("%d", workers)), util.Bold(fmt.Sprintf("%d", remainingCount)))
+
+	// Open streaming CSV writer
+	streamWriter, err := NewStreamingCSVWriter(outputFile, headers, rows, bulkType, appendMode)
+	if err != nil {
+		fmt.Printf("%s Error opening output file: %s\n", util.ErrorIcon(), util.Red(err.Error()))
+		return
+	}
 
 	startTime := time.Now()
 
@@ -162,10 +338,21 @@ func bulkRun(cmd *cobra.Command, args []string) {
 	progress := output.NewProgressBar(len(rows))
 	stats := &output.BulkStats{
 		Total:      len(rows),
+		Found:      resumeFound,
+		NotFound:   resumeNotFound,
 		OutputFile: outputFile,
+		OpType:     bulkType,
+	}
+	if bulkType == "verify" {
+		stats.ExtraCounts = make(map[string]int)
 	}
 
-	results := make([]map[string]any, len(rows))
+	// Pre-increment progress for resumed rows
+	for i := 0; i < resumeCount; i++ {
+		progress.Increment()
+	}
+	progress.Start()
+
 	jobs := make(chan bulkJob, workers*2)
 	resultsCh := make(chan bulkResult, workers*2)
 
@@ -175,7 +362,6 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			// Per-worker rate limiter: spread requests across workers
 			interval := time.Second / time.Duration(workers)
 			if interval < 10*time.Millisecond {
 				interval = 10 * time.Millisecond
@@ -190,9 +376,12 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		}()
 	}
 
-	// Send jobs
+	// Send jobs (skip completed rows)
 	go func() {
 		for i, row := range rows {
+			if completedIndices != nil && completedIndices[i] {
+				continue
+			}
 			jobs <- bulkJob{index: i, row: row}
 		}
 		close(jobs)
@@ -204,16 +393,26 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		close(resultsCh)
 	}()
 
-	// Collect results
+	// Collect results and write to file immediately
 	var mu sync.Mutex
 	for r := range resultsCh {
-		results[r.index] = r.result
+		streamWriter.WriteResult(r.index, r.result)
 		mu.Lock()
 		if r.result != nil {
 			if _, hasError := r.result["_error"]; hasError {
 				stats.Errors++
 			} else {
 				stats.Found++
+				// Track verify breakdown
+				if bulkType == "verify" {
+					if d, ok := r.result["data"].(map[string]any); ok {
+						if e, ok := d["email"].(map[string]any); ok {
+							if result, ok := e["result"].(string); ok {
+								stats.ExtraCounts[result]++
+							}
+						}
+					}
+				}
 			}
 		} else {
 			stats.NotFound++
@@ -222,15 +421,12 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		progress.Increment()
 	}
 
-	// Write output CSV
-	if err := writeBulkOutput(outputFile, headers, rows, results, bulkType); err != nil {
-		fmt.Printf("\n%s Error writing output: %s\n", util.ErrorIcon(), util.Red(err.Error()))
-		return
-	}
+	_ = streamWriter.Close()
 
 	elapsed := time.Since(startTime)
 	stats.Elapsed = elapsed
-	stats.PrintStats()
+	stats.PrintStatsTable()
+	stats.PrintDistributionChart()
 }
 
 type columnMapping struct {
@@ -514,37 +710,6 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 	return nil
 }
 
-func writeBulkOutput(filename string, headers []string, rows [][]string, results []map[string]interface{}, opType string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = file.Close() }()
-
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
-
-	// Build enriched headers
-	extraHeaders := getExtraHeaders(opType)
-	allHeaders := append(headers, extraHeaders...)
-	if err := writer.Write(allHeaders); err != nil {
-		return err
-	}
-
-	for i, row := range rows {
-		var result map[string]interface{}
-		if i < len(results) {
-			result = results[i]
-		}
-		extraCols := extractExtraCols(result, opType)
-		allCols := append(row, extraCols...)
-		if err := writer.Write(allCols); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
 
 func getExtraHeaders(opType string) []string {
 	switch opType {
