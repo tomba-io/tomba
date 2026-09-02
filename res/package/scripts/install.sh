@@ -3,6 +3,9 @@
 # Supports Linux, macOS (Darwin)
 # Usage 1: curl -sSL https://raw.githubusercontent.com/tomba-io/tomba/master/res/package/scripts/install.sh | sh
 # Usage 2: curl -sSL https://releases.tomba.io/install.sh | sh
+# Options:
+#   --version, -v   Install a specific version (e.g., --version 1.1.5)
+#   --dir, -d       Install to a custom directory (e.g., --dir $HOME/.local/bin)
 
 set -e
 
@@ -97,6 +100,86 @@ download() {
     fi
 }
 
+# Verify SHA256 checksum
+verify_checksum() {
+    FILE="$1"
+    FILENAME="$2"
+    CHECKSUMS_FILE="$3"
+
+    if [ ! -f "$CHECKSUMS_FILE" ]; then
+        warn "Checksum file not available, skipping verification"
+        return 0
+    fi
+
+    EXPECTED=$(grep "  ${FILENAME}$" "$CHECKSUMS_FILE" | cut -d ' ' -f 1)
+    if [ -z "$EXPECTED" ]; then
+        EXPECTED=$(grep " ${FILENAME}$" "$CHECKSUMS_FILE" | cut -d ' ' -f 1)
+    fi
+
+    if [ -z "$EXPECTED" ]; then
+        warn "Checksum not found for ${FILENAME}, skipping verification"
+        return 0
+    fi
+
+    if command -v sha256sum >/dev/null 2>&1; then
+        ACTUAL=$(sha256sum "$FILE" | cut -d ' ' -f 1)
+    elif command -v shasum >/dev/null 2>&1; then
+        ACTUAL=$(shasum -a 256 "$FILE" | cut -d ' ' -f 1)
+    else
+        warn "sha256sum/shasum not found, skipping checksum verification"
+        return 0
+    fi
+
+    if [ "$EXPECTED" = "$ACTUAL" ]; then
+        success "Checksum verified (SHA256)"
+        return 0
+    else
+        error "Checksum mismatch! Expected: ${EXPECTED}, Got: ${ACTUAL}"
+    fi
+}
+
+# Setup shell completions
+setup_completions() {
+    TOMBA_BIN="${INSTALL_DIR}/${BINARY_NAME}"
+    if [ ! -x "$TOMBA_BIN" ]; then
+        return
+    fi
+
+    SHELL_NAME=$(basename "${SHELL:-}" 2>/dev/null || echo "")
+    case "$SHELL_NAME" in
+        bash)
+            COMP_DIR="${BASH_COMPLETION_USER_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/bash-completion/completions}"
+            mkdir -p "$COMP_DIR" 2>/dev/null || true
+            if "$TOMBA_BIN" completion bash > "$COMP_DIR/tomba" 2>/dev/null; then
+                success "Bash completions installed to ${BOLD}${COMP_DIR}/tomba${NC}"
+            fi
+            ;;
+        zsh)
+            COMP_DIR="${HOME}/.zsh/completions"
+            mkdir -p "$COMP_DIR" 2>/dev/null || true
+            if "$TOMBA_BIN" completion zsh > "$COMP_DIR/_tomba" 2>/dev/null; then
+                success "Zsh completions installed to ${BOLD}${COMP_DIR}/_tomba${NC}"
+                # Check if fpath is configured
+                if [ -f "$HOME/.zshrc" ]; then
+                    if ! grep -q '\.zsh/completions' "$HOME/.zshrc" 2>/dev/null; then
+                        info "Add to your ${BOLD}~/.zshrc${NC}: ${CYAN}fpath=(~/.zsh/completions \$fpath); autoload -Uz compinit && compinit${NC}"
+                    fi
+                fi
+            fi
+            ;;
+        fish)
+            COMP_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/fish/completions"
+            mkdir -p "$COMP_DIR" 2>/dev/null || true
+            if "$TOMBA_BIN" completion fish > "$COMP_DIR/tomba.fish" 2>/dev/null; then
+                success "Fish completions installed to ${BOLD}${COMP_DIR}/tomba.fish${NC}"
+            fi
+            ;;
+        *)
+            info "Run ${BOLD}tomba completion --help${NC} to set up shell completions"
+            ;;
+    esac
+}
+
 banner() {
     printf "%s" "${GREEN}"
     cat << 'BANNER'
@@ -114,14 +197,48 @@ BANNER
 }
 
 main() {
+    # Parse arguments
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --version|-v) VERSION="$2"; shift 2 ;;
+            --dir|-d) INSTALL_DIR="$2"; shift 2 ;;
+            --help|-h)
+                printf "Usage: install.sh [OPTIONS]\n\n"
+                printf "Options:\n"
+                printf "  --version, -v   Install a specific version (e.g., --version 1.1.5)\n"
+                printf "  --dir, -d       Install to a custom directory (default: /usr/local/bin)\n"
+                printf "  --help, -h      Show this help message\n"
+                exit 0
+                ;;
+            *) shift ;;
+        esac
+    done
+
     banner
 
     OS=$(detect_os)
     ARCH=$(detect_arch)
     info "Detected: ${BOLD}${OS}/${ARCH}${NC}"
 
-    VERSION=$(get_latest_version)
-    info "Latest version: ${BOLD}v${VERSION}${NC}"
+    # Get version (use provided or fetch latest)
+    if [ -z "${VERSION:-}" ]; then
+        VERSION=$(get_latest_version)
+        info "Latest version: ${BOLD}v${VERSION}${NC}"
+    else
+        info "Requested version: ${BOLD}v${VERSION}${NC}"
+    fi
+
+    # Check if already installed and up to date
+    if command -v tomba >/dev/null 2>&1; then
+        CURRENT=$(tomba version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || echo "")
+        if [ -n "$CURRENT" ]; then
+            if [ "$CURRENT" = "$VERSION" ]; then
+                success "tomba v${VERSION} is already installed and up to date"
+                exit 0
+            fi
+            info "Upgrading from ${YELLOW}v${CURRENT}${NC} to ${GREEN}v${VERSION}${NC}"
+        fi
+    fi
 
     # Build download URL
     if [ "$OS" = "windows" ]; then
@@ -131,20 +248,25 @@ main() {
     fi
 
     DOWNLOAD_URL="https://github.com/${REPO}/releases/download/v${VERSION}/${FILENAME}"
+    CHECKSUMS_URL="https://github.com/${REPO}/releases/download/v${VERSION}/${BINARY_NAME}_checksums.txt"
     info "Downloading ${CYAN}${FILENAME}${NC}..."
 
     # Create temp directory
     TMP_DIR=$(mktemp -d)
     trap 'rm -rf "$TMP_DIR"' EXIT
 
-    # Download
+    # Download archive and checksums
     download "$DOWNLOAD_URL" "${TMP_DIR}/${FILENAME}"
+    download "$CHECKSUMS_URL" "${TMP_DIR}/checksums.txt" 2>/dev/null || true
 
     if [ ! -f "${TMP_DIR}/${FILENAME}" ]; then
         error "Download failed"
     fi
 
     success "Downloaded successfully"
+
+    # Verify checksum
+    verify_checksum "${TMP_DIR}/${FILENAME}" "${FILENAME}" "${TMP_DIR}/checksums.txt"
 
     # Extract
     info "Extracting..."
@@ -167,6 +289,11 @@ main() {
     # Install
     info "Installing to ${BOLD}${INSTALL_DIR}/${BINARY_NAME}${NC}..."
 
+    # Ensure install directory exists
+    if [ ! -d "$INSTALL_DIR" ]; then
+        mkdir -p "$INSTALL_DIR" 2>/dev/null || true
+    fi
+
     # Check if we need sudo
     if [ -w "$INSTALL_DIR" ]; then
         mv "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
@@ -180,7 +307,7 @@ main() {
             doas mv "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
             doas chmod +x "${INSTALL_DIR}/${BINARY_NAME}"
         else
-            error "sudo or doas is required to install to ${INSTALL_DIR}. Try: INSTALL_DIR=\$HOME/.local/bin sh install.sh"
+            error "sudo or doas is required to install to ${INSTALL_DIR}. Try: sh install.sh --dir \$HOME/.local/bin"
         fi
     fi
 
@@ -194,6 +321,9 @@ main() {
         warn "${INSTALL_DIR} may not be in your PATH. Add it with:"
         printf "    export PATH=\"%s:\$PATH\"\n" "$INSTALL_DIR"
     fi
+
+    # Setup shell completions
+    setup_completions
 
     printf "\n%sGetting started:%s\n" "${BOLD}" "${NC}"
     printf "  tomba login          Sign in with your API key\n"
