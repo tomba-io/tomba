@@ -65,6 +65,8 @@ const (
 	bulkExample = `  tomba bulk --file contacts.csv --type enrich
   tomba bulk --file leads.csv --type verify --column "Email Address"
   tomba bulk --file prospects.csv --type finder --domain-col company --first-col first --last-col last
+  tomba bulk --file prospects.csv --type finder --domain-col company --full-name-col "full_name"
+  tomba bulk --file prospects.csv --type finder --domain-col company --first-col first --enrich-mobile
   tomba bulk --file domains.csv --type search --column domain -o results.csv
   tomba bulk --file articles.csv --type author --url-col article_url
   tomba bulk --file profiles.csv --type linkedin --url-col linkedin_url

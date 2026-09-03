@@ -25,9 +25,11 @@ var (
 	bulkDomainCol   string
 	bulkFirstCol    string
 	bulkLastCol     string
-	bulkUrlCol      string
-	bulkConcurrency int
-	bulkNoResume    bool
+	bulkUrlCol       string
+	bulkFullNameCol  string
+	bulkConcurrency  int
+	bulkNoResume     bool
+	bulkEnrichMobile bool
 )
 
 // bulkCmd represents the bulk command
@@ -48,6 +50,8 @@ func init() {
 	bulkCmd.Flags().StringVar(&bulkFirstCol, "first-col", "", "Column name for first name (for finder type).")
 	bulkCmd.Flags().StringVar(&bulkLastCol, "last-col", "", "Column name for last name (for finder type).")
 	bulkCmd.Flags().StringVar(&bulkUrlCol, "url-col", "", "Column name for URL (for author/linkedin type).")
+	bulkCmd.Flags().StringVar(&bulkFullNameCol, "full-name-col", "", "Column name for full name (for finder type, alternative to first-col + last-col).")
+	bulkCmd.Flags().BoolVar(&bulkEnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found (for finder/enrich type).")
 	bulkCmd.Flags().IntVar(&bulkConcurrency, "concurrency", 0, "Number of concurrent workers (0=auto from plan, max 60).")
 	bulkCmd.Flags().BoolVar(&bulkNoResume, "no-resume", false, "Ignore existing output and start fresh.")
 	_ = bulkCmd.MarkFlagRequired("file")
@@ -430,20 +434,22 @@ func bulkRun(cmd *cobra.Command, args []string) {
 }
 
 type columnMapping struct {
-	emailIdx  int
-	domainIdx int
-	firstIdx  int
-	lastIdx   int
-	urlIdx    int
+	emailIdx    int
+	domainIdx   int
+	firstIdx    int
+	lastIdx     int
+	urlIdx      int
+	fullNameIdx int
 }
 
 func mapColumns(headers []string, opType string) *columnMapping {
 	cm := &columnMapping{
-		emailIdx:  -1,
-		domainIdx: -1,
-		firstIdx:  -1,
-		lastIdx:   -1,
-		urlIdx:    -1,
+		emailIdx:    -1,
+		domainIdx:   -1,
+		firstIdx:    -1,
+		lastIdx:     -1,
+		urlIdx:      -1,
+		fullNameIdx: -1,
 	}
 
 	// Auto-detect columns
@@ -460,6 +466,8 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			cm.lastIdx = i
 		case bulkUrlCol != "" && strings.EqualFold(h, bulkUrlCol):
 			cm.urlIdx = i
+		case bulkFullNameCol != "" && strings.EqualFold(h, bulkFullNameCol):
+			cm.fullNameIdx = i
 		case cm.emailIdx == -1 && (lower == "email" || lower == "e-mail" || lower == "email_address" || lower == "emailaddress" || lower == "mail"):
 			cm.emailIdx = i
 		case cm.domainIdx == -1 && (lower == "domain" || lower == "company_domain" || lower == "website" || lower == "company_website"):
@@ -468,6 +476,8 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			cm.firstIdx = i
 		case cm.lastIdx == -1 && (lower == "last_name" || lower == "lastname" || lower == "last" || lower == "lname"):
 			cm.lastIdx = i
+		case cm.fullNameIdx == -1 && (lower == "full_name" || lower == "fullname" || lower == "full name"):
+			cm.fullNameIdx = i
 		case cm.urlIdx == -1 && (lower == "url" || lower == "link" || lower == "linkedin" || lower == "linkedin_url" || lower == "article_url" || lower == "profile_url"):
 			cm.urlIdx = i
 		}
@@ -492,7 +502,7 @@ func mapColumns(headers []string, opType string) *columnMapping {
 				return nil
 			}
 		}
-		if cm.firstIdx == -1 || cm.lastIdx == -1 {
+		if cm.fullNameIdx == -1 && (cm.firstIdx == -1 || cm.lastIdx == -1) {
 			if cm.firstIdx == -1 {
 				cm.firstIdx = promptColumnSelect(headers, "first name")
 			}
@@ -501,6 +511,9 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			}
 		}
 		fmt.Printf("  %s Using column '%s' for domain\n", util.SuccessIcon(), util.Bold(headers[cm.domainIdx]))
+		if cm.fullNameIdx >= 0 {
+			fmt.Printf("  %s Using column '%s' for full name\n", util.SuccessIcon(), util.Bold(headers[cm.fullNameIdx]))
+		}
 		if cm.firstIdx >= 0 {
 			fmt.Printf("  %s Using column '%s' for first name\n", util.SuccessIcon(), util.Bold(headers[cm.firstIdx]))
 		}
@@ -571,7 +584,11 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		if email == "" {
 			return nil
 		}
-		result, err := conn.Enrichment(tomba.Params{"email": email})
+		params := tomba.Params{"email": email}
+		if bulkEnrichMobile {
+			params["enrich_mobile"] = true
+		}
+		result, err := conn.Enrichment(params)
 		if err != nil {
 			return map[string]interface{}{"_error": err.Error()}
 		}
@@ -606,11 +623,18 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 			return nil
 		}
 		params := tomba.Params{"domain": domain}
-		if cm.firstIdx >= 0 && cm.firstIdx < len(row) {
-			params["first_name"] = strings.TrimSpace(row[cm.firstIdx])
+		if cm.fullNameIdx >= 0 && cm.fullNameIdx < len(row) {
+			params["full_name"] = strings.TrimSpace(row[cm.fullNameIdx])
+		} else {
+			if cm.firstIdx >= 0 && cm.firstIdx < len(row) {
+				params["first_name"] = strings.TrimSpace(row[cm.firstIdx])
+			}
+			if cm.lastIdx >= 0 && cm.lastIdx < len(row) {
+				params["last_name"] = strings.TrimSpace(row[cm.lastIdx])
+			}
 		}
-		if cm.lastIdx >= 0 && cm.lastIdx < len(row) {
-			params["last_name"] = strings.TrimSpace(row[cm.lastIdx])
+		if bulkEnrichMobile {
+			params["enrich_mobile"] = true
 		}
 		result, err := conn.EmailFinder(params)
 		if err != nil {
@@ -663,7 +687,11 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		if url == "" {
 			return nil
 		}
-		result, err := conn.LinkedinFinder(tomba.Params{"url": url})
+		params := tomba.Params{"url": url}
+		if bulkEnrichMobile {
+			params["enrich_mobile"] = true
+		}
+		result, err := conn.LinkedinFinder(params)
 		if err != nil {
 			return map[string]interface{}{"_error": err.Error()}
 		}
@@ -714,17 +742,29 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 func getExtraHeaders(opType string) []string {
 	switch opType {
 	case "enrich":
-		return []string{"found_email", "first_name", "last_name", "position", "company", "country", "linkedin", "twitter"}
+		headers := []string{"found_email", "first_name", "last_name", "position", "company", "country", "linkedin", "twitter"}
+		if bulkEnrichMobile {
+			headers = append(headers, "phone_number")
+		}
+		return headers
 	case "verify":
 		return []string{"result", "status", "score", "mx_found", "smtp_check"}
 	case "finder":
-		return []string{"found_email", "score", "position", "company"}
+		headers := []string{"found_email", "first_name", "last_name", "score", "position", "company"}
+		if bulkEnrichMobile {
+			headers = append(headers, "phone_number")
+		}
+		return headers
 	case "search":
 		return []string{"total_emails", "first_email"}
 	case "author":
 		return []string{"found_email", "first_name", "last_name", "position", "company", "country"}
 	case "linkedin":
-		return []string{"found_email", "first_name", "last_name", "position", "company", "country", "linkedin"}
+		headers := []string{"found_email", "first_name", "last_name", "position", "company", "country", "linkedin"}
+		if bulkEnrichMobile {
+			headers = append(headers, "phone_number")
+		}
+		return headers
 	case "phone":
 		return []string{"phone_number", "phone_type", "country_code", "country_name"}
 	case "sources":
@@ -735,17 +775,7 @@ func getExtraHeaders(opType string) []string {
 }
 
 func extractExtraCols(result map[string]interface{}, opType string) []string {
-	extraCount := map[string]int{
-		"enrich":   8,
-		"verify":   5,
-		"finder":   4,
-		"search":   2,
-		"author":   6,
-		"linkedin": 7,
-		"phone":    4,
-		"sources":  3,
-	}
-	count := extraCount[opType]
+	count := len(getExtraHeaders(opType))
 
 	if result == nil {
 		return make([]string, count)
@@ -761,7 +791,7 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 	switch opType {
 	case "enrich":
 		d := getNestedMap(result, "data")
-		return []string{
+		cols := []string{
 			getMapStr(d, "email"),
 			getMapStr(d, "first_name"),
 			getMapStr(d, "last_name"),
@@ -771,6 +801,10 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 			getMapStr(d, "linkedin"),
 			getMapStr(d, "twitter"),
 		}
+		if bulkEnrichMobile {
+			cols = append(cols, getFirstPhone(d))
+		}
+		return cols
 	case "verify":
 		d := getNestedMap(result, "data")
 		e := getNestedMap(d, "email")
@@ -783,12 +817,18 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 		}
 	case "finder":
 		d := getNestedMap(result, "data")
-		return []string{
+		cols := []string{
 			getMapStr(d, "email"),
+			getMapStr(d, "first_name"),
+			getMapStr(d, "last_name"),
 			getMapFloat(d, "score"),
 			getMapStr(d, "position"),
 			getMapStr(d, "company"),
 		}
+		if bulkEnrichMobile {
+			cols = append(cols, getFirstPhone(d))
+		}
+		return cols
 	case "search":
 		m := getNestedMap(result, "meta")
 		d := getNestedMap(result, "data")
@@ -811,7 +851,7 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 		}
 	case "linkedin":
 		d := getNestedMap(result, "data")
-		return []string{
+		cols := []string{
 			getMapStr(d, "email"),
 			getMapStr(d, "first_name"),
 			getMapStr(d, "last_name"),
@@ -820,6 +860,10 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 			getMapStr(d, "country"),
 			getMapStr(d, "linkedin"),
 		}
+		if bulkEnrichMobile {
+			cols = append(cols, getFirstPhone(d))
+		}
+		return cols
 	case "phone":
 		d := getNestedMap(result, "data")
 		phone := ""
@@ -853,6 +897,18 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 	default:
 		return []string{}
 	}
+}
+
+func getFirstPhone(m map[string]interface{}) string {
+	if m == nil {
+		return ""
+	}
+	if phones, ok := m["phones"].([]interface{}); ok && len(phones) > 0 {
+		if p, ok := phones[0].(map[string]interface{}); ok {
+			return getMapStr(p, "phone")
+		}
+	}
+	return ""
 }
 
 func getNestedMap(m map[string]interface{}, key string) map[string]interface{} {
