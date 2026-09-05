@@ -29,8 +29,10 @@ var (
 	bulkFullNameCol  string
 	bulkConcurrency  int
 	bulkNoResume     bool
-	bulkEnrichMobile bool
-	bulkFull         bool
+	bulkEnrichMobile   bool
+	bulkFull           bool
+	bulkPhoneCol       string
+	bulkCountryCodeCol string
 )
 
 // bulkCmd represents the bulk command
@@ -45,7 +47,7 @@ var bulkCmd = &cobra.Command{
 
 func init() {
 	bulkCmd.Flags().StringVar(&bulkFile, "file", "", "Input CSV file path (required).")
-	bulkCmd.Flags().StringVar(&bulkType, "type", "enrich", "Operation type: enrich, verify, finder, search, author, linkedin, phone, sources.")
+	bulkCmd.Flags().StringVar(&bulkType, "type", "enrich", "Operation type: enrich, verify, finder, search, author, linkedin, phone, phone-validator, company, similar, sources.")
 	bulkCmd.Flags().StringVar(&bulkColumn, "column", "", "Column name for email or domain (auto-detected if empty).")
 	bulkCmd.Flags().StringVar(&bulkDomainCol, "domain-col", "", "Column name for domain (for finder type).")
 	bulkCmd.Flags().StringVar(&bulkFirstCol, "first-col", "", "Column name for first name (for finder type).")
@@ -54,6 +56,8 @@ func init() {
 	bulkCmd.Flags().StringVar(&bulkFullNameCol, "full-name-col", "", "Column name for full name (for finder type, alternative to first-col + last-col).")
 	bulkCmd.Flags().BoolVar(&bulkEnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found (for finder/enrich type).")
 	bulkCmd.Flags().BoolVar(&bulkFull, "full", false, "Get all phone numbers (for phone type).")
+	bulkCmd.Flags().StringVar(&bulkPhoneCol, "phone-col", "", "Column name for phone number (for phone-validator type).")
+	bulkCmd.Flags().StringVar(&bulkCountryCodeCol, "country-code-col", "", "Column name for country code (for phone-validator type).")
 	bulkCmd.Flags().IntVar(&bulkConcurrency, "concurrency", 0, "Number of concurrent workers (0=auto from plan, max 60).")
 	bulkCmd.Flags().BoolVar(&bulkNoResume, "no-resume", false, "Ignore existing output and start fresh.")
 	_ = bulkCmd.MarkFlagRequired("file")
@@ -458,22 +462,26 @@ func bulkRun(cmd *cobra.Command, args []string) {
 }
 
 type columnMapping struct {
-	emailIdx    int
-	domainIdx   int
-	firstIdx    int
-	lastIdx     int
-	urlIdx      int
-	fullNameIdx int
+	emailIdx       int
+	domainIdx      int
+	firstIdx       int
+	lastIdx        int
+	urlIdx         int
+	fullNameIdx    int
+	phoneIdx       int
+	countryCodeIdx int
 }
 
 func mapColumns(headers []string, opType string) *columnMapping {
 	cm := &columnMapping{
-		emailIdx:    -1,
-		domainIdx:   -1,
-		firstIdx:    -1,
-		lastIdx:     -1,
-		urlIdx:      -1,
-		fullNameIdx: -1,
+		emailIdx:       -1,
+		domainIdx:      -1,
+		firstIdx:       -1,
+		lastIdx:        -1,
+		urlIdx:         -1,
+		fullNameIdx:    -1,
+		phoneIdx:       -1,
+		countryCodeIdx: -1,
 	}
 
 	// Auto-detect columns
@@ -492,6 +500,10 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			cm.urlIdx = i
 		case bulkFullNameCol != "" && strings.EqualFold(h, bulkFullNameCol):
 			cm.fullNameIdx = i
+		case bulkPhoneCol != "" && strings.EqualFold(h, bulkPhoneCol):
+			cm.phoneIdx = i
+		case bulkCountryCodeCol != "" && strings.EqualFold(h, bulkCountryCodeCol):
+			cm.countryCodeIdx = i
 		case cm.emailIdx == -1 && (lower == "email" || lower == "e-mail" || lower == "email_address" || lower == "emailaddress" || lower == "mail"):
 			cm.emailIdx = i
 		case cm.domainIdx == -1 && (lower == "domain" || lower == "company_domain" || lower == "website" || lower == "company_website"):
@@ -502,6 +514,10 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			cm.lastIdx = i
 		case cm.fullNameIdx == -1 && (lower == "full_name" || lower == "fullname" || lower == "full name"):
 			cm.fullNameIdx = i
+		case cm.phoneIdx == -1 && (lower == "phone" || lower == "phone_number" || lower == "phonenumber" || lower == "tel" || lower == "telephone"):
+			cm.phoneIdx = i
+		case cm.countryCodeIdx == -1 && (lower == "country_code" || lower == "countrycode" || lower == "country"):
+			cm.countryCodeIdx = i
 		case cm.urlIdx == -1 && (lower == "url" || lower == "link" || lower == "linkedin" || lower == "linkedin_url" || lower == "article_url" || lower == "profile_url"):
 			cm.urlIdx = i
 		}
@@ -586,6 +602,31 @@ func mapColumns(headers []string, opType string) *columnMapping {
 			}
 		}
 		fmt.Printf("  %s Using column '%s' for email\n", util.SuccessIcon(), util.Bold(headers[cm.emailIdx]))
+	case "company", "similar":
+		if cm.domainIdx == -1 {
+			cm.domainIdx = promptColumnSelect(headers, "domain")
+			if cm.domainIdx == -1 {
+				fmt.Printf("%s Could not find domain column. Use --domain-col to specify.\n", util.ErrorIcon())
+				return nil
+			}
+		}
+		fmt.Printf("  %s Using column '%s' for domain\n", util.SuccessIcon(), util.Bold(headers[cm.domainIdx]))
+	case "phone-validator":
+		if cm.phoneIdx == -1 {
+			if cm.emailIdx >= 0 {
+				cm.phoneIdx = cm.emailIdx
+			} else {
+				cm.phoneIdx = promptColumnSelect(headers, "phone number")
+				if cm.phoneIdx == -1 {
+					fmt.Printf("%s Could not find phone column. Use --phone-col to specify.\n", util.ErrorIcon())
+					return nil
+				}
+			}
+		}
+		fmt.Printf("  %s Using column '%s' for phone number\n", util.SuccessIcon(), util.Bold(headers[cm.phoneIdx]))
+		if cm.countryCodeIdx >= 0 {
+			fmt.Printf("  %s Using column '%s' for country code\n", util.SuccessIcon(), util.Bold(headers[cm.countryCodeIdx]))
+		}
 	}
 
 	fmt.Println()
@@ -781,6 +822,64 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		var data map[string]interface{}
 		_ = json.Unmarshal(raw, &data)
 		return data
+
+	case "company":
+		if cm.domainIdx >= len(row) {
+			return map[string]interface{}{"_error": "index out of range"}
+		}
+		domain := strings.TrimSpace(row[cm.domainIdx])
+		if domain == "" {
+			return nil
+		}
+		result, err := conn.CompanyFind(tomba.Params{"domain": domain})
+		if err != nil {
+			return map[string]interface{}{"_error": err.Error()}
+		}
+		raw, _ := result.Marshal()
+		var data map[string]interface{}
+		_ = json.Unmarshal(raw, &data)
+		return data
+
+	case "similar":
+		if cm.domainIdx >= len(row) {
+			return map[string]interface{}{"_error": "index out of range"}
+		}
+		domain := strings.TrimSpace(row[cm.domainIdx])
+		if domain == "" {
+			return nil
+		}
+		result, err := conn.SimilarDomains(domain)
+		if err != nil {
+			return map[string]interface{}{"_error": err.Error()}
+		}
+		raw, _ := result.Marshal()
+		var data map[string]interface{}
+		_ = json.Unmarshal(raw, &data)
+		return data
+
+	case "phone-validator":
+		if cm.phoneIdx >= len(row) {
+			return map[string]interface{}{"_error": "index out of range"}
+		}
+		phone := strings.TrimSpace(row[cm.phoneIdx])
+		if phone == "" {
+			return nil
+		}
+		params := tomba.Params{"phone": phone}
+		if cm.countryCodeIdx >= 0 && cm.countryCodeIdx < len(row) {
+			cc := strings.TrimSpace(row[cm.countryCodeIdx])
+			if cc != "" {
+				params["country_code"] = cc
+			}
+		}
+		result, err := conn.Tomba.PhoneValidator(params)
+		if err != nil {
+			return map[string]interface{}{"_error": err.Error()}
+		}
+		raw, _ := result.Marshal()
+		var data map[string]interface{}
+		_ = json.Unmarshal(raw, &data)
+		return data
 	}
 
 	return nil
@@ -817,6 +916,12 @@ func getExtraHeaders(opType string) []string {
 		return []string{"phone_number", "valid", "country_code", "line_type", "carrier"}
 	case "sources":
 		return []string{"total_sources", "first_source_url", "first_source_domain"}
+	case "company":
+		return []string{"company_name", "company_domain", "industry", "country", "size", "founded"}
+	case "similar":
+		return []string{"total_similar", "first_similar_domain"}
+	case "phone-validator":
+		return []string{"valid", "local_format", "intl_format", "country_code", "line_type", "carrier"}
 	default:
 		return []string{}
 	}
@@ -939,6 +1044,39 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 			}
 		}
 		return []string{totalSources, firstURL, firstDomain}
+	case "company":
+		d := getNestedMap(result, "data")
+		org := getNestedMap(d, "organization")
+		return []string{
+			getMapStr(org, "name"),
+			getMapStr(org, "website_url"),
+			getMapStr(org, "industries"),
+			getMapStr(org, "country"),
+			getMapStr(org, "size"),
+			getMapStr(org, "founded"),
+		}
+	case "similar":
+		totalSimilar := ""
+		firstDomain := ""
+		if domains, ok := result["data"].([]interface{}); ok {
+			totalSimilar = fmt.Sprintf("%d", len(domains))
+			if len(domains) > 0 {
+				if s, ok := domains[0].(map[string]interface{}); ok {
+					firstDomain = getMapStr(s, "website_url")
+				}
+			}
+		}
+		return []string{totalSimilar, firstDomain}
+	case "phone-validator":
+		d := getNestedMap(result, "data")
+		return []string{
+			getMapBool(d, "valid"),
+			getMapStr(d, "local_format"),
+			getMapStr(d, "intl_format"),
+			getMapStr(d, "country_code"),
+			getMapStr(d, "line_type"),
+			getMapStr(d, "carrier"),
+		}
 	default:
 		return []string{}
 	}
@@ -996,6 +1134,16 @@ func bulkResultHasData(result map[string]interface{}, opType string) bool {
 			return len(sources) > 0
 		}
 		return false
+	case "company":
+		org := getNestedMap(d, "organization")
+		return getMapStr(org, "name") != "" || getMapStr(org, "website_url") != ""
+	case "similar":
+		if domains, ok := result["data"].([]interface{}); ok {
+			return len(domains) > 0
+		}
+		return false
+	case "phone-validator":
+		return getMapStr(d, "intl_format") != "" || getMapStr(d, "local_format") != ""
 	}
 	return true
 }

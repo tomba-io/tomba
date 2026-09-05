@@ -73,7 +73,11 @@ const (
   tomba bulk --file contacts.csv --type phone --column email
   tomba bulk --file companies.csv --type phone --domain-col domain
   tomba bulk --file profiles.csv --type phone --url-col linkedin_url --full
-  tomba bulk --file emails.csv --type sources --column email`
+  tomba bulk --file emails.csv --type sources --column email
+  tomba bulk --file domains.csv --type company --domain-col domain
+  tomba bulk --file domains.csv --type similar --domain-col domain
+  tomba bulk --file phones.csv --type phone-validator --phone-col phone
+  tomba bulk --file phones.csv --type phone-validator --phone-col phone --country-code-col country`
 
 	attributeExample = `  tomba attribute list
   tomba attribute create --name "Company Size" --type "text"

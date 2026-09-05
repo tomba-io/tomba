@@ -542,16 +542,19 @@ tomba bulk --file contacts.csv --type enrich
 
 **Supported operation types:**
 
-| Type       | Input         | Description                        |
-| ---------- | ------------- | ---------------------------------- |
-| `enrich`   | email         | Enrich emails with contact data    |
-| `verify`   | email         | Verify email deliverability        |
-| `finder`   | domain + name | Find email from domain and name (supports `full_name` or `first_name` + `last_name`) |
-| `search`   | domain        | Search all emails for a domain     |
-| `author`   | URL           | Find article author emails         |
-| `linkedin` | URL           | Find emails from LinkedIn profiles |
-| `phone`    | email, domain, or LinkedIn URL | Find phone numbers |
-| `sources`  | email         | Find email sources on the web      |
+| Type              | Input                          | Description                                                                          |
+| ----------------- | ------------------------------ | ------------------------------------------------------------------------------------ |
+| `enrich`          | email                          | Enrich emails with contact data                                                      |
+| `verify`          | email                          | Verify email deliverability                                                          |
+| `finder`          | domain + name                  | Find email from domain and name (supports `full_name` or `first_name` + `last_name`) |
+| `search`          | domain                         | Search all emails for a domain                                                       |
+| `author`          | URL                            | Find article author emails                                                           |
+| `linkedin`        | URL                            | Find emails from LinkedIn profiles                                                   |
+| `phone`           | email, domain, or LinkedIn URL | Find phone numbers                                                                   |
+| `phone-validator` | phone number                   | Validate phone numbers                                                               |
+| `company`         | domain                         | Enrich company data from domain                                                      |
+| `similar`         | domain                         | Find similar domains                                                                 |
+| `sources`         | email                          | Find email sources on the web                                                        |
 
 **Concurrency** is auto-detected from your plan (max 60 workers):
 
@@ -589,6 +592,14 @@ tomba bulk --file domains.csv --type search --column domain -o results.csv
 tomba bulk --file contacts.csv --type phone --column email
 tomba bulk --file companies.csv --type phone --domain-col domain
 tomba bulk --file profiles.csv --type phone --url-col linkedin_url --full
+
+# Company enrichment and similar domains
+tomba bulk --file domains.csv --type company --domain-col domain
+tomba bulk --file domains.csv --type similar --domain-col domain
+
+# Phone validator
+tomba bulk --file phones.csv --type phone-validator --phone-col phone
+tomba bulk --file phones.csv --type phone-validator --phone-col phone --country-code-col country
 
 # Other operation types
 tomba bulk --file articles.csv --type author --url-col article_url
