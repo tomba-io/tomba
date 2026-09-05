@@ -30,6 +30,7 @@ var (
 	bulkConcurrency  int
 	bulkNoResume     bool
 	bulkEnrichMobile bool
+	bulkFull         bool
 )
 
 // bulkCmd represents the bulk command
@@ -52,6 +53,7 @@ func init() {
 	bulkCmd.Flags().StringVar(&bulkUrlCol, "url-col", "", "Column name for URL (for author/linkedin type).")
 	bulkCmd.Flags().StringVar(&bulkFullNameCol, "full-name-col", "", "Column name for full name (for finder type, alternative to first-col + last-col).")
 	bulkCmd.Flags().BoolVar(&bulkEnrichMobile, "enrich-mobile", false, "Get the phone number associated with the email address found (for finder/enrich type).")
+	bulkCmd.Flags().BoolVar(&bulkFull, "full", false, "Get all phone numbers (for phone type).")
 	bulkCmd.Flags().IntVar(&bulkConcurrency, "concurrency", 0, "Number of concurrent workers (0=auto from plan, max 60).")
 	bulkCmd.Flags().BoolVar(&bulkNoResume, "no-resume", false, "Ignore existing output and start fresh.")
 	_ = bulkCmd.MarkFlagRequired("file")
@@ -133,6 +135,23 @@ func NewStreamingCSVWriter(filename string, inputHeaders []string, rows [][]stri
 func (w *StreamingCSVWriter) WriteResult(index int, result map[string]any) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
+
+	// Phone with --full: write one row per phone number
+	if w.opType == "phone" && bulkFull {
+		rows := extractPhoneRows(result)
+		if len(rows) == 0 {
+			count := len(getExtraHeaders(w.opType))
+			allCols := append(w.rows[index], make([]string, count)...)
+			_ = w.writer.Write(allCols)
+		} else {
+			for _, phoneCols := range rows {
+				allCols := append(w.rows[index], phoneCols...)
+				_ = w.writer.Write(allCols)
+			}
+		}
+		w.writer.Flush()
+		return
+	}
 
 	extraCols := extractExtraCols(result, w.opType)
 	allCols := append(w.rows[index], extraCols...)
@@ -403,9 +422,12 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		streamWriter.WriteResult(r.index, r.result)
 		mu.Lock()
 		if r.result != nil {
-			if _, hasError := r.result["_error"]; hasError {
+			if errVal, hasError := r.result["_error"]; hasError {
 				stats.Errors++
-			} else {
+				if errStr, ok := errVal.(string); ok {
+					classifyBulkError(errStr, stats)
+				}
+			} else if bulkResultHasData(r.result, bulkType) {
 				stats.Found++
 				// Track verify breakdown
 				if bulkType == "verify" {
@@ -417,6 +439,8 @@ func bulkRun(cmd *cobra.Command, args []string) {
 						}
 					}
 				}
+			} else {
+				stats.NotFound++
 			}
 		} else {
 			stats.NotFound++
@@ -539,14 +563,20 @@ func mapColumns(headers []string, opType string) *columnMapping {
 		}
 		fmt.Printf("  %s Using column '%s' for URL\n", util.SuccessIcon(), util.Bold(headers[cm.urlIdx]))
 	case "phone":
-		if cm.emailIdx == -1 {
+		if cm.emailIdx >= 0 {
+			fmt.Printf("  %s Using column '%s' for email\n", util.SuccessIcon(), util.Bold(headers[cm.emailIdx]))
+		} else if cm.domainIdx >= 0 {
+			fmt.Printf("  %s Using column '%s' for domain\n", util.SuccessIcon(), util.Bold(headers[cm.domainIdx]))
+		} else if cm.urlIdx >= 0 {
+			fmt.Printf("  %s Using column '%s' for URL\n", util.SuccessIcon(), util.Bold(headers[cm.urlIdx]))
+		} else {
 			cm.emailIdx = promptColumnSelect(headers, "email")
 			if cm.emailIdx == -1 {
-				fmt.Printf("%s Could not find email column. Use --column to specify.\n", util.ErrorIcon())
+				fmt.Printf("%s Could not find email, domain, or URL column. Use --column, --domain-col, or --url-col to specify.\n", util.ErrorIcon())
 				return nil
 			}
+			fmt.Printf("  %s Using column '%s' for email\n", util.SuccessIcon(), util.Bold(headers[cm.emailIdx]))
 		}
-		fmt.Printf("  %s Using column '%s' for email\n", util.SuccessIcon(), util.Bold(headers[cm.emailIdx]))
 	case "sources":
 		if cm.emailIdx == -1 {
 			cm.emailIdx = promptColumnSelect(headers, "email")
@@ -701,14 +731,32 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		return data
 
 	case "phone":
-		if cm.emailIdx >= len(row) {
-			return map[string]interface{}{"_error": "index out of range"}
-		}
-		email := strings.TrimSpace(row[cm.emailIdx])
-		if email == "" {
+		params := tomba.Params{}
+		if cm.emailIdx >= 0 && cm.emailIdx < len(row) {
+			v := strings.TrimSpace(row[cm.emailIdx])
+			if v == "" {
+				return nil
+			}
+			params["email"] = v
+		} else if cm.domainIdx >= 0 && cm.domainIdx < len(row) {
+			v := strings.TrimSpace(row[cm.domainIdx])
+			if v == "" {
+				return nil
+			}
+			params["domain"] = v
+		} else if cm.urlIdx >= 0 && cm.urlIdx < len(row) {
+			v := strings.TrimSpace(row[cm.urlIdx])
+			if v == "" {
+				return nil
+			}
+			params["linkedin"] = v
+		} else {
 			return nil
 		}
-		result, err := conn.Tomba.PhoneFinder(tomba.Params{"email": email})
+		if bulkFull {
+			params["full"] = true
+		}
+		result, err := conn.Tomba.PhoneFinder(params)
 		if err != nil {
 			return map[string]interface{}{"_error": err.Error()}
 		}
@@ -766,7 +814,7 @@ func getExtraHeaders(opType string) []string {
 		}
 		return headers
 	case "phone":
-		return []string{"phone_number", "phone_type", "country_code", "country_name"}
+		return []string{"phone_number", "valid", "country_code", "line_type", "carrier"}
 	case "sources":
 		return []string{"total_sources", "first_source_url", "first_source_domain"}
 	default:
@@ -865,20 +913,17 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 		}
 		return cols
 	case "phone":
-		d := getNestedMap(result, "data")
-		phone := ""
-		phoneType := ""
-		countryCode := ""
-		countryName := ""
-		if phones, ok := d["phones"].([]interface{}); ok && len(phones) > 0 {
-			if p, ok := phones[0].(map[string]interface{}); ok {
-				phone = getMapStr(p, "phone")
-				phoneType = getMapStr(p, "type")
-				countryCode = getMapStr(p, "country_code")
-				countryName = getMapStr(p, "country_name")
-			}
+		phone := extractFirstPhone(result)
+		if phone == nil {
+			return make([]string, count)
 		}
-		return []string{phone, phoneType, countryCode, countryName}
+		return []string{
+			getMapStr(phone, "intl_format"),
+			getMapBool(phone, "valid"),
+			getMapStr(phone, "country_code"),
+			getMapStr(phone, "line_type"),
+			getMapStr(phone, "carrier"),
+		}
 	case "sources":
 		d := getNestedMap(result, "data")
 		totalSources := ""
@@ -899,13 +944,129 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 	}
 }
 
+func classifyBulkError(errStr string, stats *output.BulkStats) {
+	// SDK error format: "error: <status>, status code: <code>"
+	if idx := strings.LastIndex(errStr, "status code: "); idx >= 0 {
+		codeStr := strings.TrimSpace(errStr[idx+len("status code: "):])
+		if len(codeStr) >= 3 {
+			switch codeStr[0] {
+			case '4':
+				stats.ClientErrors++
+				return
+			case '5':
+				stats.ServerErrors++
+				return
+			}
+		}
+	}
+	// Non-HTTP errors (timeout, network, etc.) count as client errors
+	stats.ClientErrors++
+}
+
+func bulkResultHasData(result map[string]interface{}, opType string) bool {
+	d := getNestedMap(result, "data")
+	switch opType {
+	case "enrich":
+		return getMapStr(d, "email") != ""
+	case "verify":
+		e := getNestedMap(d, "email")
+		return getMapStr(e, "result") != ""
+	case "finder":
+		return getMapStr(d, "email") != ""
+	case "search":
+		m := getNestedMap(result, "meta")
+		if v, ok := m["total"].(float64); ok {
+			return v > 0
+		}
+		return false
+	case "author":
+		return getMapStr(d, "email") != ""
+	case "linkedin":
+		return getMapStr(d, "email") != ""
+	case "phone":
+		switch v := result["data"].(type) {
+		case map[string]interface{}:
+			return getMapStr(v, "intl_format") != ""
+		case []interface{}:
+			return len(v) > 0
+		}
+		return false
+	case "sources":
+		if sources, ok := d["sources"].([]interface{}); ok {
+			return len(sources) > 0
+		}
+		return false
+	}
+	return true
+}
+
+func extractFirstPhone(result map[string]interface{}) map[string]interface{} {
+	if result == nil {
+		return nil
+	}
+	switch v := result["data"].(type) {
+	case map[string]interface{}:
+		return v
+	case []interface{}:
+		if len(v) > 0 {
+			if m, ok := v[0].(map[string]interface{}); ok {
+				return m
+			}
+		}
+	}
+	return nil
+}
+
+func extractPhoneRows(result map[string]interface{}) [][]string {
+	if result == nil {
+		return nil
+	}
+	if _, hasError := result["_error"]; hasError {
+		count := len(getExtraHeaders("phone"))
+		cols := make([]string, count)
+		cols[0] = fmt.Sprintf("%v", result["_error"])
+		return [][]string{cols}
+	}
+	var phones []map[string]interface{}
+	switch v := result["data"].(type) {
+	case map[string]interface{}:
+		phones = append(phones, v)
+	case []interface{}:
+		for _, item := range v {
+			if m, ok := item.(map[string]interface{}); ok {
+				phones = append(phones, m)
+			}
+		}
+	}
+	var rows [][]string
+	for _, p := range phones {
+		rows = append(rows, []string{
+			getMapStr(p, "intl_format"),
+			getMapBool(p, "valid"),
+			getMapStr(p, "country_code"),
+			getMapStr(p, "line_type"),
+			getMapStr(p, "carrier"),
+		})
+	}
+	return rows
+}
+
 func getFirstPhone(m map[string]interface{}) string {
 	if m == nil {
 		return ""
 	}
-	if phones, ok := m["phones"].([]interface{}); ok && len(phones) > 0 {
+	if v := getMapStr(m, "intl_format"); v != "" {
+		return v
+	}
+	if v := getMapStr(m, "phone_number"); v != "" {
+		return v
+	}
+	if phones, ok := m["phone_data"].([]interface{}); ok && len(phones) > 0 {
 		if p, ok := phones[0].(map[string]interface{}); ok {
-			return getMapStr(p, "phone")
+			if v := getMapStr(p, "intl_format"); v != "" {
+				return v
+			}
+			return getMapStr(p, "phone_number")
 		}
 	}
 	return ""

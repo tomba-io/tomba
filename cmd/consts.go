@@ -71,6 +71,8 @@ const (
   tomba bulk --file articles.csv --type author --url-col article_url
   tomba bulk --file profiles.csv --type linkedin --url-col linkedin_url
   tomba bulk --file contacts.csv --type phone --column email
+  tomba bulk --file companies.csv --type phone --domain-col domain
+  tomba bulk --file profiles.csv --type phone --url-col linkedin_url --full
   tomba bulk --file emails.csv --type sources --column email`
 
 	attributeExample = `  tomba attribute list

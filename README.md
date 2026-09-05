@@ -141,8 +141,9 @@ Slack Command: `/search tomba.io`
 Retrieves the most likely email address from a domain name, a first name and a last name.
 
 ```bash
-tomba finder --target "tomba.io" --fist "mohamed" --last "ben rebia"
-tomba finder --target "tomba.io" --fist "mohamed" --last "ben rebia" --enrich-mobile
+tomba finder --target "tomba.io" --first "mohamed" --last "ben rebia"
+tomba finder --target "tomba.io" --full "Mohamed Ben Rebia"
+tomba finder --target "tomba.io" --first "mohamed" --last "ben rebia" --enrich-mobile
 ```
 
 <details>
@@ -545,11 +546,11 @@ tomba bulk --file contacts.csv --type enrich
 | ---------- | ------------- | ---------------------------------- |
 | `enrich`   | email         | Enrich emails with contact data    |
 | `verify`   | email         | Verify email deliverability        |
-| `finder`   | domain + name | Find email from domain and name    |
+| `finder`   | domain + name | Find email from domain and name (supports `full_name` or `first_name` + `last_name`) |
 | `search`   | domain        | Search all emails for a domain     |
 | `author`   | URL           | Find article author emails         |
 | `linkedin` | URL           | Find emails from LinkedIn profiles |
-| `phone`    | email         | Find phone numbers for emails      |
+| `phone`    | email, domain, or LinkedIn URL | Find phone numbers |
 | `sources`  | email         | Find email sources on the web      |
 
 **Concurrency** is auto-detected from your plan (max 60 workers):
@@ -571,16 +572,27 @@ tomba bulk --file contacts.csv --type enrich
 tomba bulk --file leads.csv --type verify --column "Email Address"
 tomba bulk --file prospects.csv --type finder --domain-col company --first-col first --last-col last
 
+# Finder with full_name column (alternative to first + last)
+tomba bulk --file prospects.csv --type finder --domain-col company --full-name-col "full_name"
+
+# Finder/enrich with phone enrichment
+tomba bulk --file prospects.csv --type finder --domain-col company --first-col first --enrich-mobile
+tomba bulk --file contacts.csv --type enrich --enrich-mobile
+
 # Override concurrency (useful for testing or rate limit control)
 tomba bulk --file contacts.csv --type verify --concurrency 10
 
 # Custom output file
 tomba bulk --file domains.csv --type search --column domain -o results.csv
 
-# All operation types
+# Phone finder with email, domain, or LinkedIn URL
+tomba bulk --file contacts.csv --type phone --column email
+tomba bulk --file companies.csv --type phone --domain-col domain
+tomba bulk --file profiles.csv --type phone --url-col linkedin_url --full
+
+# Other operation types
 tomba bulk --file articles.csv --type author --url-col article_url
 tomba bulk --file profiles.csv --type linkedin --url-col linkedin_url
-tomba bulk --file contacts.csv --type phone --column email
 tomba bulk --file emails.csv --type sources --column email
 ```
 
