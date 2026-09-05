@@ -86,6 +86,7 @@ type BulkStats struct {
 	Total        int
 	Found        int
 	NotFound     int
+	Skipped      int // rows with empty/invalid input column
 	Errors       int
 	ClientErrors int // 4xx errors (invalid input)
 	ServerErrors int // 5xx errors (Tomba API)
@@ -95,14 +96,22 @@ type BulkStats struct {
 	ExtraCounts  map[string]int
 }
 
+// hitRate returns the hit rate as a percentage, excluding skipped rows.
+func (s *BulkStats) hitRate() float64 {
+	processed := s.Total - s.Skipped
+	if processed <= 0 {
+		return 0
+	}
+	return float64(s.Found) / float64(processed) * 100
+}
+
 // PrintStats displays the final bulk operation statistics
 func (s *BulkStats) PrintStats() {
-	hitRate := float64(0)
-	if s.Total > 0 {
-		hitRate = float64(s.Found) / float64(s.Total) * 100
-	}
 	fmt.Println()
-	fmt.Printf("%s %d/%d emails found (%.1f%% hit rate)\n", util.SuccessIcon(), s.Found, s.Total, hitRate)
+	fmt.Printf("%s %d/%d found (%.1f%% hit rate)\n", util.SuccessIcon(), s.Found, s.Total-s.Skipped, s.hitRate())
+	if s.Skipped > 0 {
+		fmt.Printf("%s %d rows skipped (empty input)\n", util.InfoIcon(), s.Skipped)
+	}
 	if s.Errors > 0 {
 		fmt.Printf("%s %d errors (%d client, %d server)\n", util.WarningIcon(), s.Errors, s.ClientErrors, s.ServerErrors)
 	}
@@ -116,24 +125,21 @@ func (s *BulkStats) PrintStats() {
 
 // PrintStatsTable displays a formatted ASCII table with bulk operation statistics
 func (s *BulkStats) PrintStatsTable() {
-	hitRate := float64(0)
-	if s.Total > 0 {
-		hitRate = float64(s.Found) / float64(s.Total) * 100
-	}
-
 	type tableRow struct {
-		label string
-		value string
+		label   string
+		value   string
+		colorFn func(string) string
 	}
 
 	rows := []tableRow{
-		{"Total", fmt.Sprintf("%d", s.Total)},
-		{"Found", fmt.Sprintf("%d", s.Found)},
-		{"Not Found", fmt.Sprintf("%d", s.NotFound)},
-		{"Client Errors", fmt.Sprintf("%d", s.ClientErrors)},
-		{"Server Errors", fmt.Sprintf("%d", s.ServerErrors)},
-		{"Hit Rate", fmt.Sprintf("%.1f%%", hitRate)},
-		{"Duration", s.Elapsed.Round(time.Millisecond).String()},
+		{"Total", fmt.Sprintf("%d", s.Total), util.White},
+		{"Found", fmt.Sprintf("%d", s.Found), util.Green},
+		{"Not Found", fmt.Sprintf("%d", s.NotFound), util.Yellow},
+		{"Skipped", fmt.Sprintf("%d", s.Skipped), util.Cyan},
+		{"Client Errors", fmt.Sprintf("%d", s.ClientErrors), util.Red},
+		{"Server Errors", fmt.Sprintf("%d", s.ServerErrors), util.Red},
+		{"Hit Rate", fmt.Sprintf("%.1f%%", s.hitRate()), util.White},
+		{"Duration", s.Elapsed.Round(time.Millisecond).String(), util.White},
 	}
 
 	labelW := 14
@@ -148,19 +154,9 @@ func (s *BulkStats) PrintStatsTable() {
 	fmt.Fprintf(&sb, "  ├%s┼%s┤\n", sep, sepV)
 
 	for i, r := range rows {
-		colorFn := util.White
-		switch i {
-		case 1:
-			colorFn = util.Green
-		case 2:
-			colorFn = util.Yellow
-		case 3, 4:
-			colorFn = util.Red
-		}
 		padded := fmt.Sprintf("%*s", valueW, r.value)
-		if i >= 1 && i <= 4 {
-			padded = fmt.Sprintf("%*s", valueW, r.value)
-			padded = colorFn(padded)
+		if i >= 1 && i <= 5 {
+			padded = r.colorFn(padded)
 		}
 		fmt.Fprintf(&sb, "  │ %-*s │ %s │\n", labelW, r.label, padded)
 	}
@@ -192,6 +188,7 @@ func (s *BulkStats) PrintDistributionChart() {
 	mainRows := []chartRow{
 		{"Found       ", s.Found, util.Green},
 		{"NotFound    ", s.NotFound, util.Yellow},
+		{"Skipped     ", s.Skipped, util.Cyan},
 		{"ClientErrors", s.ClientErrors, util.Red},
 		{"ServerErrors", s.ServerErrors, util.Red},
 	}

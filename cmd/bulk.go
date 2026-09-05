@@ -82,6 +82,9 @@ func getConcurrency(planName string) int {
 	}
 }
 
+// bulkSkipped is a sentinel result indicating the row was skipped (empty input column).
+var bulkSkipped = map[string]interface{}{"_skipped": true}
+
 type bulkJob struct {
 	index int
 	row   []string
@@ -141,7 +144,14 @@ func (w *StreamingCSVWriter) WriteResult(index int, result map[string]any) {
 	defer w.mu.Unlock()
 
 	// Phone with --full: write one row per phone number
-	if w.opType == "phone" && bulkFull {
+	if w.opType == "phone" && bulkFull && result != nil {
+		if _, skipped := result["_skipped"]; skipped {
+			count := len(getExtraHeaders(w.opType))
+			allCols := append(w.rows[index], make([]string, count)...)
+			_ = w.writer.Write(allCols)
+			w.writer.Flush()
+			return
+		}
 		rows := extractPhoneRows(result)
 		if len(rows) == 0 {
 			count := len(getExtraHeaders(w.opType))
@@ -426,7 +436,9 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		streamWriter.WriteResult(r.index, r.result)
 		mu.Lock()
 		if r.result != nil {
-			if errVal, hasError := r.result["_error"]; hasError {
+			if _, skipped := r.result["_skipped"]; skipped {
+				stats.Skipped++
+			} else if errVal, hasError := r.result["_error"]; hasError {
 				stats.Errors++
 				if errStr, ok := errVal.(string); ok {
 					classifyBulkError(errStr, stats)
@@ -653,7 +665,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		email := strings.TrimSpace(row[cm.emailIdx])
 		if email == "" {
-			return nil
+			return bulkSkipped
 		}
 		params := tomba.Params{"email": email}
 		if bulkEnrichMobile {
@@ -674,7 +686,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		email := strings.TrimSpace(row[cm.emailIdx])
 		if email == "" {
-			return nil
+			return bulkSkipped
 		}
 		result, err := conn.EmailVerifier(tomba.Params{"email": email})
 		if err != nil {
@@ -691,7 +703,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		domain := strings.TrimSpace(row[cm.domainIdx])
 		if domain == "" {
-			return nil
+			return bulkSkipped
 		}
 		params := tomba.Params{"domain": domain}
 		if cm.fullNameIdx >= 0 && cm.fullNameIdx < len(row) {
@@ -722,7 +734,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		domain := strings.TrimSpace(row[cm.domainIdx])
 		if domain == "" {
-			return nil
+			return bulkSkipped
 		}
 		result, err := conn.DomainSearch(tomba.Params{"domain": domain})
 		if err != nil {
@@ -739,7 +751,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		url := strings.TrimSpace(row[cm.urlIdx])
 		if url == "" {
-			return nil
+			return bulkSkipped
 		}
 		result, err := conn.AuthorFinder(tomba.Params{"url": url})
 		if err != nil {
@@ -756,7 +768,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		url := strings.TrimSpace(row[cm.urlIdx])
 		if url == "" {
-			return nil
+			return bulkSkipped
 		}
 		params := tomba.Params{"url": url}
 		if bulkEnrichMobile {
@@ -776,23 +788,23 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		if cm.emailIdx >= 0 && cm.emailIdx < len(row) {
 			v := strings.TrimSpace(row[cm.emailIdx])
 			if v == "" {
-				return nil
+				return bulkSkipped
 			}
 			params["email"] = v
 		} else if cm.domainIdx >= 0 && cm.domainIdx < len(row) {
 			v := strings.TrimSpace(row[cm.domainIdx])
 			if v == "" {
-				return nil
+				return bulkSkipped
 			}
 			params["domain"] = v
 		} else if cm.urlIdx >= 0 && cm.urlIdx < len(row) {
 			v := strings.TrimSpace(row[cm.urlIdx])
 			if v == "" {
-				return nil
+				return bulkSkipped
 			}
 			params["linkedin"] = v
 		} else {
-			return nil
+			return bulkSkipped
 		}
 		if bulkFull {
 			params["full"] = true
@@ -812,7 +824,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		email := strings.TrimSpace(row[cm.emailIdx])
 		if email == "" {
-			return nil
+			return bulkSkipped
 		}
 		result, err := conn.Tomba.Sources(email)
 		if err != nil {
@@ -829,7 +841,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		domain := strings.TrimSpace(row[cm.domainIdx])
 		if domain == "" {
-			return nil
+			return bulkSkipped
 		}
 		result, err := conn.CompanyFind(tomba.Params{"domain": domain})
 		if err != nil {
@@ -846,7 +858,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		domain := strings.TrimSpace(row[cm.domainIdx])
 		if domain == "" {
-			return nil
+			return bulkSkipped
 		}
 		result, err := conn.SimilarDomains(domain)
 		if err != nil {
@@ -863,7 +875,7 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 		}
 		phone := strings.TrimSpace(row[cm.phoneIdx])
 		if phone == "" {
-			return nil
+			return bulkSkipped
 		}
 		params := tomba.Params{"phone": phone}
 		if cm.countryCodeIdx >= 0 && cm.countryCodeIdx < len(row) {
