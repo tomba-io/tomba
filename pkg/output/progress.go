@@ -83,14 +83,16 @@ func formatDuration(d time.Duration) string {
 
 // BulkStats holds statistics for bulk operations
 type BulkStats struct {
-	Total       int
-	Found       int
-	NotFound    int
-	Errors      int
-	OutputFile  string
-	Elapsed     time.Duration
-	OpType      string
-	ExtraCounts map[string]int
+	Total        int
+	Found        int
+	NotFound     int
+	Errors       int
+	ClientErrors int // 4xx errors (invalid input)
+	ServerErrors int // 5xx errors (Tomba API)
+	OutputFile   string
+	Elapsed      time.Duration
+	OpType       string
+	ExtraCounts  map[string]int
 }
 
 // PrintStats displays the final bulk operation statistics
@@ -102,7 +104,7 @@ func (s *BulkStats) PrintStats() {
 	fmt.Println()
 	fmt.Printf("%s %d/%d emails found (%.1f%% hit rate)\n", util.SuccessIcon(), s.Found, s.Total, hitRate)
 	if s.Errors > 0 {
-		fmt.Printf("%s %d errors encountered\n", util.WarningIcon(), s.Errors)
+		fmt.Printf("%s %d errors (%d client, %d server)\n", util.WarningIcon(), s.Errors, s.ClientErrors, s.ServerErrors)
 	}
 	if s.Elapsed > 0 {
 		fmt.Printf("%s Completed in %s\n", util.InfoIcon(), util.Bold(s.Elapsed.Round(time.Millisecond).String()))
@@ -128,7 +130,8 @@ func (s *BulkStats) PrintStatsTable() {
 		{"Total", fmt.Sprintf("%d", s.Total)},
 		{"Found", fmt.Sprintf("%d", s.Found)},
 		{"Not Found", fmt.Sprintf("%d", s.NotFound)},
-		{"Errors", fmt.Sprintf("%d", s.Errors)},
+		{"Client Errors", fmt.Sprintf("%d", s.ClientErrors)},
+		{"Server Errors", fmt.Sprintf("%d", s.ServerErrors)},
 		{"Hit Rate", fmt.Sprintf("%.1f%%", hitRate)},
 		{"Duration", s.Elapsed.Round(time.Millisecond).String()},
 	}
@@ -151,11 +154,11 @@ func (s *BulkStats) PrintStatsTable() {
 			colorFn = util.Green
 		case 2:
 			colorFn = util.Yellow
-		case 3:
+		case 3, 4:
 			colorFn = util.Red
 		}
 		padded := fmt.Sprintf("%*s", valueW, r.value)
-		if i >= 1 && i <= 3 {
+		if i >= 1 && i <= 4 {
 			padded = fmt.Sprintf("%*s", valueW, r.value)
 			padded = colorFn(padded)
 		}
@@ -187,9 +190,10 @@ func (s *BulkStats) PrintDistributionChart() {
 	fmt.Printf("\n  %s\n\n", util.Bold("Result Distribution"))
 
 	mainRows := []chartRow{
-		{"Found   ", s.Found, util.Green},
-		{"NotFound", s.NotFound, util.Yellow},
-		{"Errors  ", s.Errors, util.Red},
+		{"Found       ", s.Found, util.Green},
+		{"NotFound    ", s.NotFound, util.Yellow},
+		{"ClientErrors", s.ClientErrors, util.Red},
+		{"ServerErrors", s.ServerErrors, util.Red},
 	}
 
 	for _, r := range mainRows {
