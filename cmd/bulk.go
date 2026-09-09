@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"sync"
@@ -143,28 +144,29 @@ func (w *StreamingCSVWriter) WriteResult(index int, result map[string]any) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	// Phone with --full: write one row per phone number
-	if w.opType == "phone" && bulkFull && result != nil {
-		if _, skipped := result["_skipped"]; skipped {
-			count := len(getExtraHeaders(w.opType))
-			allCols := append(w.rows[index], make([]string, count)...)
-			_ = w.writer.Write(allCols)
-			w.writer.Flush()
-			return
-		}
-		rows := extractPhoneRows(result)
-		if len(rows) == 0 {
-			count := len(getExtraHeaders(w.opType))
-			allCols := append(w.rows[index], make([]string, count)...)
-			_ = w.writer.Write(allCols)
-		} else {
-			for _, phoneCols := range rows {
-				allCols := append(w.rows[index], phoneCols...)
-				_ = w.writer.Write(allCols)
+	// Expand multi-row results: phone --full and search
+	if result != nil {
+		if _, skipped := result["_skipped"]; !skipped {
+			var expandedRows [][]string
+			if w.opType == "phone" && bulkFull {
+				expandedRows = extractPhoneRows(result)
+			} else if w.opType == "search" {
+				expandedRows = extractSearchRows(result)
+			}
+			if expandedRows != nil {
+				for _, cols := range expandedRows {
+					allCols := append(w.rows[index], cols...)
+					_ = w.writer.Write(allCols)
+				}
+				if len(expandedRows) == 0 {
+					count := len(getExtraHeaders(w.opType))
+					allCols := append(w.rows[index], make([]string, count)...)
+					_ = w.writer.Write(allCols)
+				}
+				w.writer.Flush()
+				return
 			}
 		}
-		w.writer.Flush()
-		return
 	}
 
 	extraCols := extractExtraCols(result, w.opType)
@@ -290,10 +292,30 @@ func bulkRun(cmd *cobra.Command, args []string) {
 	defer func() { _ = file.Close() }()
 
 	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
-	if err != nil {
-		fmt.Printf("%s Cannot parse CSV: %s\n", util.ErrorIcon(), util.Red(err.Error()))
-		return
+	reader.LazyQuotes = true
+	reader.FieldsPerRecord = -1
+	reader.TrimLeadingSpace = true
+
+	var records [][]string
+	lineNumber := 1
+	for {
+		record, readErr := reader.Read()
+		if readErr == io.EOF {
+			break
+		}
+		if readErr != nil {
+			if parseErr, ok := readErr.(*csv.ParseError); ok && parseErr.Err == csv.ErrFieldCount {
+				if len(record) > 0 {
+					records = append(records, record)
+				}
+				lineNumber++
+				continue
+			}
+			fmt.Printf("%s Cannot parse CSV line %d: %s\n", util.ErrorIcon(), lineNumber, util.Red(readErr.Error()))
+			return
+		}
+		records = append(records, record)
+		lineNumber++
 	}
 
 	if len(records) < 2 {
@@ -302,7 +324,17 @@ func bulkRun(cmd *cobra.Command, args []string) {
 	}
 
 	headers := records[0]
+	headerLen := len(headers)
 	rows := records[1:]
+
+	// Pad short rows to match header count
+	for i, row := range rows {
+		if len(row) < headerLen {
+			padded := make([]string, headerLen)
+			copy(padded, row)
+			rows[i] = padded
+		}
+	}
 
 	fmt.Printf("  Columns: %s\n", util.Cyan(strings.Join(headers, ", ")))
 	fmt.Printf("  Rows: %s\n\n", util.Bold(fmt.Sprintf("%d", len(rows))))
@@ -500,21 +532,21 @@ func mapColumns(headers []string, opType string) *columnMapping {
 	for i, h := range headers {
 		lower := strings.ToLower(strings.TrimSpace(h))
 		switch {
-		case bulkColumn != "" && strings.EqualFold(h, bulkColumn):
+		case bulkColumn != "" && cm.emailIdx == -1 && strings.EqualFold(h, bulkColumn):
 			cm.emailIdx = i
-		case bulkDomainCol != "" && strings.EqualFold(h, bulkDomainCol):
+		case bulkDomainCol != "" && cm.domainIdx == -1 && strings.EqualFold(h, bulkDomainCol):
 			cm.domainIdx = i
-		case bulkFirstCol != "" && strings.EqualFold(h, bulkFirstCol):
+		case bulkFirstCol != "" && cm.firstIdx == -1 && strings.EqualFold(h, bulkFirstCol):
 			cm.firstIdx = i
-		case bulkLastCol != "" && strings.EqualFold(h, bulkLastCol):
+		case bulkLastCol != "" && cm.lastIdx == -1 && strings.EqualFold(h, bulkLastCol):
 			cm.lastIdx = i
-		case bulkUrlCol != "" && strings.EqualFold(h, bulkUrlCol):
+		case bulkUrlCol != "" && cm.urlIdx == -1 && strings.EqualFold(h, bulkUrlCol):
 			cm.urlIdx = i
-		case bulkFullNameCol != "" && strings.EqualFold(h, bulkFullNameCol):
+		case bulkFullNameCol != "" && cm.fullNameIdx == -1 && strings.EqualFold(h, bulkFullNameCol):
 			cm.fullNameIdx = i
-		case bulkPhoneCol != "" && strings.EqualFold(h, bulkPhoneCol):
+		case bulkPhoneCol != "" && cm.phoneIdx == -1 && strings.EqualFold(h, bulkPhoneCol):
 			cm.phoneIdx = i
-		case bulkCountryCodeCol != "" && strings.EqualFold(h, bulkCountryCodeCol):
+		case bulkCountryCodeCol != "" && cm.countryCodeIdx == -1 && strings.EqualFold(h, bulkCountryCodeCol):
 			cm.countryCodeIdx = i
 		case cm.emailIdx == -1 && (lower == "email" || lower == "e-mail" || lower == "email_address" || lower == "emailaddress" || lower == "mail"):
 			cm.emailIdx = i
@@ -591,13 +623,34 @@ func mapColumns(headers []string, opType string) *columnMapping {
 		}
 		fmt.Printf("  %s Using column '%s' for URL\n", util.SuccessIcon(), util.Bold(headers[cm.urlIdx]))
 	case "phone":
+		// When user explicitly specifies columns, only clear auto-detected ones that conflict
+		hasExplicit := bulkColumn != "" || bulkDomainCol != "" || bulkUrlCol != ""
+		if hasExplicit {
+			// Clear auto-detected columns that weren't explicitly requested
+			if bulkColumn == "" {
+				cm.emailIdx = -1
+			}
+			if bulkDomainCol == "" {
+				cm.domainIdx = -1
+			}
+			if bulkUrlCol == "" {
+				cm.urlIdx = -1
+			}
+		}
+		found := false
 		if cm.emailIdx >= 0 {
 			fmt.Printf("  %s Using column '%s' for email\n", util.SuccessIcon(), util.Bold(headers[cm.emailIdx]))
-		} else if cm.domainIdx >= 0 {
+			found = true
+		}
+		if cm.domainIdx >= 0 {
 			fmt.Printf("  %s Using column '%s' for domain\n", util.SuccessIcon(), util.Bold(headers[cm.domainIdx]))
-		} else if cm.urlIdx >= 0 {
+			found = true
+		}
+		if cm.urlIdx >= 0 {
 			fmt.Printf("  %s Using column '%s' for URL\n", util.SuccessIcon(), util.Bold(headers[cm.urlIdx]))
-		} else {
+			found = true
+		}
+		if !found {
 			cm.emailIdx = promptColumnSelect(headers, "email")
 			if cm.emailIdx == -1 {
 				fmt.Printf("%s Could not find email, domain, or URL column. Use --column, --domain-col, or --url-col to specify.\n", util.ErrorIcon())
@@ -785,25 +838,36 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 
 	case "phone":
 		params := tomba.Params{}
+		// Find email: try mapped column, then scan row
 		if cm.emailIdx >= 0 && cm.emailIdx < len(row) {
-			v := strings.TrimSpace(row[cm.emailIdx])
-			if v == "" {
-				return bulkSkipped
+			if v := strings.TrimSpace(row[cm.emailIdx]); v != "" && strings.Contains(v, "@") {
+				params["email"] = v
 			}
-			params["email"] = v
-		} else if cm.domainIdx >= 0 && cm.domainIdx < len(row) {
-			v := strings.TrimSpace(row[cm.domainIdx])
-			if v == "" {
-				return bulkSkipped
+		}
+		if _, ok := params["email"]; !ok && cm.emailIdx >= 0 {
+			for _, cell := range row {
+				if v := strings.TrimSpace(cell); v != "" && strings.Contains(v, "@") && strings.Contains(v, ".") {
+					params["email"] = v
+					break
+				}
 			}
-			params["domain"] = v
-		} else if cm.urlIdx >= 0 && cm.urlIdx < len(row) {
-			v := strings.TrimSpace(row[cm.urlIdx])
-			if v == "" {
-				return bulkSkipped
+		}
+		// Find domain: try mapped column, then scan row
+		if cm.domainIdx >= 0 && cm.domainIdx < len(row) {
+			if v := strings.TrimSpace(row[cm.domainIdx]); v != "" && strings.Contains(v, ".") && !strings.Contains(v, " ") && !strings.Contains(v, "@") {
+				params["domain"] = v
 			}
-			params["linkedin"] = v
-		} else {
+		}
+		// Find linkedin: always scan entire row for linkedin URL (handles shifted columns)
+		if cm.urlIdx >= 0 {
+			for _, cell := range row {
+				if v := strings.TrimSpace(cell); v != "" && strings.Contains(v, "linkedin.com/") {
+					params["linkedin"] = v
+					break
+				}
+			}
+		}
+		if len(params) == 0 {
 			return bulkSkipped
 		}
 		if bulkFull {
@@ -915,7 +979,7 @@ func getExtraHeaders(opType string) []string {
 		}
 		return headers
 	case "search":
-		return []string{"total_emails", "first_email"}
+		return []string{"found_email", "first_name", "last_name", "score", "position", "department", "type", "linkedin", "country"}
 	case "author":
 		return []string{"found_email", "first_name", "last_name", "position", "company", "country"}
 	case "linkedin":
@@ -947,10 +1011,7 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 	}
 
 	if _, hasError := result["_error"]; hasError {
-		errMsg := fmt.Sprintf("%v", result["_error"])
-		cols := make([]string, count)
-		cols[0] = errMsg
-		return cols
+		return make([]string, count)
 	}
 
 	switch opType {
@@ -995,15 +1056,13 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 		}
 		return cols
 	case "search":
-		m := getNestedMap(result, "meta")
 		d := getNestedMap(result, "data")
-		firstEmail := ""
 		if emails, ok := d["emails"].([]interface{}); ok && len(emails) > 0 {
 			if em, ok := emails[0].(map[string]interface{}); ok {
-				firstEmail = getMapStr(em, "email")
+				return extractSearchEmailCols(em)
 			}
 		}
-		return []string{getMapFloat(m, "total"), firstEmail}
+		return make([]string, count)
 	case "author":
 		d := getNestedMap(result, "data")
 		return []string{
@@ -1177,15 +1236,49 @@ func extractFirstPhone(result map[string]interface{}) map[string]interface{} {
 	return nil
 }
 
+func extractSearchEmailCols(em map[string]interface{}) []string {
+	return []string{
+		getMapStr(em, "email"),
+		getMapStr(em, "first_name"),
+		getMapStr(em, "last_name"),
+		getMapFloat(em, "score"),
+		getMapStr(em, "position"),
+		getMapStr(em, "department"),
+		getMapStr(em, "type"),
+		getMapStr(em, "linkedin"),
+		getMapStr(em, "country"),
+	}
+}
+
+func extractSearchRows(result map[string]interface{}) [][]string {
+	if result == nil {
+		return nil
+	}
+	if _, hasError := result["_error"]; hasError {
+		count := len(getExtraHeaders("search"))
+		return [][]string{make([]string, count)}
+	}
+	d := getNestedMap(result, "data")
+	emails, ok := d["emails"].([]interface{})
+	if !ok || len(emails) == 0 {
+		return nil
+	}
+	var rows [][]string
+	for _, item := range emails {
+		if em, ok := item.(map[string]interface{}); ok {
+			rows = append(rows, extractSearchEmailCols(em))
+		}
+	}
+	return rows
+}
+
 func extractPhoneRows(result map[string]interface{}) [][]string {
 	if result == nil {
 		return nil
 	}
 	if _, hasError := result["_error"]; hasError {
 		count := len(getExtraHeaders("phone"))
-		cols := make([]string, count)
-		cols[0] = fmt.Sprintf("%v", result["_error"])
-		return [][]string{cols}
+		return [][]string{make([]string, count)}
 	}
 	var phones []map[string]interface{}
 	switch v := result["data"].(type) {
