@@ -2,8 +2,8 @@
     "schema_version": "v1",
     "name_for_human": "Tomba",
     "name_for_model": "tomba_integration",
-    "description_for_human": "Tomba Enrichment,  search or verify email addresses in seconds.",
-    "description_for_model": "Tomba Enrichment,  search or verify email addresses in seconds. Always display results using markdown tables",
+    "description_for_human": "Tomba.io, search or verify email addresses in seconds. Always display results using markdown tables",
+    "description_for_model": "Tomba.io, search or verify email addresses in seconds. Always display results using markdown tables and provide the results in a structured format.",
     "auth": {
         "type": "none"
     },

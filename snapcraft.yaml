@@ -1,19 +1,24 @@
 name: tomba
 icon: logo.png
-summary: CLI utility to search or verify lists of email addresses in seconds
+summary: Find emails, verify addresses, discover phones, and enrich companies
 description: |
-    Tomba.io (CLI) utility to search or verify lists of email addresses in seconds can significantly improve productivity and efficiency for individuals and businesses dealing with large email databases. This utility can automate the process of checking the validity and deliverability of email addresses, saving valuable time and resources. Let's explore the features and benefits of such a CLI utility:
+    Tomba.io CLI utility to find emails, verify addresses, discover phone numbers, and enrich company data in seconds. Process bulk CSV files with concurrent workers, unlimited rate limits, and auto-resume.
 
-    * Instantly locate email addresses from any website https://tomba.io/domain-search .
-    * Email verify to confirm an email address' authenticity https://tomba.io/email-verifier . 
-    * Enrich email with data https://tomba.io/enrichment .
-    * Instantly discover the email addresses of Linkedin URLs https://tomba.io/linkedin-finder .
-    * Instantly discover the email addresses of article authors https://tomba.io/author-finder .
-    * Phone finder to get phone numbers associated with emails https://tomba.io/phone-finder .
-    * Phone validator to verify phone number validity.
-    * Find similar websites and their email addresses.
-    * Technology lookup to discover technologies used by domains.
-    * Count email addresses available for any domain.
+    Features:
+    * Domain Search — instantly locate email addresses from any website https://tomba.io/domain-search
+    * Email Finder — find someone's email by name and company domain https://tomba.io/email-finder
+    * Email Verifier — confirm an email address' authenticity and deliverability https://tomba.io/email-verifier
+    * Email Enrichment — enrich email addresses with personal and company data https://tomba.io/enrichment
+    * LinkedIn Finder — discover email addresses from LinkedIn profile URLs https://tomba.io/linkedin-finder
+    * Author Finder — discover email addresses of article authors https://tomba.io/author-finder
+    * Phone Finder — get phone numbers associated with emails, domains, or LinkedIn URLs https://tomba.io/phone-finder
+    * Phone Validator — verify phone number validity, carrier, and line type
+    * Company Enrichment — get detailed company data from domain names
+    * Similar Domains — find similar websites and their email addresses
+    * Technology Lookup — discover technologies used by domains
+    * Email Count — count email addresses available for any domain
+    * Bulk Processing — process CSV files with concurrent workers for all operations
+    * Email Sources — find where an email address was publicly mentioned
 
     This snap is built via the build.snapcraft.io service from the snapcraft.yaml definition at https://github.com/tomba-io/tomba to ensure source and build transparency.
 issues: https://github.com/tomba-io/tomba/issues
