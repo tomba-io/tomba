@@ -765,8 +765,8 @@ output:
 Run a local HTTP server exposing all Tomba API endpoints as a reverse proxy.
 
 ```bash
-tomba http                  # starts on port 3000
-tomba http --port 8080      # custom port
+tomba serve                  # starts on port 3000
+tomba serve --port 8080      # custom port
 ```
 
 ### Endpoints (45 routes)
@@ -826,7 +826,7 @@ tomba http --port 8080      # custom port
 | flag            | Report incorrect data for credit recovery                                                 |
 | format          | Get the email format used by a domain                                                     |
 | help            | Help about any command                                                                    |
-| http            | Runs a HTTP server (reverse proxy).                                                       |
+| serve            | Runs a HTTP server (reverse proxy).                                                       |
 | key             | Manage API keys (list, create, delete, reset)                                             |
 | lead            | Manage leads (list, get, create, update, delete)                                          |
 | leads-list      | Manage lead lists (list, create, update, delete)                                          |

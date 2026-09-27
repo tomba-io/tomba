@@ -1,14 +1,14 @@
 [Unit]
-Description=Tomba, your unique B2B email finder and verifier, provides a distinctive lead database for effortless and effective outreach scaling.
+Description=Tomba CLI — B2B email finder, verifier, phone finder and company enrichment.
 Documentation=https://tomba.io
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/tomba http
+ExecStart=/usr/bin/tomba serve
 Restart=on-failure
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=tomba http
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tomba
 User=www-data
 Group=www-data
 

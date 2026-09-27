@@ -12,16 +12,16 @@ import (
 	"github.com/tomba-io/tomba/pkg/start"
 )
 
-// httpCmd represents the http command
-var httpCmd = &cobra.Command{
-	Use:   "http",
+// serveCmd represents the serve command
+var serveCmd = &cobra.Command{
+	Use:   "serve",
 	Short: "Runs a HTTP server (reverse proxy).",
 	Long:  Long,
-	Run:   httpRun,
+	Run:   serveRun,
 }
 
-// httpRun the actual work http
-func httpRun(cmd *cobra.Command, args []string) {
+// serveRun the actual work serve
+func serveRun(cmd *cobra.Command, args []string) {
 	init := start.New(conn)
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: false,
