@@ -7,7 +7,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
-	github.com/tomba-io/go v1.1.0
+	github.com/tomba-io/go v1.1.1
+	golang.org/x/term v0.45.0
 )
 
 require (
@@ -21,7 +22,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.48.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
 )
 
 require (
