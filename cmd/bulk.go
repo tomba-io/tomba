@@ -103,10 +103,11 @@ type StreamingCSVWriter struct {
 	writer *csv.Writer
 	rows   [][]string
 	opType string
+	colMap *columnMapping
 }
 
 // NewStreamingCSVWriter opens the output file and writes headers if needed
-func NewStreamingCSVWriter(filename string, inputHeaders []string, rows [][]string, opType string, appendMode bool) (*StreamingCSVWriter, error) {
+func NewStreamingCSVWriter(filename string, inputHeaders []string, rows [][]string, opType string, appendMode bool, colMap *columnMapping) (*StreamingCSVWriter, error) {
 	var file *os.File
 	var err error
 
@@ -136,6 +137,7 @@ func NewStreamingCSVWriter(filename string, inputHeaders []string, rows [][]stri
 		writer: writer,
 		rows:   rows,
 		opType: opType,
+		colMap: colMap,
 	}, nil
 }
 
@@ -144,7 +146,7 @@ func (w *StreamingCSVWriter) WriteResult(index int, result map[string]any) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	// Expand multi-row results: phone --full and search
+	// Expand multi-row results: phone --full, search, and similar
 	if result != nil {
 		if _, skipped := result["_skipped"]; !skipped {
 			var expandedRows [][]string
@@ -152,6 +154,12 @@ func (w *StreamingCSVWriter) WriteResult(index int, result map[string]any) {
 				expandedRows = extractPhoneRows(result)
 			} else if w.opType == "search" {
 				expandedRows = extractSearchRows(result)
+			} else if w.opType == "similar" {
+				inputDomain := ""
+				if w.colMap != nil && w.colMap.domainIdx >= 0 && w.colMap.domainIdx < len(w.rows[index]) {
+					inputDomain = strings.TrimSpace(w.rows[index][w.colMap.domainIdx])
+				}
+				expandedRows = extractSimilarRows(result, inputDomain)
 			}
 			if expandedRows != nil {
 				for _, cols := range expandedRows {
@@ -395,7 +403,7 @@ func bulkRun(cmd *cobra.Command, args []string) {
 		util.Bold(planName), util.Cyan(fmt.Sprintf("%d", workers)), util.Bold(fmt.Sprintf("%d", remainingCount)))
 
 	// Open streaming CSV writer
-	streamWriter, err := NewStreamingCSVWriter(outputFile, headers, rows, bulkType, appendMode)
+	streamWriter, err := NewStreamingCSVWriter(outputFile, headers, rows, bulkType, appendMode, colMap)
 	if err != nil {
 		fmt.Printf("%s Error opening output file: %s\n", util.ErrorIcon(), util.Red(err.Error()))
 		return
@@ -965,39 +973,53 @@ func processBulkRow(conn *start.Conn, row []string, headers []string, cm *column
 func getExtraHeaders(opType string) []string {
 	switch opType {
 	case "enrich":
-		headers := []string{"found_email", "first_name", "last_name", "position", "company", "country", "linkedin", "twitter"}
-		if bulkEnrichMobile {
-			headers = append(headers, "phone_number")
-		}
-		return headers
+		return []string{"Email address", "Domain name", "Organization", "Confidence score",
+			"Verification Status", "Type", "Pattern", "First Name", "Last Name", "Position", "Department",
+			"Twitter URL", "LinkedIn URL", "Country",
+			"Phone", "Phone2", "Phone3", "Phone4", "Phone5", "Phone6", "Phone7", "Phone8", "Phone9", "Phone10"}
 	case "verify":
-		return []string{"result", "status", "score", "mx_found", "smtp_check"}
+		return []string{"Email address", "Status", "Regexp", "Gibberish", "Disposable",
+			"Webmail", "Mx records", "Smtp server", "Smtp check", "Accept all", "Block", "Score",
+			"Phone", "Phone2", "Phone3", "Phone4", "Phone5", "Phone6", "Phone7", "Phone8", "Phone9", "Phone10"}
 	case "finder":
-		headers := []string{"found_email", "first_name", "last_name", "score", "position", "company"}
-		if bulkEnrichMobile {
-			headers = append(headers, "phone_number")
-		}
-		return headers
+		return []string{"Email address", "First Name", "Last Name", "Confidence score", "Verification status",
+			"Phone", "Phone2", "Phone3", "Phone4", "Phone5", "Phone6", "Phone7", "Phone8", "Phone9", "Phone10"}
 	case "search":
-		return []string{"found_email", "first_name", "last_name", "score", "position", "department", "type", "linkedin", "country"}
+		return []string{"Email address", "Domain name", "Organization", "Confidence score",
+			"Verification Status", "Type", "Pattern", "First Name", "Last Name", "Position", "Department",
+			"Twitter URL", "LinkedIn URL",
+			"Phone", "Phone2", "Phone3", "Phone4", "Phone5", "Phone6", "Phone7", "Phone8", "Phone9", "Phone10"}
 	case "author":
-		return []string{"found_email", "first_name", "last_name", "position", "company", "country"}
+		return []string{"url", "Email address", "Domain name", "Organization",
+			"Confidence score", "Verification Status", "First Name", "Last Name", "Position",
+			"Twitter URL", "LinkedIn URL", "Phone", "Title", "Description"}
 	case "linkedin":
-		headers := []string{"found_email", "first_name", "last_name", "position", "company", "country", "linkedin"}
-		if bulkEnrichMobile {
-			headers = append(headers, "phone_number")
-		}
-		return headers
+		return []string{"Email address", "Domain name", "Organization", "Confidence score",
+			"Verification Status", "Type", "Pattern", "First Name", "Last Name", "Position", "Department",
+			"Twitter URL",
+			"Phone", "Phone2", "Phone3", "Phone4", "Phone5", "Phone6", "Phone7", "Phone8", "Phone9", "Phone10"}
 	case "phone":
-		return []string{"phone_number", "valid", "country_code", "line_type", "carrier"}
+		if bulkFull {
+			return []string{"Input Data", "IsValid",
+				"Phone 1", "Phone 2", "Phone 3", "Phone 4", "Phone 5",
+				"Phone 6", "Phone 7", "Phone 8", "Phone 9", "Phone 10",
+				"Phone Local format", "Phone International format", "Phone Line type",
+				"Carrier", "Country Code", "Timezone"}
+		}
+		return []string{"Input Data", "IsValid", "Phone Local format", "Phone International format",
+			"Phone Line type", "Carrier", "Country Code", "Timezone"}
 	case "sources":
 		return []string{"total_sources", "first_source_url", "first_source_domain"}
 	case "company":
-		return []string{"company_name", "company_domain", "industry", "country", "size", "founded"}
+		return []string{"Website", "Organization name", "Industries", "Employee count",
+			"Twitter", "Facebook", "LinkedIn", "Country", "City", "Description",
+			"Whois Registrar", "Whois Created date", "Whois Referral url",
+			"phone", "phone2", "phone3", "phone4", "phone5", "phone6", "phone7", "phone8", "phone9", "phone10"}
 	case "similar":
-		return []string{"total_similar", "first_similar_domain"}
+		return []string{"Domain name", "Organization", "Industries", "Similar To"}
 	case "phone-validator":
-		return []string{"valid", "local_format", "intl_format", "country_code", "line_type", "carrier"}
+		return []string{"Input", "IsValid", "Phone", "Phone Local format",
+			"Phone International format", "Phone Line type", "Carrier", "Country Code", "Timezone"}
 	default:
 		return []string{}
 	}
@@ -1017,76 +1039,102 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 	switch opType {
 	case "enrich":
 		d := getNestedMap(result, "data")
+		v := getNestedMap(d, "verification")
 		cols := []string{
 			getMapStr(d, "email"),
+			getMapStr(d, "domain"),
+			getMapStr(d, "company"),
+			getMapFloat(d, "score"),
+			getMapStr(v, "status"),
+			getMapStr(d, "type"),
+			getMapStr(d, "pattern"),
 			getMapStr(d, "first_name"),
 			getMapStr(d, "last_name"),
 			getMapStr(d, "position"),
-			getMapStr(d, "company"),
-			getMapStr(d, "country"),
-			getMapStr(d, "linkedin"),
+			getMapStr(d, "department"),
 			getMapStr(d, "twitter"),
+			getMapStr(d, "linkedin"),
+			getMapStr(d, "country"),
 		}
-		if bulkEnrichMobile {
-			cols = append(cols, getFirstPhone(d))
-		}
+		cols = append(cols, extractPhones(d, 10)...)
 		return cols
 	case "verify":
 		d := getNestedMap(result, "data")
 		e := getNestedMap(d, "email")
-		return []string{
+		cols := []string{
+			getMapStr(e, "email"),
 			getMapStr(e, "result"),
-			getMapStr(e, "status"),
-			getMapFloat(e, "score"),
-			getMapBool(e, "mx_found"),
+			getMapBool(e, "regexp"),
+			getMapBool(e, "gibberish"),
+			getMapBool(e, "disposable"),
+			getMapBool(e, "webmail"),
+			getMapBool(e, "mx_records"),
+			getMapBool(e, "smtp_server"),
 			getMapBool(e, "smtp_check"),
+			getMapBool(e, "accept_all"),
+			getMapBool(e, "block"),
+			getMapFloat(e, "score"),
 		}
+		cols = append(cols, extractPhones(d, 10)...)
+		return cols
 	case "finder":
 		d := getNestedMap(result, "data")
+		v := getNestedMap(d, "verification")
 		cols := []string{
 			getMapStr(d, "email"),
 			getMapStr(d, "first_name"),
 			getMapStr(d, "last_name"),
 			getMapFloat(d, "score"),
-			getMapStr(d, "position"),
-			getMapStr(d, "company"),
+			getMapStr(v, "status"),
 		}
-		if bulkEnrichMobile {
-			cols = append(cols, getFirstPhone(d))
-		}
+		cols = append(cols, extractPhones(d, 10)...)
 		return cols
 	case "search":
 		d := getNestedMap(result, "data")
 		if emails, ok := d["emails"].([]interface{}); ok && len(emails) > 0 {
 			if em, ok := emails[0].(map[string]interface{}); ok {
-				return extractSearchEmailCols(em)
+				return extractSearchEmailCols(em, d)
 			}
 		}
 		return make([]string, count)
 	case "author":
 		d := getNestedMap(result, "data")
+		v := getNestedMap(d, "verification")
+		info := getNestedMap(d, "info")
 		return []string{
+			getMapStr(d, "url"),
 			getMapStr(d, "email"),
+			getMapStr(d, "domain"),
+			getMapStr(d, "company"),
+			getMapFloat(d, "score"),
+			getMapStr(v, "status"),
 			getMapStr(d, "first_name"),
 			getMapStr(d, "last_name"),
 			getMapStr(d, "position"),
-			getMapStr(d, "company"),
-			getMapStr(d, "country"),
+			getMapStr(d, "twitter"),
+			getMapStr(d, "linkedin"),
+			getFirstPhone(d),
+			getMapStr(info, "title"),
+			getMapStr(info, "description"),
 		}
 	case "linkedin":
 		d := getNestedMap(result, "data")
+		v := getNestedMap(d, "verification")
 		cols := []string{
 			getMapStr(d, "email"),
+			getMapStr(d, "domain"),
+			getMapStr(d, "company"),
+			getMapFloat(d, "score"),
+			getMapStr(v, "status"),
+			getMapStr(d, "type"),
+			getMapStr(d, "pattern"),
 			getMapStr(d, "first_name"),
 			getMapStr(d, "last_name"),
 			getMapStr(d, "position"),
-			getMapStr(d, "company"),
-			getMapStr(d, "country"),
-			getMapStr(d, "linkedin"),
+			getMapStr(d, "department"),
+			getMapStr(d, "twitter"),
 		}
-		if bulkEnrichMobile {
-			cols = append(cols, getFirstPhone(d))
-		}
+		cols = append(cols, extractPhones(d, 10)...)
 		return cols
 	case "phone":
 		phone := extractFirstPhone(result)
@@ -1094,11 +1142,14 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 			return make([]string, count)
 		}
 		return []string{
-			getMapStr(phone, "intl_format"),
+			getMapStr(phone, "input"),
 			getMapBool(phone, "valid"),
-			getMapStr(phone, "country_code"),
+			getMapStr(phone, "local_format"),
+			getMapStr(phone, "intl_format"),
 			getMapStr(phone, "line_type"),
 			getMapStr(phone, "carrier"),
+			getMapStr(phone, "country_code"),
+			getFirstTimezone(phone),
 		}
 	case "sources":
 		d := getNestedMap(result, "data")
@@ -1118,35 +1169,51 @@ func extractExtraCols(result map[string]interface{}, opType string) []string {
 	case "company":
 		d := getNestedMap(result, "data")
 		org := getNestedMap(d, "organization")
-		return []string{
-			getMapStr(org, "name"),
+		loc := getNestedMap(org, "location")
+		social := getNestedMap(org, "social_links")
+		whois := getNestedMap(org, "whois")
+		cols := []string{
 			getMapStr(org, "website_url"),
+			getMapStr(org, "organization"),
 			getMapStr(org, "industries"),
-			getMapStr(org, "country"),
 			getMapStr(org, "size"),
-			getMapStr(org, "founded"),
+			socialURL("https://twitter.com/", getMapStr(social, "twitter_url")),
+			socialURL("https://facebook.com/", getMapStr(social, "facebook_url")),
+			socialURL("https://linkedin.com/company/", getMapStr(social, "linkedin_url")),
+			getMapStr(loc, "country"),
+			getMapStr(loc, "city"),
+			getMapStr(org, "description"),
+			getMapStr(whois, "registrar_name"),
+			getMapStr(whois, "created_date"),
+			getMapStr(whois, "referral_url"),
 		}
+		cols = append(cols, extractPhones(org, 10)...)
+		return cols
 	case "similar":
-		totalSimilar := ""
-		firstDomain := ""
-		if domains, ok := result["data"].([]interface{}); ok {
-			totalSimilar = fmt.Sprintf("%d", len(domains))
-			if len(domains) > 0 {
-				if s, ok := domains[0].(map[string]interface{}); ok {
-					firstDomain = getMapStr(s, "website_url")
+		// Single-row fallback (multi-row expansion in extractSimilarRows handles the normal case)
+		if domains, ok := result["data"].([]interface{}); ok && len(domains) > 0 {
+			if s, ok := domains[0].(map[string]interface{}); ok {
+				return []string{
+					getMapStr(s, "website_url"),
+					getMapStr(s, "name"),
+					getMapStr(s, "industries"),
+					"",
 				}
 			}
 		}
-		return []string{totalSimilar, firstDomain}
+		return make([]string, count)
 	case "phone-validator":
 		d := getNestedMap(result, "data")
 		return []string{
+			getMapStr(d, "input"),
 			getMapBool(d, "valid"),
+			getMapStr(d, "e164_format"),
 			getMapStr(d, "local_format"),
 			getMapStr(d, "intl_format"),
-			getMapStr(d, "country_code"),
 			getMapStr(d, "line_type"),
 			getMapStr(d, "carrier"),
+			getMapStr(d, "country_code"),
+			getFirstTimezone(d),
 		}
 	default:
 		return []string{}
@@ -1236,18 +1303,26 @@ func extractFirstPhone(result map[string]interface{}) map[string]interface{} {
 	return nil
 }
 
-func extractSearchEmailCols(em map[string]interface{}) []string {
-	return []string{
+func extractSearchEmailCols(em map[string]interface{}, parentData map[string]interface{}) []string {
+	org := getNestedMap(parentData, "organization")
+	v := getNestedMap(em, "verification")
+	cols := []string{
 		getMapStr(em, "email"),
+		getMapStr(org, "website_url"),
+		getMapStr(org, "organization"),
+		getMapFloat(em, "score"),
+		getMapStr(v, "status"),
+		getMapStr(em, "type"),
+		getMapStr(org, "pattern"),
 		getMapStr(em, "first_name"),
 		getMapStr(em, "last_name"),
-		getMapFloat(em, "score"),
 		getMapStr(em, "position"),
 		getMapStr(em, "department"),
-		getMapStr(em, "type"),
+		getMapStr(em, "twitter"),
 		getMapStr(em, "linkedin"),
-		getMapStr(em, "country"),
 	}
+	cols = append(cols, extractPhones(em, 10)...)
+	return cols
 }
 
 func extractSearchRows(result map[string]interface{}) [][]string {
@@ -1266,7 +1341,7 @@ func extractSearchRows(result map[string]interface{}) [][]string {
 	var rows [][]string
 	for _, item := range emails {
 		if em, ok := item.(map[string]interface{}); ok {
-			rows = append(rows, extractSearchEmailCols(em))
+			rows = append(rows, extractSearchEmailCols(em, d))
 		}
 	}
 	return rows
@@ -1291,17 +1366,97 @@ func extractPhoneRows(result map[string]interface{}) [][]string {
 			}
 		}
 	}
+	if len(phones) == 0 {
+		return nil
+	}
+
+	// Get input data from the first phone
+	input := getMapStr(phones[0], "input")
+	isValid := getMapBool(phones[0], "valid")
+
+	// Phone 1-10 columns
+	phoneNums := make([]string, 10)
+	for i := 0; i < 10 && i < len(phones); i++ {
+		phoneNums[i] = getMapStr(phones[i], "e164_format")
+	}
+
+	// Detail columns from the first phone
+	first := phones[0]
+	row := []string{input, isValid}
+	row = append(row, phoneNums...)
+	row = append(row,
+		getMapStr(first, "local_format"),
+		getMapStr(first, "intl_format"),
+		getMapStr(first, "line_type"),
+		getMapStr(first, "carrier"),
+		getMapStr(first, "country_code"),
+		getFirstTimezone(first),
+	)
+	return [][]string{row}
+}
+
+func extractSimilarRows(result map[string]interface{}, inputDomain string) [][]string {
+	if result == nil {
+		return nil
+	}
+	if _, hasError := result["_error"]; hasError {
+		count := len(getExtraHeaders("similar"))
+		return [][]string{make([]string, count)}
+	}
+	domains, ok := result["data"].([]interface{})
+	if !ok || len(domains) == 0 {
+		return nil
+	}
 	var rows [][]string
-	for _, p := range phones {
-		rows = append(rows, []string{
-			getMapStr(p, "intl_format"),
-			getMapBool(p, "valid"),
-			getMapStr(p, "country_code"),
-			getMapStr(p, "line_type"),
-			getMapStr(p, "carrier"),
-		})
+	for _, item := range domains {
+		if s, ok := item.(map[string]interface{}); ok {
+			rows = append(rows, []string{
+				getMapStr(s, "website_url"),
+				getMapStr(s, "name"),
+				getMapStr(s, "industries"),
+				inputDomain,
+			})
+		}
 	}
 	return rows
+}
+
+func extractPhones(m map[string]interface{}, maxCount int) []string {
+	phones := make([]string, maxCount)
+	if m == nil {
+		return phones
+	}
+	if pd, ok := m["phone_data"].([]interface{}); ok {
+		for i := 0; i < maxCount && i < len(pd); i++ {
+			if p, ok := pd[i].(map[string]interface{}); ok {
+				if v := getMapStr(p, "e164_format"); v != "" {
+					phones[i] = v
+				} else {
+					phones[i] = getMapStr(p, "intl_format")
+				}
+			}
+		}
+	}
+	return phones
+}
+
+func getFirstTimezone(m map[string]interface{}) string {
+	if m == nil {
+		return ""
+	}
+	if tzs, ok := m["timezones"].([]interface{}); ok && len(tzs) > 0 {
+		if tz, ok := tzs[0].(string); ok {
+			return tz
+		}
+	}
+	return getMapStr(m, "timezone")
+}
+
+func socialURL(prefix, handle string) string {
+	if handle == "" {
+		return ""
+	}
+	return prefix + handle
 }
 
 func getFirstPhone(m map[string]interface{}) string {
